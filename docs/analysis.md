@@ -58,7 +58,7 @@ The table also has a hidden column `slice_id` which need to be set equal to the
 id of the slice that you want to obtain the description from. For example, to
 get the description and doc link for slice with id `5`:
 
-```sqlite
+```sql
 select description, doc_link
 from describe_slice
 where slice_id = 5
@@ -68,7 +68,7 @@ You can also _join_ the `describe_slice` table with the slice table to obtain
 descriptions for more than one slice. For example, to get the ts, duration and
 description for all `measure` slices:
 
-```sqlite
+```sql
 select ts, dur, description
 from slice s
 join desribe_slice d on s.id = d.slice_id
