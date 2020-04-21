@@ -23,7 +23,7 @@
     "clean": "gn clean ../../out/perfetto.dev",
     "setup": "ln -fns ../../out/perfetto.dev/site dist",
     "serve": "npm run setup; dev_appserver.py .",
-    "build": "npm run setup; gn gen --args='' ../../out/perfetto.dev; ninja -C ../../out/perfetto.dev site",
+    "build": "npm run setup; gn gen --args='' ../../out/perfetto.dev; ninja -C ../../out/perfetto.dev infra/perfetto-site.appspot.com:node_modules; ninja -C ../../out/perfetto.dev site",
     "watch": "onchange -v '../../docs/**' '**' -e 'dist' -- npm run build",
     "start": "npm run build; concurrently \"npm run serve\" \"npm run watch\""
   }
