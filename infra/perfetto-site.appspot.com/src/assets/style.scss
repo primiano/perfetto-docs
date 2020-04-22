@@ -64,7 +64,7 @@ h3 {
 .site-header {
     background-color: hsl(210, 30%, 16%);
     color: hsl(210, 17%, 98%);
-    position: sticky;
+    position: fixed;
     top: 0;
     width: 100%;
     --sh-padding-y: 5px;
@@ -163,29 +163,23 @@ h3 {
 // Site content
 // -----------------------------------------------------------------------------
 .site-content {
-    overflow-x: hidden;
-    section {
-        display: block;
-        max-width: calc(var(--content-max-width) + 2 * 20px);
-        position: relative;
-        margin: 0 auto;
-        padding: 0 20px;
-        // Pseudo element to extend the bg color to the full width.
-        &:before {
-            display: block;
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100vw;
-            width: 200vw;
-            height: 100%;
-            background-color: inherit;
-            z-index: -99;
+    .section-wrapper {
+        border-bottom: solid 1px #eee;
+        &:nth-child(2n+1) {
+          background-color: hsl(210, 17%, 98%);
         }
     }
+    section {
+        display: block;
+        position: relative;
+        padding: 0 20px;
+        margin: 0 auto;
+        max-width: calc(var(--content-max-width) + 2 * 20px);
+    }
+
     .banner {
-        background-color: hsl(225, 20%, 98%);
-        height: calc(100vh - var(--site-header-height) - var(--home-highlights-height));
+        height: calc(100vh - var(--home-highlights-height));
+        padding-top: var(--site-header-height);
         min-height: 25vw;
         display: grid;
         grid-template-columns: 1fr;
@@ -223,7 +217,6 @@ h3 {
         &:before {
             border-top: 1px solid hsl(210, 17%, 90%);
         }
-        background-color:#fff0; // hsl(210, 17%, 30%);
         height: var(--home-highlights-height);
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -275,19 +268,6 @@ h3 {
         display: grid;
         grid-template-rows: 1fr;
         grid-column-gap: 4vw;
-        &:after {
-            display: block;
-            content: '';
-            position: absolute;
-            top: auto;
-            bottom: 0;
-            left: -100vw;
-            width: 200vw;
-            height: 1px;
-            overflow: hidden;
-            background-color: #eee;
-            z-index: 1;
-        }
         >img {
             grid-area: img;
             max-width: 100%;
@@ -315,8 +295,6 @@ h3 {
             }
         }
         &:nth-child(2n+1) {
-            // background-color: hsl(210, 17%, 95%);
-            background-color: hsl(210, 17%, 98%);
             grid-template-columns: 4fr 5fr;
             grid-template-areas: "img content";
             h2 {
@@ -478,7 +456,6 @@ h3 {
                 }
             }
         }
-        // ul ul { margin-left: 16px;}
         li a {
             padding-left: 16px;
         }
