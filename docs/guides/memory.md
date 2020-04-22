@@ -151,7 +151,7 @@ do with notifications, we can put "notification" in the Focus box.
 
 
 
-As for native heap profiles, if we want to focus on some specific aspect of the
+As with native heap profiles, if we want to focus on some specific aspect of the
 graph, we can filter by the names of the classes. If we wanted to see everything
 that could be caused by notifications, we can put "notification" in the Focus box.
 
