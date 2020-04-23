@@ -1,9 +1,8 @@
 # Investigating Memory Usage on Android
 
 ## Prerequsities
-This tutorial assumes you are running Android 10 or newer on your phone, and
-Linux or macOS on your computer. For Java dumps, your phone needs to be
-running Android 11 or newer. If you are profiling your own app,
+This tutorial assumes you are running Android 11 or newer on your phone, and
+Linux or macOS on your computer. If you are profiling your own app,
 it needs to be marked as profileable or debuggable in its manifest.
 
 To mark an app as profileable, put `<profileable android:shell="true"/>` into
@@ -17,6 +16,9 @@ the `<application>`.
     </application>
 </manifest>
 ```
+
+`com.android.systemui` is marked as profileable on Android 11, so we use that
+as an example.
 
 ## dumpsys meminfo
 A good place to get started investigating memory usage of a process is
@@ -45,6 +47,71 @@ is 9M, on the native heap it's 17M. If you are running this on your own app and
 one of those clearly stands out, you might want to start with either
 [Analyzing the Native Heap](#analyzing-the-native-heap) or
 [Analyzing the Java Heap](#analyzing-the-java-heap) below.
+
+### Linux memory management
+But what does *private* and *dirty* actually mean? To answer this question, we
+need to delve into Linux memory management a bit.
+
+From the kernel's point of view, memory is split into equally sized blocks
+called *pages*. These are generally 4KiB. If an application asks for a new
+set of continuous blocks, the kernel creates a new VMA (Virtual Memory Area).
+The actual memory is only allocated (in page granularity) once the application
+tries to write to it. If you allocate 5TiB worth of pages but only touch one
+page, your process' memory usage will only go up by 4KiB. You will have
+increased your process' *virtual memory* by 5TiB, but its resident
+*physical memory* by 4KiB.
+
+When optimizing memory use of programs, we are interested in reducing their
+footprint in *physical memory*. High *virtual memory* use is generally not a
+cause for concern (except if you run out of addresses, which is very hard on
+64 bit systems).
+
+We call the amount a process' memory that is resident in *physical memory* its
+**RSS** (Resident Set Size). Not all memory is created equal though.
+Memory in Linux can be described using a couple of binary labels.
+
+* **clean / dirty:** clean memory has not been written to by the process, dirty
+one has.
+* **anon / file:** anon memory does not exist on disk, file memory contains the
+content of a file.
+* **private / shared:** modifications to private memory are only seen by the
+process doing it. Modifications to shared memory can be seen by other
+processes or the underlying file.
+
+Some memory that is resident can be *reclaimed* by the kernel if it wants to
+free up memory.
+
+<center>
+
+| dirty | shared | file |              |
+|:-----:|:------:|:----:|--------------|
+| ❌     | ❌      | ❌    | not resident |
+| ❌     | ❌      | ✓    | reclaimable  |
+| ❌     | ✓      | ❌    | not resident |
+| ❌     | ✓      | ✓    | reclaimable  |
+| ✓     | ❌      | ❌    | resident     |
+| ✓     | ❌      | ✓    | resident     |
+| ✓     | ✓      | ❌    | resident     |
+| ✓     | ✓      | ✓    | reclaimable  |
+
+</center>
+
+Memory that is *clean* and *anon* is generally not resident, *clean file*
+memory is reclaimable by the kernel in case of low system memory. *Dirty*
+memory is always resident, except if it is *file*-backed and *shared*. In
+that case it can be reclaimed by writing back the content to the file.
+
+It is generally more important to reduce the amount of memory
+that cannot be reclaimed, as reclaimable memory can be thought of as a cache
+that the kernel can free up in case of low memory. This is why we looked at
+*Private Dirty* in the `dumpsys meminfo` example.
+
+*Shared* memory can be mapped into more than one process. This means VMAs in
+different processes refer to the same physical memory. This introduces the
+concept of **PSS** (Proportional Set Size). In **PSS**, memory that is
+resident in multiple processes is proportionally attributed to each of them.
+If we map one 4KiB page into four processes, each of their **PSS** will
+increase by 1KiB.
 
 ## Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
@@ -84,13 +151,13 @@ Then upload the `raw-trace` file from the output directory to the
 [Perfetto UI](https://ui.perfetto.dev) and click on diamond marker that
 shows.
 
-![](images/profile-diamond.png)
+![Profile Diamond](images/profile-diamond.png)
 
 The default view will show you all allocations that were done while the
 profile was running but that weren't freed. This is what the "space" tab
 means.
 
-![](images/native-flamegraph.png)
+![Native Flamegraph](images/native-flamegraph.png)
 
 The tabs that are available are
 
@@ -107,7 +174,7 @@ If we want to only see callstacks that have a frame toat contains some string,
 we can use the Focus feature. If we want to know all allocations that have to
 do with notifications, we can put "notification" in the Focus box.
 
-![](images/native-flamegraph-focus.png)
+![Native Flamegraph with Focus](images/native-flamegraph-focus.png)
 
 ## Analyzing the Java Heap
 **Java Heap Dumps require Android 11.**
@@ -130,7 +197,7 @@ This can be viewed using https://ui.perfetto.dev.
 Upload the trace to the [Perfetto UI](https://ui.perfetto.dev) and click on
 diamond marker that shows.
 
-![](images/profile-diamond.png)
+![Profile Diamond](images/profile-diamond.png)
 
 This will present a flamegraph of the memory attributed to the shortest path
 to a garbage-collection root. In general an object is reachable by many paths,
@@ -138,7 +205,7 @@ we only show the shortest as that reduces the complexity of the data displayed
 and is generally the highest-signal. The rightmost `[merged]` stacks is the
 sum of all objects that are too small to be displayed.
 
-![](images/java-flamegraph.png)
+![Java Flamegraph](images/java-flamegraph.png)
 
 The tabs that are available are
 
@@ -149,13 +216,11 @@ If we want to only see callstacks that have a frame toat contains some string,
 we can use the Focus feature. If we want to know all allocations that have to
 do with notifications, we can put "notification" in the Focus box.
 
-
-
 As with native heap profiles, if we want to focus on some specific aspect of the
 graph, we can filter by the names of the classes. If we wanted to see everything
 that could be caused by notifications, we can put "notification" in the Focus box.
 
-![](images/java-flamegraph-focus.png)
+![Java Flamegraph with Focus](images/java-flamegraph-focus.png)
 
 We aggregate the paths per class name, so if there are multiple objects of the
 same type retained by a `java.lang.Object[]`, we will show one element as its
