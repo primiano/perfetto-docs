@@ -188,6 +188,10 @@ template("gen_proto_reference_md") {
   }
 }
 
+# +----------------------------------------------------------------------------+
+# | /reference/ auto-generated docs                                            |
+# +----------------------------------------------------------------------------+
+
 # Generates a .html from a proto (proto -> md -> html).
 template("gen_proto_reference_html") {
   intermediate_md = "$target_out_dir/$target_name.md"
@@ -229,8 +233,42 @@ md_to_html("index_dist") {
   out_html = "$dist_dir/index.html"
 }
 
+
+tp_tables_list = "$target_out_dir/tables.deps"
+exec_script("../../gn/standalone/glob.py",
+            [
+              "--root=" + rebase_path("../../src/trace_processor/tables", root_build_dir),
+              "--filter=*.h",
+              "--output=" + rebase_path(tp_tables_list),
+            ])
+
+action("sql_tables_reference_md") {
+  js_src = "src/gen_sql_tables_reference.js"
+  script = "../../gn/standalone/build_tool_wrapper.py"
+  tp_table_hdrs = read_file(tp_tables_list, "list lines")
+  inputs = tp_table_hdrs + [js_src]
+  outputs = [ "$target_out_dir/tables.md" ]
+  args = [
+    "--path=$nodejs_bin",
+    "node",
+    rebase_path(js_src, root_build_dir),
+    "-o",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+  foreach(table_hdr, tp_table_hdrs) {
+    args += ["-i", table_hdr]
+  }
+}
+
+md_to_html("sql_tables_reference") {
+  deps = [":sql_tables_reference_md"]
+  markdown = "$target_out_dir/tables.md"
+  out_html = "$dist_dir/docs/reference/sql-tables"
+  html_template = rebase_path("src/template_markdown.html", root_build_dir)
+}
+
 # Generates a HTML file for each //docs/**/*.md.
-md_file_list = root_build_dir + "/docs.deps"
+md_file_list = "$target_out_dir/docs.deps"
 exec_script("../../gn/standalone/glob.py",
             [
               "--root=" + rebase_path("../../docs", root_build_dir),
@@ -254,5 +292,9 @@ foreach(source, read_file(md_file_list, "list lines")) {
 
 group("markdown") {
   deps = all_md_targets
-  deps += [ ":trace_config_reference", ":trace_packet_reference" ]
+  deps += [
+      ":trace_config_reference",
+      ":trace_packet_reference",
+      ":sql_tables_reference"
+  ]
 }

@@ -30,6 +30,7 @@ const visited = {};
 // breaks.
 function singleLineComment(comment) {
   comment = comment || '';
+  comment = comment.trim();
   comment = comment.replace(/\.\n/g, '<br>');
   comment = comment.replace(/\n/g, ' ');
   return comment;
