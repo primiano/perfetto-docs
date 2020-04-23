@@ -32,6 +32,9 @@ enter the processes you want to target, click "Add Device" to pair your phone,
 and record profiles straight from your browser. This is also possible on
 Windows.
 
+See [the reference](reference/trace-config-proto#HeapprofdConfig) for all
+available data source configuration when running `perfetto` manually.
+
 ### Viewing the data
 
 The resulting profile proto contains four views on the data
@@ -310,6 +313,7 @@ Adjust the `INTERVAL` to trade-off runtime impact for higher accuracy of the
 results. If `INTERVAL=1`, every allocation is sampled for maximum accuracy.
 Otherwise, a sample is taken every `INTERVAL` bytes on average.
 
+
 ```bash
 INTERVAL=4096
 
@@ -357,3 +361,8 @@ to get gzipped protos, which tools handling pprof profile protos expect.
 
 Follow the instructions in [Viewing the Data](#viewing-the-data) to visualise
 the results.
+
+## {#java-hprof} Java Heap Graphs
+
+### {#java-hprof-deobfuscation} Deobfuscation
+TODO(fmayer): Explain deobfuscation.

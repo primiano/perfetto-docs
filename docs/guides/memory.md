@@ -318,9 +318,6 @@ We aggregate the paths per class name, so if there are multiple objects of the
 same type retained by a `java.lang.Object[]`, we will show one element as its
 child, as you can see in the leftmost stack above.
 
-### Deobfuscation
 Many Java apps obfuscate their class, method and field names to reduce APK
-size. This will make the resulting Heap Graphs impossible to read, as you
-cannot match the obfuscated names back to the source code.
-
-TODO(fmayer): Document deobfuscation.
+size. See [the java hprof](recording/data-sources#java-hprof-deobfuscation)
+documentation for details.
