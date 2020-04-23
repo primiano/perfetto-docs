@@ -3,19 +3,9 @@
 ## Prerequisites
 This tutorial assumes you are running Android 11 or newer on your phone, and
 Linux or macOS on your computer. If you are profiling your own app,
-it needs to be marked as profileable or debuggable in its manifest.
-
-To mark an app as profileable, put `<profileable android:shell="true"/>` into
-the `<application>`.
-
-```
-<manifest ...>
-    <application>
-        <profileable android:shell="true"/>
-        ...
-    </application>
-</manifest>
-```
+it needs to be marked as profileable or debuggable in its manifest. See the
+[heapprofd documentation](recording/data-sources#heapprofd-targets) for more
+details on which applications can be targeted.
 
 `com.android.systemui` is marked as profileable on Android 11, so we use that
 as an example.
