@@ -154,8 +154,8 @@ template("md_to_html") {
       inputs += [invoker.html_template]
     }
     if (defined(invoker.markdown)) {
-      args += [ "-i", invoker.markdown ]
-      inputs += [invoker.markdown]
+      args += [ "-i", rebase_path(invoker.markdown, root_build_dir) ]
+      inputs += [ invoker.markdown ]
     }
     if (defined(invoker.deps)) {
       deps = invoker.deps
@@ -181,26 +181,41 @@ template("gen_proto_reference_md") {
       "-o",
       rebase_path(invoker.markdown_out, root_build_dir),
       "-i",
-      rebase_path(invoker.proto_src, "../../"),
+      rebase_path(invoker.proto_src, root_build_dir),
       "-p",
       invoker.proto_root_type,
     ]
   }
 }
 
+# Generates a .html from a proto (proto -> md -> html).
+template("gen_proto_reference_html") {
+  intermediate_md = "$target_out_dir/$target_name.md"
+  gen_proto_reference_md("${target_name}_md") {
+    proto_src = invoker.proto_src
+    proto_root_type = invoker.proto_root_type
+    markdown_out = intermediate_md
+  }
+  md_to_html(target_name) {
+    deps = [ ":navmap", ":${target_name}_md" ]
+    markdown = intermediate_md
+    out_html = invoker.out_html
+    html_template = rebase_path("src/template_markdown.html", root_build_dir)
+  }
+}
 
-gen_proto_reference_md("trace_config_reference_md") {
+gen_proto_reference_html("trace_config_reference") {
   proto_src = "../../protos/perfetto/config/trace_config.proto"
   proto_root_type = "perfetto.protos.TraceConfig"
-  markdown_out = "$target_out_dir/trace_config_reference.md"
+  out_html = "$dist_dir/docs/reference/trace-config-proto"
 }
 
-md_to_html("trace_config_reference_html") {
-  deps = [ ":navmap", ":trace_config_reference_md" ]
-  markdown = rebase_path("$target_out_dir/trace_config_reference.md", ".")
-  out_html = "$dist_dir/docs/reference/trace-config-proto"
-  html_template = rebase_path("src/template_markdown.html", root_build_dir)
+gen_proto_reference_html("trace_packet_reference") {
+  proto_src = "../../protos/perfetto/trace/trace_packet.proto"
+  proto_root_type = "perfetto.protos.TracePacket"
+  out_html = "$dist_dir/docs/reference/trace-packet-proto"
 }
+
 
 # Generates the HTML for the sidebar.
 md_to_html("navmap") {
@@ -231,7 +246,7 @@ foreach(source, read_file(md_file_list, "list lines")) {
   md_to_html(target_name) {
     deps = [ ":navmap" ]
     base_name = string_replace(rebase_path(source, "../../docs"), ".md", "")
-    markdown = rebase_path(source, root_build_dir)
+    markdown = source
     out_html = "$dist_dir/docs/$base_name"
     html_template = rebase_path("src/template_markdown.html", root_build_dir)
   }
@@ -239,5 +254,5 @@ foreach(source, read_file(md_file_list, "list lines")) {
 
 group("markdown") {
   deps = all_md_targets
-  deps += [ ":trace_config_reference_html" ]
+  deps += [ ":trace_config_reference", ":trace_packet_reference" ]
 }

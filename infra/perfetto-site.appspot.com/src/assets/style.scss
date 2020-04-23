@@ -581,6 +581,12 @@ h3 {
             padding: 0;
             li {
                 margin: 5px 0;
+                /* This make it so that a single word gets elided but if there
+                 * are multiple words they span across lines.  */
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: break-spaces;
+                word-break: normal;
             }
         }
         >ul {

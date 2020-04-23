@@ -48,18 +48,18 @@ function getFullName(pType) {
 function genType(pType, depth) {
   depth = depth || 0;
   console.assert(pType instanceof protobufjs.ReflectionObject);
-  if (pType.name in visited)
+  const fullName = getFullName(pType);
+  if (fullName in visited)
     return '';
-  visited[pType.name] = true;
+  visited[fullName] = true;
 
   const heading = '#' + '#'.repeat(Math.min(depth, 2));
-  const fullName = getFullName(pType);
   let md = `${heading} {#${fullName}} ${fullName}`;
   md += '\n';
   const fileName = path.basename(pType.filename);
   const relPath = path.relative(PROJECT_ROOT, pType.filename);
-  md += `${(pType.comment || '').replace(/(\n)?^\s*Next id.*$/im, '')}\n\n`;
-  md += `Defined in [${fileName}](/${relPath})\n\n`;
+  md += `${(pType.comment || '').replace(/(\n)?^\s*next.*\bid:.*$/img, '')}`;
+  md += `\n\nDefined in [${fileName}](/${relPath})\n\n`;
 
   const subTypes = [];
 
@@ -109,6 +109,13 @@ function main() {
 
   const parser = new protobufjs.Root();
   parser.resolvePath = (_, target) => {
+    if (target == inProtoFile) {
+      // The root proto file passed from the cmdline will be relative to the
+      // root_build_dir (out/xxx) (e.g.: ../../protos/config)
+      return inProtoFile;
+    }
+    // All the other imports, instead, will be relative to the project root
+    // (e.g. protos/config/...)
     return path.join(PROJECT_ROOT, target);
   };
 
