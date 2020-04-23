@@ -15,7 +15,7 @@ On "user" builds, you can only use it on apps with the debuggable or
 profileable manifest flag.
 
 ### Quickstart
-See the [Memory Guide](guides/memory.md#heapprofd) for getting started with
+See the [Memory Guide](guides/memory#heapprofd) for getting started with
 heapprofd.
 
 ### Recording
