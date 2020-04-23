@@ -262,7 +262,7 @@ The tabs that are available are
 * **alloc\_objects**: how many allocations (including ones with matching frees)
   were sampled at this callstack.
 
-If we want to only see callstacks that have a frame toat contains some string,
+If we want to only see callstacks that have a frame that contains some string,
 we can use the Focus feature. If we want to know all allocations that have to
 do with notifications, we can put "notification" in the Focus box.
 
@@ -306,7 +306,7 @@ The tabs that are available are
 * **space**: how many bytes are retained via this path to the GC root.
 * **objects**: how many objects are retained via this path to the GC root.
 
-If we want to only see callstacks that have a frame toat contains some string,
+If we want to only see callstacks that have a frame that contains some string,
 we can use the Focus feature. If we want to know all allocations that have to
 do with notifications, we can put "notification" in the Focus box.
 
