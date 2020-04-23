@@ -7,7 +7,7 @@ _**Updated:** 2020-04-20_
 Provide a low-overhead native heap profiling mechanism, with C++ and Java callstack attribution, usable by all processes on an Android system. This includes Java and native services. The mechanism is capable of exporting heap dumps into traces in order to be able to correlate heap information with other activity on the system. This feature was added in the Android 10 release.
 
 ## Overview
-![](images/heapprofd-design/Architecture.png)
+![](/docs/images/heapprofd-design/Architecture.png)
 
 Implement an out-of-process heap profiler. Do the minimal amount of processing in-line of malloc, and then delegate to a central component for further processing. This introduces a new daemon _heapprofd_.
 
@@ -74,7 +74,7 @@ If the send() fails because the heapprofd has shut down the socket, voluntarily 
 
 
 ### Service operation
-![](images/heapprofd-design/shmem-detail.png)
+![](/docs/images/heapprofd-design/shmem-detail.png)
 
 The unwinder thread read the client's shared memory buffers and handle the samples received. The result of the unwinding is then enqueued using a PostTask for the main thread to do the accounting. A queue-based model between the threads is chosen because it makes synchronization easier. No synchronization is needed at all in the main thread, as the bookkeeping data will only be accessed by it.
 
@@ -158,12 +158,12 @@ Remote unwinding is used to reduce the performance impact on the applications th
   <tr>
    <td>
 
-![](images/heapprofd-design/Android-Heap0.png)
+![](/docs/images/heapprofd-design/Android-Heap0.png)
 
    </td>
    <td>
 
-![](images/heapprofd-design/Android-Heap1.png)
+![](/docs/images/heapprofd-design/Android-Heap1.png)
 
    </td>
   </tr>
@@ -285,14 +285,14 @@ This graph shows that 20 % of allocations are freed within 900 sampled allocatio
   <tr>
    <td>
 
-![](images/heapprofd-design/Android-Heap2.png)
+![](/docs/images/heapprofd-design/Android-Heap2.png)
 
 <p>
 <strong>Mean:</strong> 7000 allocations
    </td>
    <td>
 
-![](images/heapprofd-design/Android-Heap3.png)
+![](/docs/images/heapprofd-design/Android-Heap3.png)
 
 <p>
 <strong>Mean:</strong> 8950 bytes

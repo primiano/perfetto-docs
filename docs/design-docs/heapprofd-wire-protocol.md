@@ -12,7 +12,7 @@ Restructure heapprofd to make use of the <code>[SharedRingBuffer](https://cs.and
 ## Overview
 Instead of using a socket pool for sending callstacks and frees to heapprofd, we use a single shared memory buffer and signaling socket. The client writes the record describing mallocs or frees into the shared memory buffer, and then sends a single byte on the signalling socket to wake up the service.
 
-![](images/heapprofd-design/shmem-overview.png)
+![](/docs/images/heapprofd-design/shmem-overview.png)
 
 ## High-level design
 Using a shared memory buffer between the client and heapprofd removes the need to drain the socket as fast as possible in the service, which we needed previously to make sure we do not block the client's malloc calls. This allows us to simplify the threading design of heapprofd.
@@ -23,7 +23,7 @@ After the handshake is completed, the sockets are handled by the assigned _Unwin
 
 To shut down a tracing session, the _Main Thread_ posts a task on the corresponding _Unwinding Thread_ to shut down the connection. When the client has disconnected, the _Unwinding Thread_ posts a task on the _Main Thread_ to inform it about the disconnect. The same happens for unexpected disconnects.
 
-![](images/heapprofd-design/shmem-detail.png)
+![](/docs/images/heapprofd-design/shmem-detail.png)
 
 ### Ownership
 At every point in time, every object is owned by exactly one thread. No references or pointers are shared between different threads.
@@ -72,7 +72,7 @@ traced sends a `StopDataSource` IPC. The _Main Thread_ posts a task to the _Unwi
 
 The client receives an `EPIPE` on the next attempt to send data over that socket, and then tears down the client.
 
-![shared memory sequence diagram](images/heapprofd-design/Shared-Memory0.png "shared memory sequence diagram")
+![shared memory sequence diagram](/docs/images/heapprofd-design/Shared-Memory0.png "shared memory sequence diagram")
 
 
 ## Changes to client
