@@ -8,7 +8,7 @@ It consists of:
 designed for tracing of multi-process systems, based on zero-alloc zero-copy
 zero-syscall (on fast-paths) writing of protobufs over shared memory.
 
-**OS-wide Linux/Android probes for platform debugging**
+**OS-wide Linux/Android data sources for platform debugging**
 * Kernel tracing: a daemon that converts Kernel [Ftrace][ftrace] events into
   API-stable protobufs, on device, with low overhead.
 * [Heap profiling](heapprofd): low-overhead, out of process unwinding,
