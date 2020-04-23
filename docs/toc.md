@@ -6,7 +6,7 @@
   * [Trace Packet Proto](reference/trace-packet-proto.md)
 * [Design documents](#)
     * [heapprofd design](design-docs/heapprofd-design.md)
-    * [heapprofd design: wire protocol](old/heapprofd-wire-protocol.md)
+    * [heapprofd design: wire protocol](design-docs/heapprofd-wire-protocol.md)
 * [Old Stuff](#)
   * [Development workflow](#)
     * [Contributing](old/contributing.md)
