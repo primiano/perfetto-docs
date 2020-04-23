@@ -22,6 +22,7 @@ const hljs = require('highlight.js');
 const GITHUB_BASE_URL = 'https://github.com/google/perfetto/blob/master';
 const ROOT_DIR = path.dirname(path.dirname(path.dirname(__dirname)));
 
+let outDir = '';  // TODO hack.
 
 function hrefInDocs(href) {
   if (href.startsWith('/docs/')) {
@@ -94,10 +95,23 @@ function renderCode(text, lang) {
   return `<code class="hljs code-block">${hlHtml}</code>`
 }
 
+function renderImage(originalImgFn, href, title, text) {
+  const docsHref = hrefInDocs(href);
+  if (docsHref !== undefined) {
+    const outFile = outDir + docsHref;
+    const outParDir = path.dirname(outFile);
+    fs.ensureDirSync(outParDir);
+    fs.copyFileSync(ROOT_DIR + docsHref, outFile);
+  }
+  return originalImgFn(href, title, text);
+};
+
 function render(rawMarkdown) {
   const renderer = new marked.Renderer();
   const originalLinkFn = renderer.link.bind(renderer);
+  const originalImgFn = renderer.image.bind(renderer);
   renderer.link = (hr, ti, te) => renderLink(originalLinkFn, hr, ti, te);
+  renderer.image = (hr, ti, te) => renderImage(originalImgFn, hr, ti, te);
   renderer.code = renderCode;
   renderer.heading = renderHeading;
   return marked(rawMarkdown, {renderer: renderer});
@@ -106,7 +120,7 @@ function render(rawMarkdown) {
 function main() {
   const inFile = argv['i'];
   const outFile = argv['o'];
-  const outDir = argv['odir'];
+  outDir = argv['odir'];
   const templateFile = argv['t'];
   if (!outFile || !outDir) {
     console.error('Usage: --odir site -o out.html [-i input.md] [-t templ.html]');

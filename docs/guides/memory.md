@@ -192,7 +192,7 @@ duration_ms: 30000
 EOF
 ```
 
-![Camera Memory Trace](images/trace-rss-camera.png)
+![Camera Memory Trace](/docs/images/trace-rss-camera.png)
 
 We can see that around 2/3 into the trace, the memory spiked. This is where
 I took a photo. This is a good way to see how the memory usage of an
@@ -243,13 +243,13 @@ Then upload the `raw-trace` file from the output directory to the
 [Perfetto UI](https://ui.perfetto.dev) and click on diamond marker that
 shows.
 
-![Profile Diamond](images/profile-diamond.png)
+![Profile Diamond](/docs/images/profile-diamond.png)
 
 The default view will show you all allocations that were done while the
 profile was running but that weren't freed. This is what the "space" tab
 means.
 
-![Native Flamegraph](images/native-flamegraph.png)
+![Native Flamegraph](/docs/images/native-flamegraph.png)
 
 The tabs that are available are
 
@@ -266,7 +266,7 @@ If we want to only see callstacks that have a frame that contains some string,
 we can use the Focus feature. If we want to know all allocations that have to
 do with notifications, we can put "notification" in the Focus box.
 
-![Native Flamegraph with Focus](images/native-flamegraph-focus.png)
+![Native Flamegraph with Focus](/docs/images/native-flamegraph-focus.png)
 
 ## Analyzing the Java Heap
 **Java Heap Dumps require Android 11.**
@@ -291,7 +291,7 @@ TODO(fmayer): have an example that shows something interesting.
 Upload the trace to the [Perfetto UI](https://ui.perfetto.dev) and click on
 diamond marker that shows.
 
-![Profile Diamond](images/profile-diamond.png)
+![Profile Diamond](/docs/images/profile-diamond.png)
 
 This will present a flamegraph of the memory attributed to the shortest path
 to a garbage-collection root. In general an object is reachable by many paths,
@@ -299,7 +299,7 @@ we only show the shortest as that reduces the complexity of the data displayed
 and is generally the highest-signal. The rightmost `[merged]` stacks is the
 sum of all objects that are too small to be displayed.
 
-![Java Flamegraph](images/java-flamegraph.png)
+![Java Flamegraph](/docs/images/java-flamegraph.png)
 
 The tabs that are available are
 
@@ -314,7 +314,7 @@ As with native heap profiles, if we want to focus on some specific aspect of the
 graph, we can filter by the names of the classes. If we wanted to see everything
 that could be caused by notifications, we can put "notification" in the Focus box.
 
-![Java Flamegraph with Focus](images/java-flamegraph-focus.png)
+![Java Flamegraph with Focus](/docs/images/java-flamegraph-focus.png)
 
 We aggregate the paths per class name, so if there are multiple objects of the
 same type retained by a `java.lang.Object[]`, we will show one element as its
