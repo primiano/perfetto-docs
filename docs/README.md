@@ -17,7 +17,9 @@ zero-syscall (on fast-paths) writing of protobufs over shared memory.
 * System stat counters
 * Chrome userspace tracing
 * I/O tracing
-* Many new probes coming soon: heap profiling, perf sampling, syscall tracing.
+* Heap profiling (Java and native)
+* CPU sampling
+* Syscall tracing
 
 **Processing of traces**  
 [A C++ library for efficient processing and extraction of trace-based
