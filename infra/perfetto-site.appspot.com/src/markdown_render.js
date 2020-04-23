@@ -27,7 +27,7 @@ function hrefInDocs(href) {
   if (href.startsWith('/docs/')) {
     return href;
   }
-  if (href.match(/^[a-z]/g) && !href.match(/^https?:/g)) {
+  if (href.match(/^[A-Za-z]/g) && !href.match(/^https?:/g)) {
     return '/docs/' + href;
   }
   return undefined;
@@ -44,9 +44,9 @@ function assertNoDeadLink(relPathFromRoot) {
 }
 
 function renderHeading(text, level) {
-  // If the heading has an explicit ${#anchor}, use that. Othewise infer the
+  // If the heading has an explicit ${#anchor}, use that. Otherwise infer the
   // anchor from the text but only for h2 and h3. Note the right-hand-side TOC
-  // is dynamicallly generated from anchors (explicit or implicit).
+  // is dynamically generated from anchors (explicit or implicit).
   let anchorId = '';
   const explicitAnchor = /{#([\w-_.]+)}/.exec(text);
   if (explicitAnchor) {

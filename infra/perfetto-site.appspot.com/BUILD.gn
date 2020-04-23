@@ -223,7 +223,7 @@ md_to_html("navmap") {
   out_html = "$dist_dir/docs/_nav.html"
 }
 
-# Generates the root index.thml.
+# Generates the root index.html.
 md_to_html("index_dist") {
   html_template = rebase_path("src/template_index.html", root_build_dir)
   out_html = "$dist_dir/index.html"
