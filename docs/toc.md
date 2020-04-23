@@ -6,6 +6,7 @@
 * [Reference](#)
   * [Trace Config Proto](reference/trace-config-proto.md)
   * [Trace Packet Proto](reference/trace-packet-proto.md)
+  * [SQL Tables](reference/sql-tables.md)
 * [Contributing](#)
     * [Community](contributing/community.md)
 * [Design documents](#)

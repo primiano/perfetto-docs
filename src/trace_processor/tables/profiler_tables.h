@@ -27,7 +27,7 @@ namespace tables {
 // captures by the [heap profiler](/docs/heapprofd).
 // @param upid The UniquePID of the process.
 // @param ts   Timestamp of the snapshot. Multiple rows will have the same
-//             timestam.
+//             timestamp.
 // @param path The mmaped file, as per /proc/pid/maps
 #define PERFETTO_TP_PROFILER_SMAPS_DEF(NAME, PARENT, C) \
   NAME(ProfilerSmapsTable, "profiler_smaps")            \

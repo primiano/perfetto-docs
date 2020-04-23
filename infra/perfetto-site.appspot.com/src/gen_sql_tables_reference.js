@@ -59,7 +59,7 @@ function parseTableDef(tableDefName, tableDef) {
       }
       continue;
     }
-    if (m = line.match(/^\s*NAME\((\w+)\s*,/)) {
+    if (m = line.match(/^\s*NAME\(\w+\s*,\s*"(\w+)"/)) {
       tableDesc.name = m[1];
       continue;
     }

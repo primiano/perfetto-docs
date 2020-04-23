@@ -261,7 +261,7 @@ action("sql_tables_reference_md") {
 }
 
 md_to_html("sql_tables_reference") {
-  deps = [":sql_tables_reference_md"]
+  deps = [ ":sql_tables_reference_md", ":navmap" ]
   markdown = "$target_out_dir/tables.md"
   out_html = "$dist_dir/docs/reference/sql-tables"
   html_template = rebase_path("src/template_markdown.html", root_build_dir)
