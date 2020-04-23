@@ -80,7 +80,6 @@ message TracePacket {
   optional uint32 timestamp_clock_id = 58;
 
   oneof data {
-    FtraceEventBundle ftrace_events = 1;
     ProcessTree process_tree = 2;
     ProcessStats process_stats = 9;
     InodeFileMap inode_file_map = 4;
@@ -132,6 +131,9 @@ message TracePacket {
 
     // Deprecated, use TrackDescriptor instead.
     ThreadDescriptor thread_descriptor = 44;
+
+    // Events from the Linux kernel ftrace infrastructure.
+    FtraceEventBundle ftrace_events = 1;
 
     // This field is emitted at periodic intervals (~10s) and
     // contains always the binary representation of the UUID

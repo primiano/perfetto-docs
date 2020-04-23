@@ -81,8 +81,15 @@ function genType(pType, depth) {
       const field = pType.fields[fieldName];
       let type = field.type;
       if (field.resolvedType) {
-        subTypes.push(field.resolvedType);
-        type = `[\`${type}\`](#${getFullName(field.resolvedType)})`;
+        // The TraceConfig proto is linked from the TracePacket reference.
+        // Instead of recursing and generating the TraceConfig types all over
+        // again, just link to the dedicated TraceConfig reference page.
+        if (getFullName(field.resolvedType) === 'TraceConfig') {
+          type = `[\`${type}\`](/docs/reference/trace-config-proto)`;
+        } else {
+          subTypes.push(field.resolvedType);
+          type = `[\`${type}\`](#${getFullName(field.resolvedType)})`;
+        }
       } else {
         type = `\`${type}\``;
       }
