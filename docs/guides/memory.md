@@ -1,6 +1,6 @@
 # Investigating Memory Usage on Android
 
-## Prerequsities
+## Prerequisites
 This tutorial assumes you are running Android 11 or newer on your phone, and
 Linux or macOS on your computer. If you are profiling your own app,
 it needs to be marked as profileable or debuggable in its manifest.
