@@ -284,13 +284,17 @@ be obtained in page size chunks, and fragmentation causes some of that memory to
 be wasted. This can be obtained by running `adb shell dumpsys meminfo <PID>` and
 looking at the "Private Dirty" column.
 
+<center>
+
 |                     | heapprofd         | malloc\_info | RSS |
-|---------------------|-------------------|--------------|-----|
+|---------------------|:-----------------:|:------------:|:---:|
 | from native startup |          x        |      x       |  x  |
 | after zygote init   |          x        |      x       |  x  |
 | before zygote init  |                   |      x       |  x  |
 | thread caches       |                   |      x       |  x  |
 | fragmentation       |                   |              |  x  |
+
+</center>
 
 If you observe high RSS or malloc\_info metrics but heapprofd does not match,
 there might be a problem with fragmentation or the allocator.
