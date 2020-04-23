@@ -37,8 +37,7 @@ to WASM to run locally in the browser.
 
 ![Perfetto Stack](https://storage.googleapis.com/perfetto/markdown_img/perfetto-stack.png)
 
-Goals
------
+## Goals
 Perfetto is building the next-gen unified tracing ecosystem for:
 - Android platform tracing ([Systrace][systrace])
 - Chrome platform tracing ([chrome://tracing][chrome-tracing])
@@ -47,8 +46,7 @@ Perfetto is building the next-gen unified tracing ecosystem for:
 The goal is to create an open, portable and developer friendly tracing ecosystem
 for app and platform performance debugging.
 
-Key features
-------------
+## Key features
 **Designed for production**  
 Perfetto's tracing library and daemons are designed for use in production.
 Privilege isolation is a key design goal:
@@ -91,8 +89,7 @@ Perfetto allows third parties to defined their own protobufs for:
 Allowing apps to define their own strongly-typed input and output schema.
 See [trace-format.md](trace-format.md) for more details.
 
-Bugs
-----
+## Bugs
 * For bugs affecting Android or the tracing internals use the internal
 bug tracker ([go/perfetto-bugs](http://goto.google.com/perfetto-bugs)).
 * For bugs affecting Chrome use http://crbug.com, Component:Speed>Tracing
