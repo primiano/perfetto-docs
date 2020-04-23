@@ -45,7 +45,7 @@ Looking at the "Private Dirty" column of Dalvik Heap (= Java Heap) and
 Native Heap, we can see that SystemUI's memory usage on the Java heap
 is 9M, on the native heap it's 17M. If you are running this on your own app and
 one of those clearly stands out, you might want to start with either
-[Analyzing the Native Heap](#analyzing-the-native-heap) or
+[Analyzing the Native Heap](#heapprofd) or
 [Analyzing the Java Heap](#analyzing-the-java-heap) below.
 
 ### Linux memory management
@@ -113,11 +113,17 @@ resident in multiple processes is proportionally attributed to each of them.
 If we map one 4KiB page into four processes, each of their **PSS** will
 increase by 1KiB.
 
-## Analyzing the Native Heap
+## {#heapprofd} Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
 
 _If your native memory is neglibile, you can skip ahead to
 [Analyzing the Java Heap](#analyzing-the-java-heap)._
+
+
+Applications usually get memory through `malloc` or C++'s `new` rather than
+directly getting it from the kernel. The allocator makes sure that your memory
+is more efficiently handled (i.e. there are not many gaps) and that the
+overhead from asking the kernel remains low.
 
 We can log the native allocations and frees that a process does using
 *heapprofd*. The resulting profile can be used to attribute memory usage
