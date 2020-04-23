@@ -35,6 +35,12 @@ function setupSandwichMenu() {
 
 // (Re-)Generates the Table Of Contents for docs (the right-hand-side one).
 function updateTOC() {
+  if (document.body.scrollHeight < 10000) {
+    document.documentElement.style.scrollBehavior = 'smooth';
+  } else {
+    document.documentElement.style.scrollBehavior = 'initial';
+  }
+
   const tocContainer = document.querySelector('.docs .toc');
   if (!tocContainer)
     return;
