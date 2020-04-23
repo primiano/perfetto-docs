@@ -43,12 +43,9 @@ Uptime: 2030149 Realtime: 2030149
 
 Looking at the "Private Dirty" column of Dalvik Heap (= Java Heap) and
 Native Heap, we can see that SystemUI's memory usage on the Java heap
-is 9M, on the native heap it's 17M. If you are running this on your own app and
-one of those clearly stands out, you might want to start with either
-[Analyzing the Native Heap](#heapprofd) or
-[Analyzing the Java Heap](#analyzing-the-java-heap) below.
+is 9M, on the native heap it's 17M.
 
-### Linux memory management
+## Linux memory management
 But what does *private* and *dirty* actually mean? To answer this question, we
 need to delve into Linux memory management a bit.
 
@@ -113,6 +110,94 @@ resident in multiple processes is proportionally attributed to each of them.
 If we map one 4KiB page into four processes, each of their **PSS** will
 increase by 1KiB.
 
+## {#lmk} Low-memory kills
+
+## Memory over time
+`dumpsys meminfo` is good to get a snapshot of the current memory usage, but
+even very short memory spikes can lead to low-memory situations, which will
+lead to [LMKs](#lmk). We have two tools to investigate situations like this
+
+* RSS High Watermark.
+* Memory tracepoints.
+
+### RSS High Watermark
+
+We can get a lot of information from the `/proc/[pid]/status` file, including
+memory information. `RssHWM` shows the maximum RSS usage the process has seen
+since it was started.
+
+```
+$ adb shell cat '/proc/$(pidof com.android.systemui)/status'
+[...]
+VmPeak:	14995392 kB
+VmSize:	14994624 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	  256972 kB
+VmRSS:	  195272 kB
+RssAnon:	   30184 kB
+RssFile:	  164420 kB
+RssShmem:	     668 kB
+VmData:	 1310236 kB
+VmStk:	    8192 kB
+VmExe:	      28 kB
+VmLib:	  158856 kB
+VmPTE:	    1396 kB
+VmPMD:	      76 kB
+VmSwap:	   43960 kB
+[...]
+```
+
+### Memory tracepoints
+
+We can use Perfetto to get information about memory management events from the
+kernel.
+
+```
+$ adb shell perfetto \
+  -c - --txt \
+  -o /data/misc/perfetto-traces/trace \
+<<EOF
+
+buffers: {
+    size_kb: 8960
+    fill_policy: DISCARD
+}
+buffers: {
+    size_kb: 1280
+    fill_policy: DISCARD
+}
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
+}
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "mm_event/mm_event_record"
+            ftrace_events: "kmem/rss_stat"
+            ftrace_events: "kmem/ion_heap_grow"
+            ftrace_events: "kmem/ion_heap_shrink"
+        }
+    }
+}
+duration_ms: 30000
+
+EOF
+```
+
+![Camera Memory Trace](images/trace-rss-camera.png)
+
+We can see that around 2/3 into the trace, the memory spiked. This is where
+I took a photo. This is a good way to see how the memory usage of an
+application reacts to different things.
+
 ## {#heapprofd} Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
 
@@ -152,6 +237,7 @@ When you see *Profiling active*, play around with the phone a bit. When you
 are done, press Ctrl-C to end the profile.
 
 ### Viewing the data
+TODO(fmayer): have an example that shows something interesting.
 
 Then upload the `raw-trace` file from the output directory to the
 [Perfetto UI](https://ui.perfetto.dev) and click on diamond marker that
@@ -200,6 +286,8 @@ This can be viewed using https://ui.perfetto.dev.
 ```
 
 ### Viewing the Data
+TODO(fmayer): have an example that shows something interesting.
+
 Upload the trace to the [Perfetto UI](https://ui.perfetto.dev) and click on
 diamond marker that shows.
 
