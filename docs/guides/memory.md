@@ -67,10 +67,11 @@ We call the amount a process' memory that is resident in *physical memory* its
 **RSS** (Resident Set Size). Not all memory is created equal though.
 Memory in Linux can be described using a couple of binary labels.
 
-* **clean / dirty:** clean memory has not been written to by the process, dirty
-one has.
 * **anon / file:** anon memory does not exist on disk, file memory contains the
 content of a file.
+* **clean / dirty:** clean memory has not been written to by the process, or
+the changes have been written back to the backing file. Dirty memory has been
+written to and has not been written back to the backing file.
 * **private / shared:** modifications to private memory are only seen by the
 process doing it. Modifications to shared memory can be seen by other
 processes or the underlying file.
