@@ -1,3 +1,5 @@
+* [Guides](#)
+  * [Memory](guides/memory.md)
 * [Reference](#)
   * [Trace Config Proto](reference/trace-config-proto.md)
   * [Trace Packet Proto](reference/trace-packet-proto.md)
