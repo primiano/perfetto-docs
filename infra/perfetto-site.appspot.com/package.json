@@ -20,7 +20,7 @@
     "yargs": "^15.1.0"
   },
   "scripts": {
-    "clean": "gn clean ../../out/perfetto.dev",
+    "clean": "../../tools/gn clean ../../out/perfetto.dev",
     "setup": "ln -fns ../../out/perfetto.dev/site dist",
     "serve": "npm run setup; dev_appserver.py .",
     "build": "npm run setup; ../../tools/gn gen --args='' ../../out/perfetto.dev; ../../tools/ninja -C ../../out/perfetto.dev infra/perfetto-site.appspot.com:node_modules; ../../tools/ninja -C ../../out/perfetto.dev site",
