@@ -196,7 +196,7 @@ EOF
 
 We can see that around 2/3 into the trace, the memory spiked. This is where
 I took a photo. This is a good way to see how the memory usage of an
-application reacts to different things.
+application reacts to different triggers.
 
 ## {#heapprofd} Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
