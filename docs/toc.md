@@ -31,3 +31,5 @@
   * [IPC internals](ipc.md)
   * [heapprofd Design](heapprofd-design.md)
   * [heapprofd Design: Wire Protocol](heapprofd-wire-protocol.md)
+* [Reference](#)
+  * [Trace Config Proto](reference/trace-config-proto.md)

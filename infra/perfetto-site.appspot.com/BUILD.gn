@@ -36,7 +36,7 @@ group("site") {
 }
 
 # +----------------------------------------------------------------------------+
-# | Template used to run node binaries using the hermetic node toolchain.      |
+# | Runs NodeJS using the hermetic node toolchain.                             |
 # +----------------------------------------------------------------------------+
 template("node_bin") {
   action(target_name) {
@@ -67,6 +67,9 @@ template("node_bin") {
   }
 }
 
+# +----------------------------------------------------------------------------+
+# | Installs the node modules secified in package.json                         |
+# +----------------------------------------------------------------------------+
 action("node_modules") {
   script = "../../gn/standalone/build_tool_wrapper.py"
   stamp_file = "$dist_dir/.$target_name.stamp"
@@ -114,6 +117,104 @@ node_bin("scss") {
   ]
 }
 
+# +----------------------------------------------------------------------------+
+# | Markdown generation                                                        |
+# +----------------------------------------------------------------------------+
+
+html_templates = [
+  "src/template_header.html",
+  "src/template_footer.html",
+  "src/template_index.html",
+  "src/template_markdown.html",
+]
+
+
+# Renderers a markdown file into a HTML.
+# Args:
+#  markdown:        [in]  The source markdown file.
+#  html_template:   [in]  HTML template (optional).
+#  out_html:        [out] The generated HTML.
+template("md_to_html") {
+  action(target_name) {
+    js_src = "src/markdown_render.js"
+    script = "../../gn/standalone/build_tool_wrapper.py"
+    outputs = [ invoker.out_html ]
+    inputs = [ js_src ] + html_templates
+    args = [
+      "--path=$nodejs_bin",
+      "node",
+      rebase_path(js_src, root_build_dir),
+      "--odir",
+      rebase_path(dist_dir, root_build_dir),
+      "-o",
+      rebase_path(outputs[0], root_build_dir),
+    ]
+    if (defined(invoker.html_template)) {
+      args += [ "-t", invoker.html_template ]
+      inputs += [invoker.html_template]
+    }
+    if (defined(invoker.markdown)) {
+      args += [ "-i", invoker.markdown ]
+      inputs += [invoker.markdown]
+    }
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
+    }
+ }
+}
+
+# Generates a .md file from a .proto.
+# Args:
+#  proto_src: [in]
+#  proto_root_type: [in]
+#  markdown_out: [in]
+template("gen_proto_reference_md") {
+  action(target_name) {
+    js_src = "src/gen_proto_reference.js"
+    script = "../../gn/standalone/build_tool_wrapper.py"
+    inputs = [ invoker.proto_src, js_src ]
+    outputs = [ invoker.markdown_out ]
+    args = [
+      "--path=$nodejs_bin",
+      "node",
+      rebase_path(js_src, root_build_dir),
+      "-o",
+      rebase_path(invoker.markdown_out, root_build_dir),
+      "-i",
+      rebase_path(invoker.proto_src, "../../"),
+      "-p",
+      invoker.proto_root_type,
+    ]
+  }
+}
+
+
+gen_proto_reference_md("trace_config_reference_md") {
+  proto_src = "../../protos/perfetto/config/trace_config.proto"
+  proto_root_type = "perfetto.protos.TraceConfig"
+  markdown_out = "$target_out_dir/trace_config_reference.md"
+}
+
+md_to_html("trace_config_reference_html") {
+  deps = [ ":navmap", ":trace_config_reference_md" ]
+  markdown = rebase_path("$target_out_dir/trace_config_reference.md", ".")
+  out_html = "$dist_dir/docs/reference/trace-config-proto"
+  html_template = rebase_path("src/template_markdown.html", root_build_dir)
+}
+
+# Generates the HTML for the sidebar.
+md_to_html("navmap") {
+  markdown = "../../docs/toc.md"
+  out_html = "$dist_dir/docs/_nav.html"
+}
+
+# Generates the root index.thml.
+md_to_html("index_dist") {
+  html_template = rebase_path("src/template_index.html", root_build_dir)
+  out_html = "$dist_dir/index.html"
+}
+
+# Generates a HTML file for each //docs/**/*.md.
 md_file_list = root_build_dir + "/docs.deps"
 exec_script("../../gn/standalone/glob.py",
             [
@@ -123,73 +224,20 @@ exec_script("../../gn/standalone/glob.py",
             ],
             "",
             [ "../../docs/toc.md" ])
-
-html_templates = [
-  "src/template_header.html",
-  "src/template_footer.html",
-  "src/template_index.html",
-  "src/template_markdown.html",
-]
-
-action("navmap") {
-  js_src = "src/markdown_render.js"
-  script = "../../gn/standalone/build_tool_wrapper.py"
-  inputs = [
-             "../../docs/toc.md",
-             js_src,
-           ] + html_templates
-  outputs = [ "$dist_dir/docs/_nav.html" ]
-  args = [
-    "--path=$nodejs_bin",
-    "node",
-    rebase_path(js_src, root_build_dir),
-    "-i",
-    rebase_path(inputs[0], root_build_dir),
-    "--odir",
-    rebase_path(dist_dir, root_build_dir),
-    "-o",
-    rebase_path(outputs[0], root_build_dir),
-  ]
+all_md_targets = []
+foreach(source, read_file(md_file_list, "list lines")) {
+  target_name = "gen_$source"
+  all_md_targets += [ ":$target_name" ]
+  md_to_html(target_name) {
+    deps = [ ":navmap" ]
+    base_name = string_replace(rebase_path(source, "../../docs"), ".md", "")
+    markdown = rebase_path(source, root_build_dir)
+    out_html = "$dist_dir/docs/$base_name"
+    html_template = rebase_path("src/template_markdown.html", root_build_dir)
+  }
 }
 
-action("index_dist") {
-  js_src = "src/markdown_render.js"
-  template_file = "src/template_index.html"
-  script = "../../gn/standalone/build_tool_wrapper.py"
-  outputs = [ "$dist_dir/index.html" ]
-  inputs = [ js_src ] + html_templates
-  args = [
-    "--path=$nodejs_bin",
-    "node",
-    rebase_path(js_src, root_build_dir),
-    "-t",
-    rebase_path(template_file, root_build_dir),
-    "--odir",
-    rebase_path(dist_dir, root_build_dir),
-    "-o",
-    rebase_path(outputs[0], root_build_dir),
-  ]
-}
-
-action_foreach("markdown") {
-  deps = [ ":navmap" ]
-  js_src = "src/markdown_render.js"
-  template_file = "src/template_markdown.html"
-  sources = read_file(md_file_list, "list lines")
-  script = "../../gn/standalone/build_tool_wrapper.py"
-  outputs = [ "$dist_dir/docs/{{source_name_part}}" ]
-  inputs = [ js_src ] + html_templates
-  args = [
-    "--path=$nodejs_bin",
-    "node",
-    rebase_path(js_src, root_build_dir),
-    "-i",
-    rebase_path("{{source}}", root_build_dir),
-    "-t",
-    rebase_path(template_file, root_build_dir),
-    "--odir",
-    rebase_path(dist_dir, root_build_dir),
-    "-o",
-    rebase_path(outputs[0], root_build_dir),
-  ]
+group("markdown") {
+  deps = all_md_targets
+  deps += [ ":trace_config_reference_html" ]
 }

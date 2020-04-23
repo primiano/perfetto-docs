@@ -33,19 +33,6 @@ function hrefInDocs(href) {
   return undefined;
 }
 
-const renderer = new marked.Renderer();
-renderer.heading = (text, level) => {
-  if (level < 2 || level > 3) {
-    return `<h${level}>${text}</h${level}>`
-  }
-  let escapedText = text.toLowerCase().replace(/[^\w]+/g, '-');
-  escapedText = escapedText.replace(/[-]+/g, '-');  // Drop consecutive '-'s.
-  return `<h${level}>
-            <a name="${escapedText}" class="anchor" href="#${escapedText}"></a>
-            ${text}
-          </h${level}>`;
-};
-
 function assertNoDeadLink(relPathFromRoot) {
   relPathFromRoot = relPathFromRoot.replace(/\#.*$/g, '');  // Remove #line.
   const fullPath = path.join(ROOT_DIR, relPathFromRoot);
@@ -56,8 +43,27 @@ function assertNoDeadLink(relPathFromRoot) {
   }
 }
 
-const markedLink = renderer.link.bind(renderer);
-renderer.link = (href, title, text) => {
+function renderHeading(text, level) {
+  // If the heading has an explicit ${#anchor}, use that. Othewise infer the
+  // anchor from the text but only for h2 and h3. Note the right-hand-side TOC
+  // is dynamicallly generated from anchors (explicit or implicit).
+  let anchorId = '';
+  const explicitAnchor = /{#([\w-_.]+)}/.exec(text);
+  if (explicitAnchor) {
+    text = text.replace(explicitAnchor[0], '');
+    anchorId = explicitAnchor[1];
+  } else if (level >= 2 && level <= 3) {
+    anchorId = text.toLowerCase().replace(/[^\w]+/g, '-');
+    anchorId = anchorId.replace(/[-]+/g, '-');  // Drop consecutive '-'s.
+  }
+  let anchor = '';
+  if (anchorId) {
+    anchor = `<a name="${anchorId}" class="anchor" href="#${anchorId}"></a>`;
+  }
+  return `<h${level}>${anchor}${text}</h${level}>`;
+}
+
+function renderLink(originalLinkFn, href, title, text) {
   const docsHref = hrefInDocs(href);
   let sourceCodeLink = undefined;
   if (docsHref !== undefined) {
@@ -75,22 +81,10 @@ renderer.link = (href, title, text) => {
     assertNoDeadLink(sourceCodeLink);
     href = GITHUB_BASE_URL + sourceCodeLink;
   }
-  return markedLink(href, title, text);
-};
+  return originalLinkFn(href, title, text);
+}
 
-const markedImage = renderer.image.bind(renderer);
-renderer.image = (href, title, text) => {
-  const docsHref = hrefInDocs(href);
-  if (docsHref !== undefined) {
-    const outFile = outDir + docsHref;
-    const outParDir = path.dirname(outFile);
-    fs.ensureDirSync(outParDir);
-    fs.copyFileSync(ROOT_DIR + docsHref, outFile);
-  }
-  return markedImage(href, title, text);
-};
-
-renderer.code = (text, lang) => {
+function renderCode(text, lang) {
   let hlHtml = '';
   if (lang) {
     hlHtml = hljs.highlight(lang, text).value
@@ -98,40 +92,52 @@ renderer.code = (text, lang) => {
     hlHtml = hljs.highlightAuto(text).value
   }
   return `<code class="hljs code-block">${hlHtml}</code>`
-};
-
-const inFile = argv['i'];
-const outFile = argv['o'];
-const outDir = argv['odir'];
-const templateFile = argv['t'];
-if (!outFile || !outDir) {
-  console.error('Usage: --odir site -o out.html [-i input.md] [-t templ.html]');
-  process.exit(1);
 }
 
-let markdownHtml = '';
-if (inFile) {
-  const rawMarkdown = fs.readFileSync(inFile, 'utf8');
-  markdownHtml = marked(rawMarkdown, {renderer: renderer});
+function render(rawMarkdown) {
+  const renderer = new marked.Renderer();
+  const originalLinkFn = renderer.link.bind(renderer);
+  renderer.link = (hr, ti, te) => renderLink(originalLinkFn, hr, ti, te);
+  renderer.code = renderCode;
+  renderer.heading = renderHeading;
+  return marked(rawMarkdown, {renderer: renderer});
 }
 
-if (templateFile) {
-  // TODO rename nav.html to sitemap or something more mainstream.
-  const navFilePath = path.join(path.dirname(outFile), '_nav.html');
-  const templateData = {
-    markdown: markdownHtml,
-    fileName: '/' + outFile.split('/').slice(1).join('/'),
-  };
-  if (fs.existsSync(navFilePath)) {
-    templateData['nav'] = fs.readFileSync(navFilePath, 'utf8');
+function main() {
+  const inFile = argv['i'];
+  const outFile = argv['o'];
+  const outDir = argv['odir'];
+  const templateFile = argv['t'];
+  if (!outFile || !outDir) {
+    console.error('Usage: --odir site -o out.html [-i input.md] [-t templ.html]');
+    process.exit(1);
   }
-  ejs.renderFile(templateFile, templateData, (err, html) => {
-    if (err)
-      throw err;
-    fs.writeFileSync(outFile, html);
+
+  let markdownHtml = '';
+  if (inFile) {
+    markdownHtml = render(fs.readFileSync(inFile, 'utf8'));
+  }
+
+  if (templateFile) {
+    // TODO rename nav.html to sitemap or something more mainstream.
+    const navFilePath = path.join(outDir, 'docs', '_nav.html');
+    const templateData = {
+      markdown: markdownHtml,
+      fileName: '/' + outFile.split('/').slice(1).join('/'),
+    };
+    if (fs.existsSync(navFilePath)) {
+      templateData['nav'] = fs.readFileSync(navFilePath, 'utf8');
+    }
+    ejs.renderFile(templateFile, templateData, (err, html) => {
+      if (err)
+        throw err;
+      fs.writeFileSync(outFile, html);
+      process.exit(0);
+    });
+  } else {
+    fs.writeFileSync(outFile, markdownHtml);
     process.exit(0);
-  });
-} else {
-  fs.writeFileSync(outFile, markdownHtml);
-  process.exit(0);
+  }
 }
+
+main();

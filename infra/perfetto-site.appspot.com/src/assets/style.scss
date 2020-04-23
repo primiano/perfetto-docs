@@ -38,8 +38,8 @@ $mobile: "(max-width: 768px)";
 
 html {
     font-family: Roboto, sans-serif;
-    scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
 }
 
 html,
@@ -514,6 +514,9 @@ h3 {
         h3 {
             padding-top: 10px;
             line-height: 32px;
+            &:not(:first-child) {
+                padding-top: 30px;
+            }
         }
         h1 {
             font-size: 2.25rem;
@@ -551,6 +554,31 @@ h3 {
         }
         *:hover .anchor {
             opacity: 1;
+        }
+        code {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+        }
+
+        &[data-md-file^="/docs/reference/"] {
+            h1, h2, h3 {
+                code {
+                    margin-left: 20px;
+                    color: #666;
+                }
+            }
+            table {
+                width: 100%;
+                font-size: 14px;
+                border-spacing: 8px;
+                border-collapse: separate;
+                thead {
+                    text-align: left;
+                }
+                td {
+                    border-top: 1px solid #eee;
+                }
+            }
         }
     }
     .toc {
