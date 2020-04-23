@@ -192,6 +192,14 @@ duration_ms: 30000
 EOF
 ```
 
+While it is running, take a photo if you are following along.
+
+Pull the file using `adb pull /data/misc/perfetto-traces/trace ~/mem-trace`
+and upload to the [Perfetto UI](https://ui.perfetto.dev). This will show
+overall stats about system [ION](#ion) usage, and per-process stats to
+expand. Scroll down (or Ctrl-F for) to `com.google.android.GoogleCamera` and
+expand. This will show a timeline for various memory stats for camera.
+
 ![Camera Memory Trace](/docs/images/trace-rss-camera.png)
 
 We can see that around 2/3 into the trace, the memory spiked. This is where

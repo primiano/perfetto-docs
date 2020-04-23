@@ -1,6 +1,8 @@
 * [Introduction](README.md)
 * [Guides](#)
   * [Memory](guides/memory.md)
+* [Recording traces](#)
+  * [Data sources](recording/data-sources.md)
 * [Reference](#)
   * [Trace Config Proto](reference/trace-config-proto.md)
   * [Trace Packet Proto](reference/trace-packet-proto.md)
