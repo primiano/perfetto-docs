@@ -27,7 +27,7 @@ function hrefInDocs(href) {
   if (href.startsWith('/docs/')) {
     return href;
   }
-  if (href.match(/^[a-z]/g) && !href.match(/^https?:/g)) {
+  if (href.match(/^[A-Za-z]/g) && !href.match(/^https?:/g)) {
     return '/docs/' + href;
   }
   return undefined;
