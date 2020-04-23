@@ -138,13 +138,17 @@ This restriction can be lifted by disabling SELinux by running
 `adb shell su root setenforce 0` or by passing `--disable-selinux` to the
 `heap_profile` script.
 
+<center>
+
 |                         | userdebug setenforce 0 | userdebug | user |
-|-------------------------|------------------------|-----------|------|
+|-------------------------|:----------------------:|:---------:|:----:|
 | critical native service |            y           |     n     |  n   |
 | native service          |            y           |     y     |  n   |
 | app                     |            y           |     y     |  n   |
 | profileable app         |            y           |     y     |  y   |
 | debuggable app          |            y           |     y     |  y   |
+
+</center>
 
 To mark an app as profileable, put `<profileable android:shell="true"/>` into
 the `<application>`.
