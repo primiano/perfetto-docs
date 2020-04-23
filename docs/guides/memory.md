@@ -80,22 +80,21 @@ free up memory.
 
 <center>
 
-| dirty | shared | file |              |
-|:-----:|:------:|:----:|--------------|
-| ❌     | ❌      | ❌    | not resident |
-| ❌     | ❌      | ✓    | reclaimable  |
-| ❌     | ✓      | ❌    | not resident |
-| ❌     | ✓      | ✓    | reclaimable  |
-| ✓     | ❌      | ❌    | resident     |
-| ✓     | ❌      | ✓    | resident     |
-| ✓     | ✓      | ❌    | resident     |
-| ✓     | ✓      | ✓    | reclaimable  |
+|       |          |      |             |
+|:-----:|:--------:|:----:|-------------|
+| clean | private  | anon | reclaimable |
+| clean | private  | file | reclaimable |
+| clean | shared   | anon | reclaimable |
+| clean | shared   | file | reclaimable |
+| dirty | private  | anon | resident    |
+| dirty | private  | file | resident    |
+| dirty | shared   | anon | resident    |
+| dirty | shared   | file | reclaimable |
 
 </center>
 
-Memory that is *clean* and *anon* is generally not resident, *clean file*
-memory is reclaimable by the kernel in case of low system memory. *Dirty*
-memory is always resident, except if it is *file*-backed and *shared*. In
+Memory that is *clean* is reclaimable by the kernel in case of low system memory.
+*Dirty* memory is always resident, except if it is *file*-backed and *shared*. In
 that case it can be reclaimed by writing back the content to the file.
 
 It is generally more important to reduce the amount of memory
