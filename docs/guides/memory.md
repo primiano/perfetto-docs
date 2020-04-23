@@ -58,7 +58,7 @@ set of continuous blocks, the kernel creates a new VMA (Virtual Memory Area).
 The actual memory is only allocated (in page granularity) once the application
 tries to write to it. If you allocate 5TiB worth of pages but only touch one
 page, your process' memory usage will only go up by 4KiB. You will have
-increased your process' *virtual memory* by 5TiB, but its resident
+increased your process' *virtual memory* by 5TiB, but its memory resident
 *physical memory* by 4KiB.
 
 When optimizing memory use of programs, we are interested in reducing their
