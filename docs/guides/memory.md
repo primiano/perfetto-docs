@@ -101,6 +101,63 @@ If we map one 4KiB page into four processes, each of their **PSS** will
 increase by 1KiB.
 
 ## {#lmk} Low-memory kills
+When an Android device becomes low on memory, a daemon called LMKD will
+start killing unimportant processes in order to free up memory. Device's
+strategies differ, but in general processes will be killed in order of
+decending `oom_score_adj` score.
+
+App will remain *cached* even after the user finishes using them, to make
+subsequent starts of the app faster. Such apps will generally be killed
+first (because they have a higher `oom_score_adj`).
+
+We can collect information about LMKs and `oom_score_adj` using Perfetto.
+
+```
+$ adb shell perfetto \
+  -c - --txt \
+  -o /data/misc/perfetto-traces/trace \
+<<EOF
+
+buffers: {
+    size_kb: 8960
+    fill_policy: DISCARD
+}
+buffers: {
+    size_kb: 1280
+    fill_policy: DISCARD
+}
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
+}
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "lowmemorykiller/lowmemory_kill"
+            ftrace_events: "oom/oom_score_adj_update"
+            ftrace_events: "ftrace/print"
+            atrace_apps: "lmkd"
+        }
+    }
+}
+duration_ms: 60000
+
+EOF
+```
+Pull the file using `adb pull /data/misc/perfetto-traces/trace ~/oom-trace`
+and upload to the [Perfetto UI](https://ui.perfetto.dev).
+
+
+![OOM Score](/docs/images/oom-score.png)
+
+We can see that the OOM score of Camera gets reduced (making it less likely
+to be killed) when it is opened, and gets increased again once it is closed.
 
 ## Memory over time
 `dumpsys meminfo` is good to get a snapshot of the current memory usage, but
