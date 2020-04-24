@@ -1,11 +1,11 @@
 # Trace Processor
 
 _**TLDR**: The Trace Processor is a C++ library
-([/src/trace_processor](/src/trace_processor))
-that ingests traces encoded in a wide variety of formats and allows SQL queries
-on trace events contained in a consistent set of tables. It also has other
-features including computation of summary metrics, annotating the trace with new
-events and deriving new events from the contents of the trace._
+([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a
+wide variety of formats and allows SQL queries on trace events contained in a
+consistent set of tables. It also has other features including computation of
+summary metrics, annotating the trace with new events and deriving new events
+from the contents of the trace._
 
 ## Introduction
 
@@ -53,9 +53,9 @@ TODO(lalitm): link to trace analysis quickstart
 _For a comprehensive reference of all the available tables and their columns,
 see TODO(lalitm)._
 
-As noted in the [introduction to trace analysis](/docs/analysis/index.md), slices,
-counters and tracks are core concepts to analysing traces. The trace processor
-exposes these as tables which can be queried using SQL.
+As noted in the [introduction to trace analysis](/docs/analysis/index.md),
+slices, counters and tracks are core concepts to analysing traces. The trace
+processor exposes these as tables which can be queried using SQL.
 
 For example, all counter events in the trace are in the `counter` table. For
 example, to obtain the first 10 counter events in the trace
