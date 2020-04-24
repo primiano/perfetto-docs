@@ -21,24 +21,49 @@ const hljs = require('highlight.js');
 
 const GITHUB_BASE_URL = 'https://github.com/google/perfetto/blob/master';
 const ROOT_DIR = path.dirname(path.dirname(path.dirname(__dirname)));
+const DOCS_DIR = path.join(ROOT_DIR, 'docs');
 
 let outDir = '';  // TODO hack.
+let curMdFile = '';  // TODO hack
+
+
+// function resolveLink(href) {
+//   href = href.replace(/#.*$/, '');  // Remove the #fragment part.
+//   if (href.match('/^http(s?):.*/')) {
+//     return { href: href, extUrl: true} ;
+//   }
+//   curDocDir = path.relative(DOCS_DIR, path.dirname(curMdFile));
+//   const baseDir = href.startsWith('/') ? ROOT_DIR : curDocDir;
+//   const absPath =  path.resolve(path.join(baseDir, href));
+//   const relPath = path.relative(ROOT_DIR, absPath);
+//   return {href: relPath,
+// }
 
 function hrefInDocs(href) {
-  if (href.startsWith('/docs/')) {
-    return href;
+  if (href.match(/^(https?:)|(mailto:)|#/)) {
+    return undefined;
   }
-  if (href.match(/^[A-Za-z]/g) && !href.match(/^https?:/g)) {
-    return '/docs/' + href;
+  let pathFromRoot;
+  if (href.startsWith('/')) {
+    pathFromRoot = href;
+  } else {
+    curDocDir = '/' + path.relative(ROOT_DIR, path.dirname(curMdFile));
+    pathFromRoot = path.join(curDocDir, href);
+  }
+  if (pathFromRoot.startsWith('/docs/')) {
+    return pathFromRoot;
   }
   return undefined;
 }
 
 function assertNoDeadLink(relPathFromRoot) {
+  if (relPathFromRoot.match(/\breference\//))
+    return;  // Skip check for build-time generated links in reference/
+
   relPathFromRoot = relPathFromRoot.replace(/\#.*$/g, '');  // Remove #line.
   const fullPath = path.join(ROOT_DIR, relPathFromRoot);
   if (!fs.existsSync(fullPath)) {
-    const msg = `Dead link: ${relPathFromRoot}`;
+    const msg = `Dead link: ${relPathFromRoot} in ${curMdFile}`;
     console.error(msg);
     throw new Error(msg);
   }
@@ -65,13 +90,17 @@ function renderHeading(text, level) {
 }
 
 function renderLink(originalLinkFn, href, title, text) {
+  if (href.startsWith('../')) {
+    throw new Error(`Don\'t use relative paths in docs, always use /docs/xxx ` +
+      `or /src/xxx for both links to docs and code (${href})`)
+  }
   const docsHref = hrefInDocs(href);
   let sourceCodeLink = undefined;
   if (docsHref !== undefined) {
-    href = docsHref.replace(/.md$/g, '');
-  } else if (href.startsWith('../')) {
-    // ../tools/xxx -> github/tools/xxx.
-    sourceCodeLink = href.substr(2);
+    // Check that the target doc exists. Skip the check on /reference/ files
+    // that are typically generated at build time.
+    assertNoDeadLink(docsHref);
+    href = docsHref.replace(/[.]md\b/, '');
   } else if (href.startsWith('/') && !href.startsWith('//')) {
     // /tools/xxx -> github/tools/xxx.
     sourceCodeLink = href;
@@ -114,7 +143,7 @@ function render(rawMarkdown) {
   renderer.image = (hr, ti, te) => renderImage(originalImgFn, hr, ti, te);
   renderer.code = renderCode;
   renderer.heading = renderHeading;
-  return marked(rawMarkdown, {renderer: renderer});
+  return marked(rawMarkdown, { renderer: renderer });
 }
 
 function main() {
@@ -126,6 +155,7 @@ function main() {
     console.error('Usage: --odir site -o out.html [-i input.md] [-t templ.html]');
     process.exit(1);
   }
+  curMdFile = inFile;
 
   let markdownHtml = '';
   if (inFile) {

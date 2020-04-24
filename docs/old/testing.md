@@ -53,7 +53,7 @@ Perfetto is tested in a variety of locations:
 **Perfetto CI**: https:/ci.perfetto.dev/  
 Builds and runs perfetto_{unittests,integrationtests,benchmarks} from the
 standalone checkout. Benchmarks are ran in a reduced form for smoke testing.
-See [this doc](/docs/continuous-integration.md) for more details.
+See [this doc](/docs/old/continuous-integration.md) for more details.
 
 **Android CI** (see go/apct and go/apct-guide):  
 runs only `perfetto_integrationtests`

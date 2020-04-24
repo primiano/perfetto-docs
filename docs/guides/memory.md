@@ -4,7 +4,7 @@
 This tutorial assumes you are running Android 11 or newer on your phone, and
 Linux or macOS on your computer. If you are profiling your own app,
 it needs to be marked as profileable or debuggable in its manifest. See the
-[heapprofd documentation](recording/data-sources#heapprofd-targets) for more
+[heapprofd documentation](/docs/recording/data-sources.md#heapprofd-targets) for more
 details on which applications can be targeted.
 
 `com.android.systemui` is marked as profileable on Android 11, so we use that
@@ -319,5 +319,5 @@ same type retained by a `java.lang.Object[]`, we will show one element as its
 child, as you can see in the leftmost stack above.
 
 Many Java apps obfuscate their class, method and field names to reduce APK
-size. See [the java hprof](recording/data-sources#java-hprof-deobfuscation)
+size. See [the java hprof](/docs/recording/data-sources.md#java-hprof-deobfuscation)
 documentation for details.

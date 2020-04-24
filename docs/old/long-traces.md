@@ -35,7 +35,7 @@ For a complete example of a working trace config in long-tracing mode see
 
 ## Instructions
 These instructions assume you have a working standalone checkout (see
-[instructions here](/docs/build-instructions.md)).
+[instructions here](/docs/old/build-instructions-old.md)).
 
 These instructions have been tested as non-root. Many of the steps below can be
 simplified when running as root and are required due to SELinux when running as

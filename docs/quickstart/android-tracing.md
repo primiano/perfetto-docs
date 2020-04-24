@@ -9,7 +9,7 @@ These traces contain data collected from a variety of sources such as:
 
 You can collect a trace in the following ways:
 
-* Through the record page in the [Perfetto UI](ui.perfetto.dev).
+* Through the record page in the [Perfetto UI](https://ui.perfetto.dev).
 * Using the `perfetto` CLI.
 
 ##Perfetto UI
@@ -18,7 +18,7 @@ Navigate to ui.perfetto.dev and select **Record new trace**.
 
 From this page, select and turn on the data sources you want to include in the trace. More detail about the different data sources can be found [here](TODO add link).
 
-![Record page of the Perfetto UI](../images/record-trace.png)
+![Record page of the Perfetto UI](/docs/images/record-trace.png)
 
 If you are unsure, start by turning on **Scheduling details** under the **Cpu** tab.
 
@@ -26,7 +26,7 @@ Ensure your device is connected and select **Add ADB device**. Once your device 
 
 Allow time for the trace to be collected (10s by default) and then you should see the trace appear.
 
-![Perfetto UI with a trace loaded](../images/trace-view.png)
+![Perfetto UI with a trace loaded](/docs/images/trace-view.png)
 
 Your trace may look different depending on which data sources you enabled.
 
@@ -93,7 +93,7 @@ duration_ms: 10000
 EOF 
 ```
 
-The full reference for the Perfetto CLI can be found [here](../cmdline/perfetto-cli.md).
+The full reference for the Perfetto CLI can be found [here](/docs/reference/perfetto-cli.md).
 
 
 

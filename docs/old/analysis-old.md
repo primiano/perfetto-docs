@@ -1,7 +1,7 @@
 # Trace analysis
 
 Trace analysis refers to a set of features built into the Perfetto
-[trace processor](trace-processor.md) and Perfetto UI which enrich a trace with
+[trace processor](trace-processor-old.md) and Perfetto UI which enrich a trace with
 extra information synthesized during the import of a trace. There are three
 features which currently part of this project:
 
@@ -11,7 +11,7 @@ features which currently part of this project:
 
 ## <a name="descriptions"></a>Adding descriptions to slices
 
-![Descriptions in action](images/description.png "Descriptions")
+![Descriptions in action](/docs/images/description.png "Descriptions")
 **<p align="center">Description for the measure slice</p>**
 
 ### Background
@@ -34,7 +34,7 @@ Link: https://developer.android.com/reference/android/view/layoutinflater#inflat
 ### Adding descriptions to a slice
 
 Adding a new event just requires a self-contained change to the
-[`DescribeSlice`](../src/trace_processor/analysis/describe_slice.h) function.
+[`DescribeSlice`](/src/trace_processor/analysis/describe_slice.h) function.
 The inputs are the table containing all the slices from the trace and the id of
 the slice which an embedder (e.g. the UI) is requesting a description for. The
 output is a `SliceDescription` which is simply a `pair<description, doc link>`.
@@ -77,10 +77,10 @@ where name = 'measure'
 
 ## <a name="annotations"></a>Annotating the trace with new events
 
-![Slice annotations](images/annotation-slice.png "Slice annotations")
+![Slice annotations](/docs/images/annotation-slice.png "Slice annotations")
 **<p align="center">Annotation slice track containing app startups</p>**
 
-![Counter annotations](images/annotation-counter.png "Counter annotations")
+![Counter annotations](/docs/images/annotation-counter.png "Counter annotations")
 **<p align="center">Annotation counter track added to measure ION
 allocations</p>**
 
@@ -101,10 +101,10 @@ from `zygote`. Most users do not need startup broken down to this level of
 detail; instead they are simply interested in a single slice spanning the whole
 startup duration.
 
-The annotations feature is tied very closely to [metrics subsystem](metrics.md);
+The annotations feature is tied very closely to [metrics subsystem](metrics-old.md);
 Often the SQL-based metrics often need to create higher-level abstractions from
 raw slices as intermediate artifacts. From previous example, the
-[startup metric](../src/trace_processor/metrics/android/android_startup.sql), it
+[startup metric](/src/trace_processor/metrics/android/android_startup.sql), it
 creates the exact `launching` slice we want to display in the UI.
 
 The other benefit of aligning the two is that changes in metrics are
@@ -113,14 +113,14 @@ automatically kept in sync with what the user sees in the UI.
 ### Adding annotations to a new or existing metric
 
 As annotations depend on metrics, the initial steps are same as that of
-[developing a metric](metrics.md). In summary:
+[developing a metric](metrics-old.md). In summary:
 
 - Create a new proto message for your metric and add it to the
-  [`TraceMetrics`](../protos/perfetto/metrics/metrics.proto) proto
-- Write a new SQL metric file in the [metrics](../src/trace_processor/metrics)
+  [`TraceMetrics`](/protos/perfetto/metrics/metrics.proto) proto
+- Write a new SQL metric file in the [metrics](/src/trace_processor/metrics)
   folder. Good examples to follow are
-  [ion](../src/trace_processor/metrics/android/android_ion.sql) and
-  [startup](../src/trace_processor/metrics/android/android_startup.sql) metrics
+  [ion](/src/trace_processor/metrics/android/android_ion.sql) and
+  [startup](/src/trace_processor/metrics/android/android_startup.sql) metrics
 
 **Note**: the metric can be just an empty proto message during prototyping or if
 you think that no summarisation is necessary. However, generally if an event is

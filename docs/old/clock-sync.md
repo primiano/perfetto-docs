@@ -5,7 +5,7 @@ clock domains. On top of the default set of builtin clock domains, new clock
 domains can be dynamically created at trace-time.
 
 Clock domains are allowed to drift from each other.
-At import time, Perfetto's [Trace Processor](/docs/trace-processor.md) is able
+At import time, Perfetto's [Trace Processor](/docs/old/trace-processor-old.md) is able
 to rebuild the clock graph and use that to re-synchronize events on a global
 trace time, as long as [ClockSnapshot][clock_snapshot] packets are present in
 the trace.
@@ -126,7 +126,7 @@ The [`ClockSnapshot`][clock_snapshot] packet defines sync points between two or
 more clock domains. It conveys the notion *"at this point in time, the timestamp
 of the clock domains X,Y,Z was 1000, 2000, 3000."*.
 
-The trace importer ([Trace Processor](/docs/trace-processor.md)) uses this
+The trace importer ([Trace Processor](/docs/old/trace-processor-old.md)) uses this
 information to establish a mapping between these clock domain. For instance,
 to realize that 1042 on clock domain X == 3042 on clock domain Z.
 

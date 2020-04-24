@@ -15,7 +15,7 @@ On "user" builds, you can only use it on apps with the debuggable or
 profileable manifest flag.
 
 ### Quickstart
-See the [Memory Guide](guides/memory#heapprofd) for getting started with
+See the [Memory Guide](/docs/guides/memory.md#heapprofd) for getting started with
 heapprofd.
 
 ### Recording
@@ -32,8 +32,8 @@ enter the processes you want to target, click "Add Device" to pair your phone,
 and record profiles straight from your browser. This is also possible on
 Windows.
 
-See [the reference](reference/trace-config-proto#HeapprofdConfig) for all
-available data source configuration when running `perfetto` manually.
+See [the reference](/docs/reference/trace-config-proto.md#HeapprofdConfig) for
+all available data source configuration when running `perfetto` manually.
 
 ### Viewing the data
 

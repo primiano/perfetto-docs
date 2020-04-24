@@ -9,7 +9,7 @@ The formats supported today are:
  * systrace format: the ftrace text format used by Android systrace
  * profile format (heap profiler only): pprof-like format.
    This is only valid for traces with
-   [heap profiler](src/profiling/memory/README.md) dumps.
+   [heap profiler](/src/profiling/memory/README.md) dumps.
 
 traceconv is also used in the UI to convert Perfetto traces to the Chrome
 JSON format and directly open these traces in the legacy systrace UI

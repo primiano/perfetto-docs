@@ -24,10 +24,10 @@ namespace trace_processor {
 namespace tables {
 
 // The profiler smaps contains the memory stats for virtual memory ranges
-// captures by the [heap profiler](/docs/heapprofd).
+// captures by the [heap profiler](/docs/recording/data-sources.md#).
 // @param upid The UniquePID of the process.
 // @param ts   Timestamp of the snapshot. Multiple rows will have the same
-//             timestamp.
+//             timestamp  .
 // @param path The mmaped file, as per /proc/pid/maps
 #define PERFETTO_TP_PROFILER_SMAPS_DEF(NAME, PARENT, C) \
   NAME(ProfilerSmapsTable, "profiler_smaps")            \

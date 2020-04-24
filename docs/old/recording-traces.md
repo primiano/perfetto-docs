@@ -20,7 +20,7 @@ Perfetto provides a few different ways for recording traces:
 > (perfetto::kInProcessBackend).
 
 In order to record a trace, you should first initialize a
-[TraceConfig](../protos/perfetto/config/trace_config.proto) message which
+[TraceConfig](/protos/perfetto/config/trace_config.proto) message which
 specifies what type of data to record. If your app includes track events
 (i.e, `TRACE_EVENT`), you typically want to choose the categories which are
 enabled for tracing. By default, all non-debug categories are enabled, but
@@ -92,7 +92,7 @@ close(fd);
 ```
 
 The resulting trace file can be directly opened in the [Perfetto
-UI](https://ui.perfetto.dev) or the [Trace Processor](trace-processor.md).
+UI](https://ui.perfetto.dev) or the [Trace Processor](trace-processor-old.md).
 
 ## Tracing with Perfetto UI
 

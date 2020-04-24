@@ -72,7 +72,7 @@ has two options for this:
 # Track events
 
 ![Track events shown in the Perfetto UI](
-  track-events.png "Track events in the Perfetto UI")
+  /docs/track-events.png "Track events in the Perfetto UI")
 
 *Track events* are application specific, time bounded events recorded into a
 *trace* while the application is running. Track events are always associated
@@ -162,7 +162,7 @@ TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
 ```
 
 For more complex arguments, you can define [your own protobuf
-messages](../protos/perfetto/trace/track_event/track_event.proto) and emit
+messages](/protos/perfetto/trace/track_event/track_event.proto) and emit
 them as a parameter for the event.
 
 > Currently custom protobuf messages need to be added directly to the
@@ -344,7 +344,7 @@ each event. In this case, you can implement a *custom data source* for
 Perfetto.
 
 Note that when working with custom data sources, you will also need
-corresponding changes in [trace processor](trace-processor.md) to enable
+corresponding changes in [trace processor](trace-processor-old.md) to enable
 importing your data format.
 
 A custom data source is a subclass of `perfetto::DataSource`. Perfetto with
@@ -434,7 +434,7 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 Perfetto's trace points are designed to have minimal overhead when tracing is
 disabled while providing high throughput for data intensive tracing use
 cases. While exact timings will depend on your system, there is a
-[microbenchmark](../src/tracing/api_benchmark.cc) which gives some ballpark
+[microbenchmark](/src/tracing/api_benchmark.cc) which gives some ballpark
 figures:
 
 | Scenario | Runtime on Pixel 3 XL | Runtime on ThinkStation P920 |
@@ -455,7 +455,7 @@ the event belongs to. In most cases, a track corresponds to a visual
 horizontal track in the Perfetto UI like this:
 
 ![Track timelines shown in the Perfetto UI](
-  track-timeline.png "Track timelines in the Perfetto UI")
+  /docs/track-timeline.png "Track timelines in the Perfetto UI")
 
 Events that describe parallel sequences (e.g., separate
 threads) should use separate tracks, while sequential events (e.g., nested
@@ -521,7 +521,7 @@ your own types of interned data.
 
 First, define an interning index for your type. It should map to a specific
 field of
-[interned_data.proto](../protos/perfetto/trace/interned_data/interned_data.proto)
+[interned_data.proto](/protos/perfetto/trace/interned_data/interned_data.proto)
 and specify how the interned data is written into that message when seen for
 the first time.
 

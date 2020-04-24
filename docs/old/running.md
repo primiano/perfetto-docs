@@ -1,7 +1,7 @@
 # Running Perfetto
 
 In order to run Perfetto and get a meaningful trace you need to build
-(see [build instructions](build-instructions.md)) and run the following:
+(see [build instructions](build-instructions-old.md)) and run the following:
 
 `traced`:
 The unprivileged trace daemon that owns the log buffers and maintains
@@ -81,7 +81,7 @@ an arbitrary trace config. See instructions in the
 
 Trace UI
 --------
-For building the trace UI see the [build instructions](build-instructions.md)
+For building the trace UI see the [build instructions](build-instructions-old.md)
 page. To run the UI using your local build:
 
 ```
