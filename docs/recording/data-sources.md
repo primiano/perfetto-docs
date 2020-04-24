@@ -133,7 +133,7 @@ processes will result in an empty profile.
 On userdebug builds, all processes except for a small blacklist of critical
 services can be profiled (to find the blacklist, look for
 `never_profile_heap` in [heapprofd.te](
-https://android.googlesource.com/platform/system/sepolicy/+/refs/heads/master/private/heapprofd.te)).
+https://cs.android.com/android/platform/superproject/+/master:system/sepolicy/private/heapprofd.te?q=never_profile_heap)).
 This restriction can be lifted by disabling SELinux by running
 `adb shell su root setenforce 0` or by passing `--disable-selinux` to the
 `heap_profile` script.
