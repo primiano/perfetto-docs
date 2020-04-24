@@ -46,12 +46,12 @@ including:
 
 ## Quickstart
 
-<TODO link to trace analysis quickstart>
+TODO(lalitm): link to trace analysis quickstart
 
 ## Tables
 
 _For a comprehensive reference of all the available tables and their columns,
-see <TODO>._
+see TODO(lalitm)._
 
 As noted in the [introduction to trace analysis](analysis/index.md), slices,
 counters and tracks are core concepts to analysing traces. The trace processor
@@ -74,7 +74,7 @@ As tracks come in many types, this is reflected in their structure in trace
 processor. Every type of track has its own table and they form a
 "object-oriented" heirarchy of tables.
 
-<TODO diagram>
+TODO(lalitm) diagram
 
 Note how every column in the parent tables is also present in the child tables.
 Moreover, every row in child tables is also present in the parent tables and has
