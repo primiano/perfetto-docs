@@ -50,9 +50,8 @@ upid                 pid                  name
 ...
 ```
 
-A common task is to look for a specific thread and its assocated process. To
-look for the `android.fg` thread from the `system_server` process, the following
-query can be used
+A common task is to look for a specific thread and its assocated proces. For
+example, looking for the `android.fg` thread from the `system_server` process
 
 ```console
 > SELECT tid, thread.name as thread_name, pid, process.name as process_name FROM thread JOIN process USING (upid) WHERE thread_name = 'android.fg' AND process_name = 'system_server'
@@ -116,7 +115,40 @@ ts                   value
 ...
 ```
 
+### Combining tracks with slices/counters
+
+Tracks can come in many varieties (thread tracks, process tracks, CPU counter
+tracks etc) and each of these have their own table.
+
+Using the `track_id` column, these tables can be joined with the `slice` and
+`counter` tables to obtain the slices or counters for a single track. This is
+most useful when the track tables are further joined with other metadata tables
+(e.g. the `thread` and `process` tables).
+
+For example, we can obtain all the app slices for the GoogleCamera process
+
+![](/docs/images/camera-slices.png)
+
+```console
+> SELECT ts, dur, slice.name FROM slice JOIN thread_track ON thread_track.id = slice.track_id JOIN thread USING (utid) WHERE thread.name = 'id.GoogleCamera'
+ts                   dur                  name
+-------------------- -------------------- --------------------
+     261195282509319                82448 disconnect
+     261195301397967                63177 query
+     261195301463279                42605 query
+     261195301528800                37761 query
+     261196464210635                17916 unlockAsync
+...
+```
+
+For more information on the types of tracks and how to combine them with the
+`slice` and `counter` tables, see the
+[trace processor documentation](/docs/analysis/trace-processor.md)
+
 ### Scheduling slices
+
+Scheduling slices are slices which indicate which thread was scheduled on which
+CPU at which time.
 
 ![](/docs/images/sched-slices.png)
 
