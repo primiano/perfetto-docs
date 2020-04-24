@@ -71,7 +71,7 @@ function genType(pType, depth) {
     for (const enumName of Object.keys(pType.values)) {
       const enumVal = pType.values[enumName];
       const comment = singleLineComment(pType.comments[enumName]);
-      md += `\`${enumName}\` | \`${enumVal}\` | ${comment}\n`
+      md += `${enumName} | ${enumVal} | ${comment}\n`
     }
   } else {
     md += '#### Fields:\n';
@@ -86,15 +86,13 @@ function genType(pType, depth) {
         // Instead of recursing and generating the TraceConfig types all over
         // again, just link to the dedicated TraceConfig reference page.
         if (getFullName(field.resolvedType) === 'TraceConfig') {
-          type = `[\`${type}\`](/docs/reference/trace-config-proto)`;
+          type = `[${type}](/docs/reference/trace-config-proto)`;
         } else {
           subTypes.push(field.resolvedType);
-          type = `[\`${type}\`](#${getFullName(field.resolvedType)})`;
+          type = `[${type}](#${getFullName(field.resolvedType)})`;
         }
-      } else {
-        type = `\`${type}\``;
       }
-      md += `\`${fieldName}\` | ${type} | ${singleLineComment(field.comment)}\n`
+      md += `${fieldName} | ${type} | ${singleLineComment(field.comment)}\n`
     }
   }
   md += '\n\n\n\n';

@@ -546,13 +546,29 @@ h3 {
             table {
                 width: 100%;
                 font-size: 14px;
-                border-spacing: 8px;
-                border-collapse: separate;
+                border-spacing: 0;
+                border-collapse: collapse;
+                th, td {
+                    padding: 8px;
+                    border: 0 solid #dadce0;
+                    border-top-width: 1px;
+                    border-bottom-width: 1px;
+
+                }
+                tr {
+                    height: 20px;
+                }
                 thead {
                     text-align: left;
+                    background-color: #e8eaed;
+                    color: #202124;
                 }
                 td {
-                    border-top: 1px solid #eee;
+                    &:first-child { background: #f7f7f7; }
+
+                    /* Not really 100% but makes sure that the description
+                     * column takes most of the width */
+                    &:last-child { width: 100%; }
                 }
             }
         }
