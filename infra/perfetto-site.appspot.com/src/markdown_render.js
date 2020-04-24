@@ -19,7 +19,8 @@ const fs = require('fs-extra');
 const path = require('path');
 const hljs = require('highlight.js');
 
-const GITHUB_BASE_URL = 'https://github.com/google/perfetto/blob/master';
+const CS_BASE_URL = 'https://cs.android.com/android/platform/superproject/+/master:external/perfetto';
+
 const ROOT_DIR = path.dirname(path.dirname(path.dirname(__dirname)));
 const DOCS_DIR = path.join(ROOT_DIR, 'docs');
 
@@ -109,7 +110,7 @@ function renderLink(originalLinkFn, href, title, text) {
     // Fix up line anchors for GitHub link: #42 -> #L42.
     sourceCodeLink = sourceCodeLink.replace(/#(\d+)$/g, '#L$1')
     assertNoDeadLink(sourceCodeLink);
-    href = GITHUB_BASE_URL + sourceCodeLink;
+    href = CS_BASE_URL + sourceCodeLink;
   }
   return originalLinkFn(href, title, text);
 }
