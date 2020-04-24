@@ -379,7 +379,7 @@ h3 {
 // Docs
 // -----------------------------------------------------------------------------
 .docs {
-    min-height: calc(100vh - var(--site-header-height) - var(--site-footer-height));
+    min-height: calc(100vh - var(--site-footer-height));
     display: grid;
     --nav-width: 240px;
     grid-template-columns: var(--nav-width) auto 180px;
