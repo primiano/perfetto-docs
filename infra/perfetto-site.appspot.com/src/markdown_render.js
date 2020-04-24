@@ -41,6 +41,10 @@ let curMdFile = '';  // TODO hack
 // }
 
 function hrefInDocs(href) {
+  if (href.startsWith('/docs/')) {
+    return href;
+  }
+
   if (href.match(/^(https?:)|(mailto:)|#/)) {
     return undefined;
   }
@@ -63,7 +67,7 @@ function assertNoDeadLink(relPathFromRoot) {
 
   relPathFromRoot = relPathFromRoot.replace(/\#.*$/g, '');  // Remove #line.
   const fullPath = path.join(ROOT_DIR, relPathFromRoot);
-  if (!fs.existsSync(fullPath)) {
+  if (!fs.existsSync(fullPath) && !fs.existsSync(fullPath + ".md")) {
     const msg = `Dead link: ${relPathFromRoot} in ${curMdFile}`;
     console.error(msg);
     throw new Error(msg);
