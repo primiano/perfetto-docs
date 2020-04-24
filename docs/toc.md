@@ -1,5 +1,6 @@
 * [Introduction](README.md)
 * [Quickstart](#)
+	 * [System tracing on Android](quickstart/android-tracing.md)
     * [Trace analysis](quickstart/trace-analysis.md)
 * [Guides](#)
   * [Memory](guides/memory.md)
