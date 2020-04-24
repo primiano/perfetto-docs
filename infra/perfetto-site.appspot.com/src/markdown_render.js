@@ -41,11 +41,7 @@ let curMdFile = '';  // TODO hack
 // }
 
 function hrefInDocs(href) {
-  if (href.startsWith('/docs/')) {
-    return href;
-  }
-
-  if (href.match(/^(https?:)|(mailto:)|#/)) {
+  if (href.match(/^(https?:)|^(mailto:)|^#/)) {
     return undefined;
   }
   let pathFromRoot;
