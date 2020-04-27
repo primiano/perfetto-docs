@@ -16,6 +16,7 @@
   * [SQL Tables](reference/sql-tables.md)
   * [Command Line](#)
   	 * [Perfetto CLI](reference/cmdline/perfetto-cli.md)
+  	 * [heap_profile CLI](reference/cmdline/heap_profile-cli.md)
 * [Contributing](#)
     * [Community](contributing/community.md)
     * [Build Instructions](contributing/build-instructions.md)
