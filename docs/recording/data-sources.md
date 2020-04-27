@@ -212,6 +212,27 @@ You can then concatenate the symbols to the trace (
 `symbolized-trace`. The `tools/heap_profile` script will also generate this
 file in your output directory, if `PERFETTO_BINARY_PATH` is used.
 
+The symbol file is the first with matching Build ID in the following order:
+
+* absolute path of library file relative to binary path.
+* absolute path of library file relative to binary path, but with base.apk!
+  removed from filename.
+* only filename of library file relative to binary path.
+* only filename of library file relative to binary path, but with base.apk!
+  removed from filename.
+* in the subdirectory .build-id: the first two hex digits of the build-id
+  as subdirectory, then the rest of the hex digits, with ".debug"appended.
+  See
+  https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
+
+For example, "/system/lib/base.apk!foo.so" with build id abcd1234,
+is looked for at
+* $PERFETTO_BINARY_PATH/system/lib/base.apk!foo.so
+* $PERFETTO_BINARY_PATH/system/lib/foo.so
+* $PERFETTO_BINARY_PATH/base.apk!foo.so
+* $PERFETTO_BINARY_PATH/foo.so
+* $PERFETTO_BINARY_PATH/.build-id/ab/cd1234.debug
+
 ### Troubleshooting
 
 #### Buffer overrun
