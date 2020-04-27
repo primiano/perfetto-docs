@@ -12,11 +12,11 @@ You can collect a trace in the following ways:
 * Through the record page in the [Perfetto UI](https://ui.perfetto.dev).
 * Using the `perfetto` CLI.
 
-##Perfetto UI
+## Perfetto UI
 
 Navigate to ui.perfetto.dev and select **Record new trace**.
 
-From this page, select and turn on the data sources you want to include in the trace. More detail about the different data sources can be found [here](TODO add link).
+From this page, select and turn on the data sources you want to include in the trace. More detail about the different data sources can be found [here](/docs/recording/data-sources.md).
 
 ![Record page of the Perfetto UI](/docs/images/record-trace.png)
 
@@ -30,7 +30,7 @@ Allow time for the trace to be collected (10s by default) and then you should se
 
 Your trace may look different depending on which data sources you enabled.
 
-##Perfetto CLI
+## Perfetto CLI
 
 If you are familiar with `systrace`, `perfetto` can be used in a similar way.
 
@@ -92,6 +92,9 @@ duration_ms: 10000
 
 EOF 
 ```
+
+Pull the file using `adb pull /data/misc/perfetto-traces/trace ~/trace.pftrace`
+and upload to the [Perfetto UI](https://ui.perfetto.dev).
 
 The full reference for the Perfetto CLI can be found [here](/docs/reference/perfetto-cli.md).
 
