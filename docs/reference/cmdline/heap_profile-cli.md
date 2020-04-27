@@ -40,4 +40,3 @@ usage: heap_profile [-h] [-i INTERVAL] [-d DURATION] [--no-start] [-p PIDS]
 | --simpleperf | Get simpleperf profile of heapprofd. This is only for heapprofd development. |
 | --trace-to-text-binary | Path to local trace to text. For debugging. |
 | --print-config | Print config instead of running. For debugging. |
-
