@@ -205,13 +205,12 @@ the `PERFETTO_BINARY_PATH` as an environment variable.
 PERFETTO_BINARY_PATH=somedir tools/heap_profile --name ${NAME}
 ```
 
-and the output files (`*.pb.gz`) will be symbolized.
-
 You can persist symbols for a trace by running
 `PERFETTO_BINARY_PATH=somedir tools/traceconv symbolize raw-trace > symbols`.
 You can then concatenate the symbols to the trace (
 `cat raw-trace symbols > symbolized-trace`) and the symbols will part of
-`symbolized-trace`.
+`symbolized-trace`. The `tools/heap_profile` script will also generate this
+file in your output directory, if `PERFETTO_BINARY_PATH` is used.
 
 ### Troubleshooting
 
