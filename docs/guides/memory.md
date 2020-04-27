@@ -71,7 +71,7 @@ free up memory.
 
 <center>
 
-|       |          |      |             |
+| clean / dirty  | private / shared  | anon / file  | reclaimable |
 |:-----:|:--------:|:----:|-------------|
 | clean | private  | anon | reclaimable |
 | clean | private  | file | reclaimable |
