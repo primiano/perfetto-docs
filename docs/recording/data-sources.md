@@ -214,24 +214,24 @@ file in your output directory, if `PERFETTO_BINARY_PATH` is used.
 
 The symbol file is the first with matching Build ID in the following order:
 
-* absolute path of library file relative to binary path.
-* absolute path of library file relative to binary path, but with base.apk!
+1. absolute path of library file relative to binary path.
+2. absolute path of library file relative to binary path, but with base.apk!
   removed from filename.
-* only filename of library file relative to binary path.
-* only filename of library file relative to binary path, but with base.apk!
+3. only filename of library file relative to binary path.
+4. only filename of library file relative to binary path, but with base.apk!
   removed from filename.
-* in the subdirectory .build-id: the first two hex digits of the build-id
+5. in the subdirectory .build-id: the first two hex digits of the build-id
   as subdirectory, then the rest of the hex digits, with ".debug"appended.
   See
   https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
 
 For example, "/system/lib/base.apk!foo.so" with build id abcd1234,
 is looked for at
-* $PERFETTO_BINARY_PATH/system/lib/base.apk!foo.so
-* $PERFETTO_BINARY_PATH/system/lib/foo.so
-* $PERFETTO_BINARY_PATH/base.apk!foo.so
-* $PERFETTO_BINARY_PATH/foo.so
-* $PERFETTO_BINARY_PATH/.build-id/ab/cd1234.debug
+1. $PERFETTO_BINARY_PATH/system/lib/base.apk!foo.so
+2. $PERFETTO_BINARY_PATH/system/lib/foo.so
+3. $PERFETTO_BINARY_PATH/base.apk!foo.so
+4. $PERFETTO_BINARY_PATH/foo.so
+5. $PERFETTO_BINARY_PATH/.build-id/ab/cd1234.debug
 
 ### Troubleshooting
 
