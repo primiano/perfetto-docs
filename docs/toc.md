@@ -14,6 +14,8 @@
   * [Trace Config Proto](reference/trace-config-proto.md)
   * [Trace Packet Proto](reference/trace-packet-proto.md)
   * [SQL Tables](reference/sql-tables.md)
+  * [Command Line](#)
+  	 * [Perfetto CLI](reference/cmdline/perfetto-cli.md)
 * [Contributing](#)
     * [Community](contributing/community.md)
     * [Build Instructions](contributing/build-instructions.md)
