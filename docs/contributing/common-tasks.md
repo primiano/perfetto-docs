@@ -21,7 +21,7 @@ Here is an [example change](https://android-review.googlesource.com/c/platform/e
 * Run `tools/gen_all out/YOUR_BUILD_DIRECTORY`. This will update the generated headers containing the descriptors for the proto.
   * *Note: this step has to be performed any time any metric-related proto is modified.1*
 * Add a new SQL file for the metric to [src/trace_processor/metrics](/src/trace_processor/metrics). The appropriate `BUILD.gn` file should be updated as well.
-  * To learn how to write new metrics, see the [trace-based metrics documentation](/docs/analaysis/metrics.md).
+  * To learn how to write new metrics, see the [trace-based metrics documentation](/docs/analysis/metrics.md).
 * Build all targets in your out directory with `tools/ninja -C out/YOUR_BUILD_DIRECTORY`.
 * Add a test for the metric using `tools/add_tp_diff_test.sh`.
 * Run the newly added test with `tools/diff_test_trace_processor.py <path to trace processor binary>`.
