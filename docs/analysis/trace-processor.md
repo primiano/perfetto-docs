@@ -168,3 +168,39 @@ ORDER BY ts
 ```
 
 This query returns just the rows in the `counter` table which are associated to a CPU.
+
+## Annotations
+
+TIP: To see how to add to add a new annotation to trace processor, see the checklist [here](/docs/TODO.md)
+
+Annotations attach a human-readable description to a slice in the trace. This can include information like the source of a slice, why a slice is important and links to documentation where the viewer can learn more about the slice. In essence, descriptions act as if an expert was telling the user what the slice means.
+
+For example, consider the `inflate` slice which occurs during view inflation in Android. We can add the following description and link:
+
+```
+Description: Constructing a View hierarchy from pre-processed XML via LayoutInflater#layout. This includes constructing all of the View objects in the hierarchy, and applying styled attributes.
+
+Link: https://developer.android.com/reference/android/view/layoutinflater#inflate(int,%20android.view.viewgroup)
+```
+
+## Creating derived events
+
+TIP: To see how to add to add a new annotation to trace processor, see the checklist [here]()
+
+This feature allows creation of new events (slices and counters) from the data in the trace. These events can then be displayed in the UI tracks as if they were part of the trace itself.
+
+This is useful as often the data in the trace is very low-level. While low level information is important for experts to perform deep debugging, often users are just looking for a high level overview without needing to consider events from multiple locations.
+
+For example, an app startup in Android spans multiple components including`ActivityManager`, `system_server` and the newly created app process derived from `zygote`. Most users do not need this level of detail; they are only interested in a single slice spanning the entire startup.
+
+Creating derived events is tied very closely to [metrics subsystem](/docs/analysis/metrics.md); often SQL-based metrics need to create higher-level abstractions from raw events as intermediate artifacts. From previous example, the [startup metric](/src/trace_processor/metrics/android/android_startup.sql) creates the exact `launching` slice we want to display in the UI.
+
+The other benefit of aligning the two is that changes in metrics are automatically kept in sync with what the user sees in the UI.
+
+## Alerts
+
+Alerts are used to draw the attention of the user to interesting parts of the trace; this are usually warnings or errors about anomalies which occured in the trace.
+
+Currently, alerts are not implemented in the trace processor but the API to create derived events was designed with them in mind. We plan on adding another column `alert_type` (name to be finalized) to the annotations table which can have the value `warning`, `error` or `null`. Depending on this value, the Perfetto UI will flag these events to the user.
+
+NOTE: we do not plan on supporting case where alerts need to be added to existing events. Instead, new events should be created using annotations and alerts added on these instead; this is because the trace processor storage is append-only.
