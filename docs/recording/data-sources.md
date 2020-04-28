@@ -219,7 +219,7 @@ prefixed).
 If the profiled binary or libraries do not have symbol names, you can
 symbolize profiles offline. Even if they do, you might want to symbolize in
 order to get inlined function and line number information. All tools
-traceconv, trace_processor_shell, the heap_profile script) support specifying
+(traceconv, trace_processor_shell, the heap_profile script) support specifying
 the `PERFETTO_BINARY_PATH` as an environment variable.
 
 ```
