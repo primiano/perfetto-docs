@@ -12,10 +12,9 @@ The checklists below show how to achieve some common tasks in the codebase.
 - If special handling in `trace_processor` is desired update [src/trace_processor/importers/ftrace/ftrace_parser.cc](/src/trace_processor/importers/ftrace/ftrace_parser.cc) to parse the event.
 - Upload and land your change as normal.
 
-Here is an [example change](https://android-review.googlesource.com/c/platform/external/perfetto/+/1290645) which added the `ion/ion_stat` event.
+Here is an [example change](https://android-review.googlesource.com/c/platform/external/perfetto/+/1290645) which added the `ion/ion_stat` event.¢
 
+## Add a new metric
 
-
-
-
-
+* Create the proto file containing the metric 
+* Run `tools/gen_all out/YOUR_BUILD_DIRECTORY` 
