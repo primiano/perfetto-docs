@@ -18,7 +18,7 @@ profileable manifest flag.
 See the [Memory Guide](/docs/guides/memory.md#heapprofd) for getting started with
 heapprofd.
 
-## UI
+### UI
 
 Dumps from heapprofd are shown as flamegraphs in the UI after clicking on the
 diamond.
@@ -27,7 +27,7 @@ diamond.
 
 ![](/docs/images/native-flamegraph.png)
 
-## Trace Processor
+### Trace Processor
 Information about callstacks is written to the following tables:
 * [`stack_profile_mapping`](/docs/reference/sql-tables.md#stack_profile_mapping)
 * [`stack_profile_frame`](/docs/reference/sql-tables.md#stack_profile_frame)
