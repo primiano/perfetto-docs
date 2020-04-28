@@ -44,24 +44,14 @@ for every process in the trace and lists the names of the top 5 processes (by
 CPU time) and the number of threads which were associated with those processes
 over its lifetime.
 
-_Note:_
+NOTE: To jump to the code at the end of this guide, see this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080). The prerequistes and Step 4 below give instructions on how to get trace processor and run it to output the metrics.
 
-- If you want to jump straight to the code, at the end of this guide, your
-  workspace should look something like this
-  [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080).
-  See Step 0 and 4 below as to where to get trace processor and how to run it to
-  output the metrics.
+### Prerequisites
 
-### Step 0
+As a setup step, you'll want to create a folder to act as a scratch workspace; this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
 
-As a setup step, you'll want to create a folder to act as a scratch workspace;
-this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
-
-The other thing you'll need is trace processor shell. You can download this
-[here](https://get.perfetto.dev/trace_processor) or you can build from source
-using the instructions [here](trace-processor.md). Whichever method is chosen,
-\$TRACE_PROCESSOR env variable will be used to refer to the location of the
-binary in Step 4.
+The other thing you'll need is trace processor shell. You can download this [here](https://get.perfetto.dev/trace_processor) or you can build from source
+using the instructions [here](trace-processor.md). Whichever method is chosen, $TRACE_PROCESSOR env variable will be used to refer to the location of the binary in Step 4.
 
 ### Step 1
 

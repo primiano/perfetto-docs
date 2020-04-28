@@ -1,5 +1,7 @@
 # Trace Analysis
 
+-------
+
 <write introduction to trace analysis here>
 
 ## Background
