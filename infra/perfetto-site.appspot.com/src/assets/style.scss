@@ -589,10 +589,31 @@ h3 {
 
                     /* Not really 100% but makes sure that the description
                      * column takes most of the width */
-                    &:last-child { width: 100%; }
+                    &:last-child { width: 80%; }
                 }
             }
         }
+
+        .callout {
+            padding: .5rem .5rem .5rem 2rem;
+            border: none;
+            border-radius: 2px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 90%;
+
+            &.note {
+                &:before {
+                    content: 'warning';
+                    font-family: 'Material Icons Round';
+                    position: absolute;
+                    margin-left: -2rem;
+                }
+                background-color: #fbe9e7;
+                color: #a52714;
+            }
+        }
+
     }
     .toc {
         grid-column: 3;

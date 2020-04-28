@@ -134,7 +134,22 @@ function renderImage(originalImgFn, href, title, text) {
     fs.copyFileSync(ROOT_DIR + docsHref, outFile);
   }
   return originalImgFn(href, title, text);
-};
+}
+
+function renderParagraph(text) {
+  let cssClass = '';
+  if (text.startsWith('NOTE:')) {
+    cssClass = 'note';
+  } else if (text.startsWith('TIP:')) {
+    cssClass = 'tip';
+  } else if (text.startsWith('TODO:')) {
+    cssClass = 'todo';
+  }
+  if (cssClass != '') {
+    cssClass = ` class="callout ${cssClass}"`;
+  }
+  return `<p${cssClass}>${text}</p>\n`;
+}
 
 function render(rawMarkdown) {
   const renderer = new marked.Renderer();
@@ -144,6 +159,8 @@ function render(rawMarkdown) {
   renderer.image = (hr, ti, te) => renderImage(originalImgFn, hr, ti, te);
   renderer.code = renderCode;
   renderer.heading = renderHeading;
+  renderer.paragraph = renderParagraph;
+
   return marked(rawMarkdown, { renderer: renderer });
 }
 

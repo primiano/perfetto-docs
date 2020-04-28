@@ -5,6 +5,7 @@
 * [Guides](#)
   * [Memory](guides/memory.md)
 * [Recording traces](#)
+  * [Trace Configuration](recording/config.md)
   * [Data sources](recording/data-sources.md)
 * [Trace Analysis](#)
     * [Overview](analysis/index.md)
