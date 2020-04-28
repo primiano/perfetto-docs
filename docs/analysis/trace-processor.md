@@ -4,7 +4,9 @@ _**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/tra
 
 ## Introduction
 
-Traces are raw and optimized for fast & low overhead writing. This leads to encoding of events in a format that make it difficult to extract useful information. This is compounded by the amount of legacy formats which are still in use and need to be supported in trace analysis tools. The trace processor abstracts this complexity by parsing traces, extracting the data inside and exposing it as database tables which can be queried with SQL.
+Traces are raw and optimized for fast & low overhead writing. This leads to encoding of events in a format that make it difficult to extract useful information. This is compounded by the amount of legacy formats which are still in use and need to be supported in trace analysis tools.
+
+The trace processor abstracts this complexity by parsing traces, extracting the data inside and exposing it as database tables which can be queried with SQL.
 
 Features of the trace processor include:
 
@@ -32,11 +34,27 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 
 ## Quickstart
 
-TODO(lalitm): link to trace analysis quickstart
+TODO: link to trace analysis quickstart
 
 ## Tables
 
-_For a comprehensive reference of all the available tables and their columns, see TODO(lalitm)._
+Before reading this section, it's recommended to read the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover concepts like events and tracks which are important to understand before reading this section.
+
+### Hierarchies
+
+Modelling an object with many types  is a common problem in trace processor. For example, tracks can come in many varieties (thread tracks, process tracks, counter tracks etc). Each type has a piece of data associated to it unique to that type; for example, thread tracks have a `utid` of the thread, counter tracks have the `unit` of the counter.
+
+To solve this problem in object-oriented languages, a `Track` class could be created and inheritance used for all subclasses (e.g. `ThreadTrack` and `CounterTrack` being subclasses of `Track`, `ProcessCounterTrack` being a subclass of `CounterTrack` etc).
+
+TODO: add a diagram with the hierarchy.
+
+In trace processor, we replicate this "object-oriented" approach in tables of objects with many types. For example, we have a `track` table as the "root" of the heirarchy with the `thread_track` and `counter_track` tables "inheriting from" the `track` table.
+
+TODO: talk about how inheritance works with columns of the tables
+
+TODO: add a diagram with the SQL hierarchy
+
+TODO: talk about efficiency
 
 ### Tracks
 
@@ -127,7 +145,7 @@ SELECT * FROM slice ORDER BY ts LIMIT 10
 
 As tracks come in many types, this is reflected in their structure in trace processor. Every type of track has its own table and they form a "object-oriented" heirarchy of tables.
 
-TODO(lalitm) diagram
+TODO: diagram
 
 Note how every column in the parent tables is also present in the child tables. Moreover, every row in child tables is also present in the parent tables and has the same `id`.
 
