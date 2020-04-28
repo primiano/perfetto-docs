@@ -327,7 +327,7 @@ it. In this case the key is the `_CompressedAsset` that requires uncompressing
 into RAM rather than being able to (_cleanly_) memory-map. By not compressing
 these data, we can save RAM.
 
-## Analyzing the Java Heap
+## {#java-hprof} Analyzing the Java Heap
 **Java Heap Dumps require Android 11.**
 
 ### Capturing the profile
@@ -378,7 +378,3 @@ that could be caused by notifications, we can put "notification" in the Focus bo
 We aggregate the paths per class name, so if there are multiple objects of the
 same type retained by a `java.lang.Object[]`, we will show one element as its
 child, as you can see in the leftmost stack above.
-
-Many Java apps obfuscate their class, method and field names to reduce APK
-size. See [the java hprof](/docs/recording/data-sources.md#java-hprof-deobfuscation)
-documentation for details.

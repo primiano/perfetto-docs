@@ -413,5 +413,23 @@ the results.
 
 ## {#java-hprof} Java Heap Graphs
 
-### {#java-hprof-deobfuscation} Deobfuscation
-TODO(fmayer): Explain deobfuscation.
+NOTE: **Java Heap Graphs require Android 11.**
+
+### Quickstart
+See the [Memory Guide](/docs/guides/memory.md#java-hprof) for getting started
+with Java Heap Graphs.
+
+### UI
+
+Java Dumps are shown as flamegraphs in the UI after clicking on the
+diamond.
+
+![](/docs/images/profile-diamond.png)
+
+![](/docs/images/java-flamegraph.png)
+
+### Trace Processor
+Information about the Java Heap is written to the following tables:
+* [`heap_graph_class`](/docs/reference/sql-tables.md#heap_graph_class)
+* [`heap_graph_object`](/docs/reference/sql-tables.md#heap_graph_object)
+* [`heap_graph_reference`](/docs/reference/sql-tables.md#heap_graph_reference)
