@@ -142,8 +142,12 @@ function renderParagraph(text) {
     cssClass = 'note';
   } else if (text.startsWith('TIP:')) {
     cssClass = 'tip';
-  } else if (text.startsWith('TODO:')) {
+  } else if (text.startsWith('TODO:') || text.startsWith('FIXME:')) {
     cssClass = 'todo';
+  } else if (text.startsWith('WARNING:')) {
+    cssClass = 'warning';
+  } else if (text.startsWith('Summary:')) {
+    cssClass = 'summary';
   }
   if (cssClass != '') {
     cssClass = ` class="callout ${cssClass}"`;

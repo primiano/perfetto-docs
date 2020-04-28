@@ -601,16 +601,50 @@ h3 {
             margin-left: auto;
             margin-right: auto;
             width: 90%;
+            border-left: 3px solid transparent;
+            box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,.05), 0 0 0.05rem rgba(0,0,0,.1);
+
+            &:before {
+                font-family: 'Material Icons Round';
+                position: absolute;
+                font-size: 1.5rem;
+                margin-left: -1.75rem;
+                margin-top: -2px;
+            }
 
             &.note {
-                &:before {
-                    content: 'warning';
-                    font-family: 'Material Icons Round';
-                    position: absolute;
-                    margin-left: -2rem;
-                }
-                background-color: #fbe9e7;
-                color: #a52714;
+                background-color: #E8F0FE;
+                border-color: #1967D2;
+                color: #1967D2;
+                &:before { content: 'bookmark'; }
+            }
+
+            &.summary {
+                background-color: #E4F7FB;
+                border-color:  #129EAF;
+                color: #129EAF;
+                &:before { content: 'sms'; }
+            }
+
+            &.tip {
+                background-color: #E6F4EA;
+                border-color: #188038;
+                color: #188038;
+                &:before { content: 'star'; }
+            }
+
+            &.todo {
+                background-color: #F1F3F4;
+                border-color: #5F6368;
+                color: #5F6368;
+                &:before { content: 'error'; }
+            }
+
+            &.warning {
+                background-color: #FCE8E6;
+                border-color: #C5221F;
+                color: #C5221F;
+                &:before { content: 'warning'; }
             }
         }
 
