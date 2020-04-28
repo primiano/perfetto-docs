@@ -3,7 +3,7 @@
   * [System tracing on Android](quickstart/android-tracing.md)
   * [Trace analysis](quickstart/trace-analysis.md)
 * [Guides](#)
-  * [Memory](guides/memory.md)
+  * [Memory Usage on Android](guides/memory.md)
 * [Recording traces](#)
   * [Trace configuration](recording/config.md)
   * [Data sources](recording/data-sources.md)

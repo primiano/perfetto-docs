@@ -1,4 +1,4 @@
-# Investigating Memory Usage on Android
+# Memory Usage on Android
 
 ## Prerequisites
 This tutorial assumes you are running Android 11 or newer on your phone, and
@@ -6,9 +6,6 @@ Linux or macOS on your computer. If you are profiling your own app,
 it needs to be marked as profileable or debuggable in its manifest. See the
 [heapprofd documentation](/docs/recording/data-sources.md#heapprofd-targets) for more
 details on which applications can be targeted.
-
-`com.android.systemui` is marked as profileable on Android 11, so we use that
-as an example.
 
 ## dumpsys meminfo
 A good place to get started investigating memory usage of a process is

@@ -134,7 +134,7 @@ the pprof compatible proto.
 
 If you see this message but do not expect any other sessions, run
 ```
-adb shell killall -KILL perfetto
+adb shell killall perfetto
 ```
 to stop any concurrent sessions that may be running.
 
