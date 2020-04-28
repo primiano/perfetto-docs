@@ -18,6 +18,27 @@ profileable manifest flag.
 See the [Memory Guide](/docs/guides/memory.md#heapprofd) for getting started with
 heapprofd.
 
+## UI
+
+Dumps from heapprofd are shown as flamegraphs in the UI after clicking on the
+diamond.
+
+![](/docs/images/profile-diamond.png)
+
+![](/docs/images/native-flamegraph.png)
+
+## Trace Processor
+Information about callstacks is written to the following tables:
+* [`stack_profile_mapping`](/docs/reference/sql-tables.md#stack_profile_mapping)
+* [`stack_profile_frame`](/docs/reference/sql-tables.md#stack_profile_frame)
+* [`stack_profile_callsite`](/docs/reference/sql-tables.md#stack_profile_callsite)
+
+The allocations themselves are written to
+[`heap_profile_allocation`](/docs/reference/sql-tables.md#heap_profile_allocation).
+
+Offline symbolization data is stored in
+[`stack_profile_symbol`](/docs/reference/sql-tables.md#stack_profile_symbol).
+
 ### Recording
 On Linux / MacOS, use the `tools/heap_profile` script to heap profile a
 process. If you are having trouble make sure you are using the

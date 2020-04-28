@@ -102,7 +102,7 @@ increase by 1KiB.
 
 ## {#lmk} Low-memory kills
 When an Android device becomes low on memory, a daemon called LMKD will
-start killing unimportant processes in order to free up memory. Device's
+start killing unimportant processes in order to free up memory. Devices'
 strategies differ, but in general processes will be killed in order of
 decending `oom_score_adj` score.
 
@@ -249,16 +249,15 @@ expand. This will show a timeline for various memory stats for camera.
 
 ![Camera Memory Trace](/docs/images/trace-rss-camera.png)
 
-We can see that around 2/3 into the trace, the memory spiked. This is where
-I took a photo. This is a good way to see how the memory usage of an
-application reacts to different triggers.
+We can see that around 2/3 into the trace, the memory spiked (in the
+mem.rss.anon track). This is where I took a photo. This is a good way to see
+how the memory usage of an application reacts to different triggers.
 
 ## {#heapprofd} Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
 
 _If your native memory is neglibile, you can skip ahead to
 [Analyzing the Java Heap](#analyzing-the-java-heap)._
-
 
 Applications usually get memory through `malloc` or C++'s `new` rather than
 directly getting it from the kernel. The allocator makes sure that your memory
@@ -276,10 +275,10 @@ Use the `tools/heap_profile` script to profile a process. If you are having
 trouble make sure you are using the [latest version](
 https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile).
 See all the arguments using `tools/heap_profile -h`, or use the defaults
-and just profile a process (e.g. `com.android.systemui`):
+and just profile a process (e.g. `system_server`):
 
 ```
-$ tools/heap_profile -n com.android.systemui
+$ tools/heap_profile -n system_server
 
 Profiling active. Press Ctrl+C to terminate.
 You may disconnect your device.
@@ -289,22 +288,15 @@ These can be viewed using pprof. Googlers: head to pprof/ and upload them.
 ```
 
 When you see *Profiling active*, play around with the phone a bit. When you
-are done, press Ctrl-C to end the profile.
+are done, press Ctrl-C to end the profile. For this tutorial, I opened a
+couple of apps.
 
 ### Viewing the data
-TODO(fmayer): have an example that shows something interesting.
-
 Then upload the `raw-trace` file from the output directory to the
 [Perfetto UI](https://ui.perfetto.dev) and click on diamond marker that
 shows.
 
 ![Profile Diamond](/docs/images/profile-diamond.png)
-
-The default view will show you all allocations that were done while the
-profile was running but that weren't freed. This is what the "space" tab
-means.
-
-![Native Flamegraph](/docs/images/native-flamegraph.png)
 
 The tabs that are available are
 
@@ -317,11 +309,23 @@ The tabs that are available are
 * **alloc\_objects**: how many allocations (including ones with matching frees)
   were sampled at this callstack.
 
-If we want to only see callstacks that have a frame that contains some string,
-we can use the Focus feature. If we want to know all allocations that have to
-do with notifications, we can put "notification" in the Focus box.
+The default view will show you all allocations that were done while the
+profile was running but that weren't freed (the **space** tab).
 
-![Native Flamegraph with Focus](/docs/images/native-flamegraph-focus.png)
+![Native Flamegraph](/docs/images/syssrv-apk-assets-two.png)
+
+We can see that a lot of memory gets allocated in paths through
+`ResourceManager.loadApkAssets`. To get the total memory that was allocated
+this way, we can enter "loadApkAssets" into the Focus textbox. This will only
+show callstacks where some frame matches "loadApkAssets".
+
+![Native Flamegraph with Focus](/docs/images/syssrv-apk-assets-focus.png)
+
+From this we have a clear idea where in the code we have to look. From the
+code we can see how that memory is being used and if we actually need all of
+it. In this case the key is the `_CompressedAsset` that requires uncompressing
+into RAM rather than being able to (_cleanly_) memory-map. By not compressing
+these data, we can save RAM.
 
 ## Analyzing the Java Heap
 **Java Heap Dumps require Android 11.**
