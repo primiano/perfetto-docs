@@ -2,7 +2,7 @@
 
 -------
 
-This quickstart will give some example SQL queries showing how to retrieve data from the trace processor. Screenshots from the [Perfetto UI](https://ui.perfetto.dev) is used to visualise how the data would look graphically.
+*TLDR: This quickstart will give some example SQL queries showing how to retrieve data from the trace processor.*
 
 ## Prerequistes
 

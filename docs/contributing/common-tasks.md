@@ -52,7 +52,7 @@ NOTE: all currently implemented annotations are based only on the name of the sl
 
 ## Adding new derived events
 
-As derived events depend on metrics, the initial steps are same as that of developing a metric (see above)
+As derived events depend on metrics, the initial steps are same as that of developing a metric (see above).
 
 NOTE: the metric can be just an empty proto message during prototyping or if no summarisation is necessary. However, generally if an event is important enough to display in the UI, it should also be tracked in benchmarks as a metric.
 
