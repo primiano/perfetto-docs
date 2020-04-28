@@ -53,6 +53,89 @@ TODO(lalitm): link to trace analysis quickstart
 _For a comprehensive reference of all the available tables and their columns,
 see TODO(lalitm)._
 
+### Tracks
+
+Tracks allow grouping all events which have the same context onto a single timeline. Every track has a `name` and `id` and they form the backbone of the Perfetto UI.
+
+![](/docs/images/tracks.png)
+
+```console
+> SELECT id, name FROM track
+id                   name
+-------------------- --------------------
+                   0 cpuidle
+                   1 cpuidle
+                   2 cpuidle
+...
+                  13 mem.virt
+                  14 mem.rss
+...
+                  21 oom_score_adj
+```
+
+### Combining tracks with slices/counters
+
+Tracks can come in many varieties (thread tracks, process tracks, CPU counter
+tracks etc) and each of these have their own table.
+
+Using the `track_id` column, these tables can be joined with the `slice` and
+`counter` tables to obtain the slices or counters for a single track. This is
+most useful when the track tables are further joined with other metadata tables
+(e.g. the `thread` and `process` tables).
+
+For example, we can obtain all the app slices for the GoogleCamera process
+
+![](/docs/images/camera-slices.png)
+
+```console
+> SELECT ts, dur, slice.name FROM slice JOIN thread_track ON thread_track.id = slice.track_id JOIN thread USING (utid) WHERE thread.name = 'id.GoogleCamera'
+ts                   dur                  name
+-------------------- -------------------- --------------------
+     261195282509319                82448 disconnect
+     261195301397967                63177 query
+     261195301463279                42605 query
+     261195301528800                37761 query
+     261196464210635                17916 unlockAsync
+...
+```
+
+For more information on the types of tracks and how to combine them with the
+`slice` and `counter` tables, see the
+[trace processor documentation](/docs/analysis/trace-processor.md)
+
+### Scheduling slices
+
+Scheduling slices are slices which indicate which thread was scheduled on which
+CPU at which time.
+
+![](/docs/images/sched-slices.png)
+
+```console
+> SELECT ts, dur, cpu, utid FROM sched
+ts                   dur                  cpu                  utid
+-------------------- -------------------- -------------------- --------------------
+     261187012170995               247188                    2                  767
+     261187012418183                12812                    2                 2790
+     261187012421099               220000                    4                  683
+     261187012430995                72396                    2                 2791
+...
+```
+
+SQL joins can be used to obtain more information about the running thread and
+process in each slice.
+
+```console
+> SELECT ts, dur, cpu, tid, thread.name AS thread_name, pid, process.name AS process_name FROM sched JOIN thread USING (utid) JOIN process USING (upid) ORDER BY ts
+ts                   dur                  cpu                  tid                  thread_name          pid                  process_name
+-------------------- -------------------- -------------------- -------------------- -------------------- -------------------- --------------------
+     261187012170995               247188                    2                  627 logd.klogd                            600 /system/bin/logd
+     261187012418183                12812                    2                20614 traced_probes0                      25434 /system/bin/traced_p
+     261187012421099               220000                    4                12428 kworker/u16:2                           2 kthreadd
+...
+```
+
+### 
+
 As noted in the [introduction to trace analysis](/docs/analysis/index.md),
 slices, counters and tracks are core concepts to analysing traces. The trace
 processor exposes these as tables which can be queried using SQL.
