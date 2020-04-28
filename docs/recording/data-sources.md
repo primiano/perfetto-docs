@@ -2,7 +2,7 @@
 
 ## {#heapprofd} heapprofd - Android Heap Profiler
 
-**heapprofd requires Android 10.**
+NOTE: **heapprofd requires Android 10.**
 
 heapprofd is a tool that tracks native heap allocations & deallocations of an
 Android process within a given time period. The resulting profile can be used
@@ -199,7 +199,7 @@ always produced. You can create multiple of these dumps, and they will be
 enumerated in the output directory.
 
 ### Symbolization
-**Symbolization is currently only available on Linux.**
+NOTE: **Symbolization is currently only available on Linux.**
 
 #### Set up llvm-symbolizer
 You only need to do this once.
