@@ -1,13 +1,15 @@
 # Quickstart: Trace Analysis
 
+-------
+
 This quickstart will give some example SQL queries showing how to retrieve data from the trace processor. Screenshots from the [Perfetto UI](https://ui.perfetto.dev) is used to visualise how the data would look graphically.
 
-### Prerequistes
+## Prerequistes
 
 - A device running macOS/Linux
 - A trace file in a [supported format](). [This trace]() is used throughout this guide.
 
-### Downloading and starting trace processor
+## Starting trace processor
 
 To begin, download the trace processor [here](). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
 
@@ -18,7 +20,7 @@ $ chmod +x ./trace_processor       # ensures that trace processor is executable
 $ ./trace_processor trace.pftrace
 ```
 
-### Slices
+## Slices
 
 Slices are events which have name and span some duration of time.
 
@@ -34,7 +36,7 @@ ts                   dur                  name
      ...
 ```
 
-### Counters
+## Counters
 
 Counters are events with a value which changes over time.
 
@@ -51,11 +53,9 @@ ts                   value
 ...
 ```
 
-### Threads and processes
+## Threads and processes
 
 Threads and processes are each given their own table and uniquely identified by the `utid` and `upid` columns respectively; `tids` and `pids` cannot be used directly as they can be reused over the course of a trace. For more details on this, see the trace processor [table documentation](/docs/analysis/trace-processor.md).
-
-![](/docs/images/threads-processes.png)
 
 ```console
 > SELECT utid, tid, name FROM thread
@@ -84,6 +84,6 @@ tid                  thread_name          pid                  process_name
                 1313 android.fg                           1282 system_server
 ```
 
-### Next steps
+## Next steps
 
 TODO(lalitm): link to trace processor documentation and reference
