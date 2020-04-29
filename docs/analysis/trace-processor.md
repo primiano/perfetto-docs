@@ -124,21 +124,6 @@ For more information on the types of tracks and how to combine them with the `sl
 
 ### Scheduling slices
 
-Scheduling slices are slices which indicate which thread was scheduled on which CPU at which time.
-
-![](/docs/images/sched-slices.png)
-
-```console
-> SELECT ts, dur, cpu, utid FROM sched
-ts                   dur                  cpu                  utid
--------------------- -------------------- -------------------- --------------------
-     261187012170995               247188                    2                  767
-     261187012418183                12812                    2                 2790
-     261187012421099               220000                    4                  683
-     261187012430995                72396                    2                 2791
-...
-```
-
 SQL joins can be used to obtain more information about the running thread and process in each slice.
 
 ```console
