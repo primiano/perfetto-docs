@@ -26,6 +26,7 @@
     * [Community](contributing/community.md)
     * [Build Instructions](contributing/build-instructions.md)
     * [Common tasks](contributing/common-tasks.md)
+    * [Embedding Perfetto](contributing/embedding.md)
 * [Design documents](#)
     * [heapprofd design](design-docs/heapprofd-design.md)
     * [heapprofd design: wire protocol](design-docs/heapprofd-wire-protocol.md)
