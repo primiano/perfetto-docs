@@ -37,6 +37,13 @@ and available on the CI page.
 If the label `Presubmit-Ready: +1` is set, the CI will also publish a comment
 like [this][ci-example] on the CL.
 
+## Bugs
+* For bugs affecting Android or the tracing internals use the internal
+bug tracker ([go/perfetto-bugs](http://goto.google.com/perfetto-bugs)) or
+[GitHub issues](https://github.com/google/perfetto/issues).
+* For bugs affecting Chrome use http://crbug.com, Component:Speed>Tracing
+label:Perfetto.
+
 ## Community
 
 You can reach us on our [Discord channel](https://discord.gg/35ShE3A).
