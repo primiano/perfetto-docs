@@ -40,9 +40,9 @@ re-identify the session using `--attach=key`.
 Once detached, the cmdline client will exit (without forking any bg process) and
 the `traced` service will keep the tracing session alive.  
 Because of the exit, a client that wants to use `--detach` needs to set the
-[`write_into_file`](long-traces.md) flag in the trace config, which transfers
-the output trace file descriptor to the service (see the [examples](#examples)
-section).
+[`write_into_file`](config.md#long-traces) flag in the trace config, which
+transfers the output trace file descriptor to the service (see the
+[examples](#examples) section).
 
 A detached session will run until either:
 

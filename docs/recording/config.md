@@ -225,7 +225,7 @@ and then passing it to perfetto as follows, without the `--txt` argument:
 perfetto -c config.bin -o trace_file.pftrace
 ```
 
-## Streaming long traces
+## {#long-traces} Streaming long traces
 
 By default Perfetto keeps the full trace buffer(s) in memory and writes it into
 the destination file (the `-o` cmdline argument) only at the end of the tracing
