@@ -10,8 +10,8 @@ to rebuild the clock graph and use that to re-synchronize events on a global
 trace time, as long as [ClockSnapshot][clock_snapshot] packets are present in
 the trace.
 
-Problem statement
------------------
+## Problem statement
+
 In a complex multi-producer scenario, different data source can emit events
 using different clock domains.
 
@@ -21,6 +21,7 @@ Some examples:
   but the Android event log uses `CLOCK_REALTIME`.
   Some other data sources can use `CLOCK_MONOTONIC`.
   These clocks can drift over time from each other due to suspend/resume.
+
 * Graphics-related events are typically timestamped by the GPU, which can use a
   hardware clock source that drifts from the system clock.
 
@@ -30,12 +31,14 @@ even when possible, doing so might be prohibitively expensive).
 To solve this, we allow events to be recorded with different clock domains and
 re-synchronize them at import time using clock snapshots.
 
-Trace proto syntax
-------------------
+## Trace proto syntax
 
 Clock synchronization is based on two elements of the trace:
 
-### 1. The [`timestamp_clock_id`][timestamp_clock_id] field of TracePacket
+1. [The timestamp_clock_id field of TracePacket](#timestamp_clock_id)
+2. [The ClockSnapshot trace packet](#clock_snapshot)
+
+### {#timestamp_clock_id} The timestamp_clock_id field of TracePacket
 
 ```protobuf
 message TracePacket {
@@ -120,7 +123,7 @@ arbitrarily chosen value). Instead the recommended pattern is:
 * Chose the clock ID as `(HASH("com.example.my_subsystem") + 128) & 0xFFFFFFF`
   where `HASH(x)` is the FNV-1a hash of the fully qualified clock domain name.
 
-### 2. The [`ClockSnapshot`][clock_snapshot] trace packet
+### {#clock_snapshot} The ClockSnapshot trace packet
 
 The [`ClockSnapshot`][clock_snapshot] packet defines sync points between two or
 more clock domains. It conveys the notion *"at this point in time, the timestamp
@@ -214,8 +217,8 @@ Nearest snapshot: {CLOCK_MONOTONIC:1200, CLOCK_BOOTTIME:5200}
 CLOCK_BOOTTIME = (3703 - 1200) + 5200 = 7703
 ```
 
-Caveats
--------
+## Caveats
+
 Clock resolution between two domains (A,B) is allowed only as long as all the
 clock domains in the A -> B path are monotonic (or at least look so in the
 `ClockSnapshot` packets).

@@ -77,7 +77,7 @@ When a tracing session is started by a consumer, the tracing service will:
   example below) was registered, the service will ask the producer process to
   start that data source, passing it the raw bytes of the
 [`DataSourceConfig` subsection](/docs/reference/trace-config-proto#DataSourceConfig)
-verbatim to the data source (See [backward/forward compat section](#abi) below).
+verbatim to the data source (See backward/forward compat section below).
 
 ![TraceConfig diagram](/docs/images/trace_config.png)
 
@@ -296,14 +296,14 @@ those fields and route the whole DataSourceConfig object to any data source
 registered with the same name.
 
 The `[lazy=true]` marker has a special implication in the
-[protozero](/docs/TODO.md) code generator. Unlike standard nested messages
-setter, it generates raw accessors (e.g.,
+[protozero](/docs/TODO.md) code generator. Unlike standard nested messages, it
+generates raw accessors (e.g.,
 `const std::string& ftrace_config_raw()` instead of
 `const protos::FtraceConfig& ftrace_config()`). This is to avoid injecting too
 many `#include` dependencies and avoiding binary size bloat in the code that
 implements data sources.
 
-#### {#abi} A note on backwards/forward compatibility
+#### A note on backwards/forward compatibility
 The tracing service will route the raw binary blob of the `DataSourceConfig`
 message to the data sources with a matching name, without attemping to decode
 and re-encode it. If the `DataSourceConfig` section of the trace config contains
@@ -364,7 +364,7 @@ data_sources {
 
 ## {#advanced} Advanced topics
 
-## Triggers
+### Triggers
 
 In nominal conditions, a tracing session has a lifecycle that simply matches the
 invocation of the `perfetto` cmdline client: trace data recording starts when
