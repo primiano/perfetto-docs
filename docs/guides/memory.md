@@ -1,10 +1,12 @@
 # Memory Usage on Android
 
 ## Prerequisites
-This tutorial assumes you are running Android 11 or newer on your phone, and
-Linux or macOS on your computer. If you are profiling your own app,
-it needs to be marked as profileable or debuggable in its manifest. See the
-[heapprofd documentation](/docs/recording/data-sources.md#heapprofd-targets) for more
+* A host running macOS or Linux.
+* A device running Android 11+.
+
+If you are profiling your own app, it needs to be marked as profileable or
+debuggable in its manifest. See the [heapprofd documentation](
+/docs/recording/data-sources.md#heapprofd-targets) for more
 details on which applications can be targeted.
 
 ## dumpsys meminfo
