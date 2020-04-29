@@ -24,9 +24,9 @@ const CS_BASE_URL = 'https://cs.android.com/android/platform/superproject/+/mast
 const ROOT_DIR = path.dirname(path.dirname(path.dirname(__dirname)));
 const DOCS_DIR = path.join(ROOT_DIR, 'docs');
 
-let outDir = '';  // TODO hack.
-let curMdFile = '';  // TODO hack
-
+let outDir = '';
+let curMdFile = '';
+let title = '';
 
 // function resolveLink(href) {
 //   href = href.replace(/#.*$/, '');  // Remove the #fragment part.
@@ -74,6 +74,9 @@ function renderHeading(text, level) {
   // If the heading has an explicit ${#anchor}, use that. Otherwise infer the
   // anchor from the text but only for h2 and h3. Note the right-hand-side TOC
   // is dynamically generated from anchors (explicit or implicit).
+  if (level === 1 && !title) {
+    title = text;
+  }
   let anchorId = '';
   const explicitAnchor = /{#([\w-_.]+)}/.exec(text);
   if (explicitAnchor) {
@@ -189,6 +192,7 @@ function main() {
     const navFilePath = path.join(outDir, 'docs', '_nav.html');
     const templateData = {
       markdown: markdownHtml,
+      title: `${title} - Perfetto Tracing Docs`,
       fileName: '/' + outFile.split('/').slice(1).join('/'),
     };
     if (fs.existsSync(navFilePath)) {
