@@ -50,13 +50,33 @@ To solve this problem in object-oriented languages, a `Track` class could be cre
 
 TODO: add a diagram with the hierarchy.
 
-In trace processor, we replicate this "object-oriented" approach in tables of objects with many types. For example, we have a `track` table as the "root" of the heirarchy with the `thread_track` and `counter_track` tables "inheriting from" the `track` table.
-
-TODO: talk about how inheritance works with columns of the tables
+In trace processor,  this "object-oriented" approach is replicated by having different tables for each type of object. For example, we have a `track` table as the "root" of the heirarchy with the `thread_track` and `counter_track` tables "inheriting from" the `track` table.
 
 TODO: add a diagram with the SQL hierarchy
 
-TODO: talk about efficiency
+Concretely, inheritance between tables works like so:
+
+* Every row in a table has an `id` which is unique for a hierarchy of tables.
+  * For example, every `track` will have an `id` which is unique among all tracks (regardless of the type of track)
+* If a table C inherits from P, each row in C will also be in P _with the same id_
+  * This allows for ids to act as "pointers" to rows; lookups by id can be performed on any table which has that row
+  * For example, every `process_counter_track` row will have a matching row in `counter_track` which will itself have matching rows in `track`
+* If a table C with columns `A` and `B` inherits from P with column `A`, `A` will have the same data in both C and P
+  * For example, suppose
+    *  `process_counter_track` has columns `name`, `unit` and `upid`
+    * `counter_track` has `name` and `unit`
+    * `track` has `name`
+  * Every row in `process_counter_track` will have the same `name`  for the row with the same id in  `track` and `counter_track`
+  * Similarily, every row in `process_counter_track` will have both the same `name ` and `unit` for the row with the same id in `counter_track`
+* Every row in a table has a `type` column. This specifies the _most specific_ table this row belongs to.
+  * This allows _dynamic casting_ of a row to its most specific type
+  * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
+
+The above rules are best summarised in this diagram.
+
+TODO: add a diagram with the columns in SQL hierarchy
+
+NOTE: To ensure that inheritance is performance efficient, the trace processor does not actually duplicate rows behind the scenes. Instead, it stores data in each row only once in large arrays and uses efficient data structures (e.g. bitvectors) to index into the arrays.
 
 ### Tracks
 
