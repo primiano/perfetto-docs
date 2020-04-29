@@ -13,14 +13,14 @@ To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in y
 
 Example config: 
 
-```
+```protobuf
 data_sources: {
     config {
         name: "linux.process_stats"
         target_buffer: 1
         process_stats_config {
             scan_all_processes_on_start: true
-			  proc_stats_poll_ms: 1000
+            proc_stats_poll_ms: 1000
         }
     }
 }
@@ -31,17 +31,17 @@ For more configuration options see [process_stats_config.proto](/protos/perfetto
 The process/thread associations end up in the process and thread tables in the trace processor.
 Run the following query to see them:
 
-``` 
+``` sql
 select * from thread join process using(upid)
 ```
 
 If you also have scheduling data in your trace you can see the CPU time broken down by process by running this query:
 
-```
+```sql
 select process.name, tot_proc/1e9 as cpu_sec from (select upid, sum(tot_thd) as tot_proc from (select utid, sum(dur) as tot_thd from sched group by utid) join thread using(utid) group by upid) join process using(upid) order by cpu_sec desc limit 100
 ```
 
-To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql_tables#process_counter_track). table.
+To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
 
 TODO: Add example query for proc stat counters
 
@@ -53,12 +53,12 @@ TODO: Add UI screenshot
 
 You can configure which log buffers are included in the trace. If no buffers are specified, all will be included.
 
-```
+```protobuf
 data_sources: {
     config {
         name: "android.log"
         android_log_config {
-             log_ids: LID_DEFAULT
+            log_ids: LID_DEFAULT
             log_ids: LID_SYSTEM
             log_ids: LID_CRASH
         }
@@ -70,9 +70,9 @@ You may also want to add filtering on a tags using the filter_tags parameter or 
 
 The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
 
-If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql_tables#android_logs) table. To take a look at the logs with the tag ‘perfetto’ you would use the following query:
+If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To take a look at the logs with the tag ‘perfetto’ you would use the following query:
 
-```
+```sql
 select * from android_logs where tag = “perfetto”
 ```
 
@@ -88,7 +88,7 @@ This data source allows periodic polling of system data from
 
 The polling period and specific counters to include in the trace can be set in the trace config.
 
-```
+```protobuf
 data_sources: {
     config {
         name: "linux.sys_stats"
@@ -112,7 +112,7 @@ data_sources: {
 
 All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
 
-When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables#counter_track) table.
+When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables.md#counter_track) table.
 
 TODO: Add example query
 
@@ -259,7 +259,7 @@ will report that the process had already been profiled when converting to
 the pprof compatible proto.
 
 If you see this message but do not expect any other sessions, run
-```
+```shell
 adb shell killall perfetto
 ```
 to stop any concurrent sessions that may be running.
@@ -299,7 +299,7 @@ This restriction can be lifted by disabling SELinux by running
 To mark an app as profileable, put `<profileable android:shell="true"/>` into
 the `<application>`.
 
-```
+```xml
 <manifest ...>
     <application>
         <profileable android:shell="true"/>
@@ -362,14 +362,14 @@ The symbol file is the first with matching Build ID in the following order:
 
 1. absolute path of library file relative to binary path.
 2. absolute path of library file relative to binary path, but with base.apk!
-  removed from filename.
+    removed from filename.
 3. only filename of library file relative to binary path.
 4. only filename of library file relative to binary path, but with base.apk!
-  removed from filename.
+    removed from filename.
 5. in the subdirectory .build-id: the first two hex digits of the build-id
-  as subdirectory, then the rest of the hex digits, with ".debug"appended.
-  See
-  https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
+    as subdirectory, then the rest of the hex digits, with ".debug"appended.
+    See
+    https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
 
 For example, "/system/lib/base.apk!foo.so" with build id abcd1234,
 is looked for at
@@ -429,7 +429,7 @@ that the library has unwind information. We need one of
 
 To check if an ELF file has any of those, run
 
-```
+```console
 $ readelf -S file.so | grep "gnu_debugdata\|eh_frame\|debug_frame"
   [12] .eh_frame_hdr     PROGBITS         000000000000c2b0  0000c2b0
   [13] .eh_frame         PROGBITS         0000000000011000  00011000
@@ -499,13 +499,13 @@ convert the heap dumps in a trace into the [pprof](
 https://github.com/google/pprof) format. These can then be viewed using
 the pprof CLI or a UI (e.g. Speedscope, or Google-internally pprof/).
 
-```
+```shell
 tools/traceconv profile /tmp/profile
 ```
 
 This will create a directory in `/tmp/` containing the heap dumps. Run
 
-```
+```shell
 gzip /tmp/heap_profile-XXXXXX/*.pb
 ```
 
@@ -523,7 +523,7 @@ bytes, where `count` and `size` is positive, and, if any of them were already
 freed, another line with negative `count` and `size`. The sum of those gets us
 the `space` view.
 
-```
+```sql
 > select a.callsite_id, a.ts, a.upid, f.name, f.rel_pc, m.build_id, m.name as mapping_name,
          sum(a.size) as space_size, sum(a.count) as space_count
         from heap_profile_allocation a join
@@ -554,7 +554,7 @@ SQL.
 There is an **experimental** table that surfaces this information. The API is
 subject to change, so only use this in one-off situations.
 
-```
+```sql
 > select name, map_name, cumulative_size
          from experimental_flamegraph(8300973884377,1,'native')
          order by abs(cumulative_size) desc;
