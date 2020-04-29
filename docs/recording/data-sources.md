@@ -1,5 +1,60 @@
 # Available data sources
 
+
+## Process Stats
+
+The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
+
+TODO: Add UI screenshot
+
+Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
+
+To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in your process stats config. X must be greater than 100ms to avoid excessive CPU usage. Details about the specific counters being collected can be found in [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto).
+
+Example config: 
+
+```
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+			  proc_stats_poll_ms: 1000
+        }
+    }
+}
+```
+
+For more configuration options see [process_stats_config.proto](/protos/perfetto/config/process_stats/process_stats_config.proto). See [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto) and [process_tree.proto](/protos/perfetto/trace/ps/process_tree.proto) for more detailed information about all the information that can be collected.
+
+The process/thread associations end up in the process and thread tables in the trace processor.
+Run the following query to see them:
+
+``` 
+select * from thread join process using(upid)
+```
+
+If you also have scheduling data in your trace you can see the CPU time broken down by process by running this query:
+
+```
+select process.name, tot_proc/1e9 as cpu_sec from (select upid, sum(tot_thd) as tot_proc from (select utid, sum(dur) as tot_thd from sched group by utid) join thread using(utid) group by upid) join process using(upid) order by cpu_sec desc limit 100
+```
+
+To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql_tables#process_counter_track). table.
+
+TODO: Add example query for proc stat counters
+
+## Logcat
+
+
+
+
+
+
+
+
+
 ## {#heapprofd} heapprofd - Android Heap Profiler
 
 NOTE: **heapprofd requires Android 10.**
