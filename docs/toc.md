@@ -9,6 +9,7 @@
   * [Trace configuration](recording/config.md)
   * [Data sources](recording/data-sources.md)
   * [Advanced topics](#)
+    * [Buffers and dataflow](recording/buffers.md)
     * [Clock synchronization](recording/clock-sync.md)
     * [Detached mode](recording/detached-mode.md)
 * [Trace Analysis](#)
