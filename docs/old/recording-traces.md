@@ -92,7 +92,7 @@ close(fd);
 ```
 
 The resulting trace file can be directly opened in the [Perfetto
-UI](https://ui.perfetto.dev) or the [Trace Processor](trace-processor-old.md).
+UI](https://ui.perfetto.dev) or the [Trace Processor](/docs/analysis/trace-processor.md).
 
 ## Tracing with Perfetto UI
 

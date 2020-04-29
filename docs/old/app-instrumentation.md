@@ -83,18 +83,18 @@ in a process.
 There are a few main types of track events:
 
 1. **Slices**, which represent nested, time bounded operations. For example,
-  a slice could cover the time period from when a function begins executing
-  to when it returns, the time spent loading a file from the network or the
-  time spent blocked on a disk read.
+    a slice could cover the time period from when a function begins executing
+    to when it returns, the time spent loading a file from the network or the
+    time spent blocked on a disk read.
 
 2. **Counters**, which are snapshots of time-varying numeric values. For
-  example, a track event can record instantaneous the memory usage of a
-  process during its execution.
+    example, a track event can record instantaneous the memory usage of a
+    process during its execution.
 
 3. **Flows**, which are used to connect related slices that span different
-  tracks together. For example, if an image file is first loaded from
-  the network and then decoded on a thread pool, a flow event can be used to
-  highlight its path through the system. (Not fully implemented yet).
+    tracks together. For example, if an image file is first loaded from
+    the network and then decoded on a thread pool, a flow event can be used to
+    highlight its path through the system. (Not fully implemented yet).
 
 The [Perfetto UI](https://ui.perfetto.dev) has built in support for track
 events, which provides a useful way to quickly visualize the internal
@@ -344,7 +344,7 @@ each event. In this case, you can implement a *custom data source* for
 Perfetto.
 
 Note that when working with custom data sources, you will also need
-corresponding changes in [trace processor](trace-processor-old.md) to enable
+corresponding changes in [trace processor](/docs/analysis/trace-processor.md) to enable
 importing your data format.
 
 A custom data source is a subclass of `perfetto::DataSource`. Perfetto with
