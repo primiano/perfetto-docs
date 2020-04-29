@@ -19,7 +19,6 @@ buffers {
   fill_policy: RING_BUFFER
 }
 
-
 data_sources {
   config {
     name: "linux.ftrace"
@@ -58,16 +57,16 @@ The TraceConfig is a protobuf message
     * For the [heap profiler](/docs/TODO.md), the target process name and
       sampling rate.
 
-NOTE: See the [data sources page](/docs/recording/data-sources.md) for details
-      on how to configure the data sources bundled with Perfetto.
+      NOTE: See the [data sources page](/docs/recording/data-sources.md) for
+      details on how to configure the data sources bundled with Perfetto.
 
 3. The `{data source} x {buffer}` mappings: which buffer each data
     source should write into (see [buffers section](#buffers) below).
 
 The tracing service (`traced`) acts as a configuration dispatcher: it receives
-a config from the `perfetto` cmdline client (or any other [Consumer](/docs/TODO.md))
-and forwards parts of the config to the various [Producers](/docs/TODO.md)
-connected.
+a config from the `perfetto` cmdline client (or any other
+[Consumer](/docs/TODO.md)) and forwards parts of the config to the various
+[Producers](/docs/TODO.md) connected.
 
 When a tracing session is started by a consumer, the tracing service will:
 
@@ -99,7 +98,6 @@ buffers {
   size_kb: 8192
   fill_policy: DISCARD
 }
-
 ```
 
 Each buffer has a fill policy which is either:
@@ -180,7 +178,7 @@ data_sources: {
 ## PBTX vs binary format
 
 There are two ways to pass the trace config when using the `perfetto` cmdline
-client:
+client fformat:
 
 #### Text format
 
@@ -261,20 +259,219 @@ cap the size of the trace.
 For a complete example of a working trace config in long-tracing mode see
 [`/test/configs/long_trace.cfg`](/test/configs/long_trace.cfg).
 
+Summary: to capture a long trace just set `write_into_file:true`, set a long
+         `duration_ms` and use an in-memory buffer size of 32MB or more.
 
-## Triggers
+## Data-source specific config
 
-## Backwards / forward compat
+Alongside the trace-wide configuration parameters, the trace config defines also
+data-source-specific behaviors. At the proto schema level, this is defined in
+the `DataSourceConfig` section of `TraceConfig`:
 
-## Extensions
+From [data_source_config.proto](/protos/perfetto/config/data_source_config.proto):
+
+```protobuf
+message TraceConfig {
+  ...
+  repeated DataSource data_sources = 2;  // See below.
+}
+
+message DataSource {
+  optional protos.DataSourceConfig config = 1;  // See below.
+  ...
+}
+
+message DataSourceConfig {
+  optional string name = 1;
+  ...
+  optional FtraceConfig ftrace_config = 100 [lazy = true];
+  ...
+  optional AndroidPowerConfig android_power_config = 106 [lazy = true];
+}
+```
+
+Fields like `ftrace_config`, `android_power_config` are examplpes of data-source
+specific configs. The tracing service will completely ignore the contents of
+those fields and route the whole DataSourceConfig object to any data source
+registered with the same name.
+
+The `[lazy=true]` marker has a special implication in the
+[protozero](/docs/TODO.md) code generator. Unlike standard nested messages
+setter, it generates raw accessors (e.g.,
+`const std::string& ftrace_config_raw()` instead of
+`const protos::FtraceConfig& ftrace_config()`). This is to avoid injecting too
+many `#include` dependencies and avoiding binary size bloat in the code that
+implements data sources.
+
+#### {#abi} A note on backwards/forward compatibility
+The tracing service will route the raw binary blob of the `DataSourceConfig`
+message to the data sources with a matching name, without attemping to decode
+and re-encode it. If the `DataSourceConfig` section of the trace config contains
+a new field that didn't exist at the time when the service was built, the
+service will still pass the `DataSourceConfig` through to the data source.
+his allows to introduced new data sources without without needing the service to
+know anything about them upfront.
+
+TODO: we are aware of the fact that today extending the `DataSourceConfig` with
+a custom proto requires changing the `data_source_config.proto` in the Perfetto
+repo, which is unideal for external projects. The long-term plan is to reserve
+a range of fields for non-upstream extensions and provide generic templated
+accessors for client code. Until then, we accept patches upstream to introduce
+ad-hoc configurations for your own data sources.
+
+
+## Multi-process data sources
+
+Some data sources are singletons. E.g., in the case of scheruler tracing that
+Perfetto ships on Android, there is only data source for the whole system,
+owned by the `traced_probes` service.
+
+However, in the general case multiple processes can advertise the same data
+source. This is the case, for instance, when using the
+[Perfetto Client Library](/docs/TODO.md) for userspace instrumentation.
+
+If this happpens, when starting a tracing session that specifies that data
+source in the trace config, Perfetto by default will ask all processes that
+advertise that data asource to start it.
+
+In some cases it might be desirable to futher limit the enabling of the data
+source to a specific process (or set of processes). That is possible through the
+`producer_name_filter` and `producer_name_regex_filter`.
+
+NOTE: the typical Perfetto run-time model is: one process == one Perfetto
+      Producer; one Producer typically hosts multiple data sources.
+
+When those filters are set, the Perfetto tracing service will activate the data
+source only in the subset of producers matching the filter.
+
+Example:
+
+```protobuf
+buffers {
+  size_kb: 4096
+}
+
+data_sources {
+  config {
+    name: "track_event"
+
+    # Enable the data source only on Chrome and Chrome canary.
+    producer_name_filter: "com.android.chrome"
+    producer_name_filter: "com.google.chrome.canary"
+  }
+}
+```
 
 ## {#advanced} Advanced topics
 
+## Triggers
+
+In nominal conditions, a tracing session has a lifecycle that simply matches the
+invocation of the `perfetto` cmdline client: trace data recording starts when
+the TraceConfig is passed to `perfetto` and ends when either the
+`Traceconfig.duration_ms` has elapsed, or when the cmdline client terminates.
+
+Perfetto supports an alternative mode of either starting or stoppping the trace
+which is based on triggers. The overall idea is to declare in the trace config
+itself:
+
+* A set of triggers, which are just free-form strings.
+* Whether a gien trigger should cause the trace to be started or stopped, and
+  the start/stop delay.
+
+Why using triggers? Why can't one just start perfetto or kill(SIGTERM) it when
+needed? The rationale of all this is the security model: in most Perfetto
+deployments (e.g., on Android) only privileged entities (e.g., adb shell) can
+configure/start/stop tracing. Apps are unprivileged in this sense and they
+cannot control tracing.
+
+Triggers offer a way to unprivileged apps to control, in a limited fashion, the
+lifecycle of a tracing session. The conceptual model is:
+
+* The privileged Consumer (see [perfetto model](/docs/TODO.md)), i.e. the entity
+  that is normally authorized to start tracing (e.g., adb shell in Android),
+  declares upfront what are the possible trigger names for the trace and what
+  they will do.
+* Unprivileged entities (any random app process) can activate those triggers.
+  Unprivilege entities don't get a say on what the triggers will do, they only
+  communicate that an event happened.
+
+Triggers can be signalled via the cmdline util
+
+```bash
+/system/bin/trigger_perffetto "trigger_name"
+```
+
+(or also by starting an independent trace session which uses only the
+`activate_triggers: "trigger_name"` field in the config)
+
+There are two types of triggers:
+
+#### Start triggers
+
+Start triggers allow activating a tracing session only after some significant
+event has happened. Passing a trace config that has `START_TRACING` trigger
+causes the tracing session to stay idle (i.e. not recordi any data) until either
+the trigger is hit or the `duration_ms` timeout is hit.
+
+Example config:
+```protobuf
+// If no trigger is hit, the trace will end without having recorded any data
+// after 30s.
+duration_ms: 30000
+
+// If the "myapp_is_slow" is hit, the trace starts recording data and will be
+// stopped after 5s.
+trigger_config {
+  trigger_mode: START_TRACING
+  triggers {
+    name: "myapp_is_slow"
+    stop_delay_ms: 5000
+  }
+}
+
+// The rest of the config is as usual.
+buffers { ... }
+data_sources { ... }
+```
+
+#### Stop triggers
+
+STOP_TRACING triggers allow to prematurely finalize a trace when the trigger is
+hit. In this mode the trace starts immediately when the `perfetto` client is
+invoked (like in nominal cases). The trigger acts as a premature finalization
+signal.
+
+This can be used to use perfetto in flight-recorder mode. By starting a trace
+with buffers configured in `RING_BUFFER` mode and `STOP_TRACING` triggers,
+the trace will be recorded in a loop and finalized when the culprit event is
+detected. This is key for events where the root cause is in the recent past
+(e.g., the app detects a slow scroll or a missing frame).
+
+Example config:
+```protobuf
+// If no trigger is hit, the trace will end after 30s.
+duration_ms: 30000
+
+// If the "missed_frame" is hit, the trace is stopped after 1s.
+trigger_config {
+  trigger_mode: STOP_TRACING
+  triggers {
+    name: "missed_frame"
+    stop_delay_ms: 1000
+  }
+}
+
+// The rest of the config is as usual.
+buffers { ... }
+data_sources { ... }
+```
+
 ### DISCARD and flushes
+
+TODO: describe `flush_period_ms` and link to the trace buffering page.
 
 ## Other resources
 
-* Reference
-* Per-data source configs
-* libprotobuf
-
+* [TraceConfig Reference](/docs/reference/trace-config-proto)
+* [Config for Perfetto system data sources](/docs/recording/data-sources)
