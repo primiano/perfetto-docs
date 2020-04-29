@@ -76,7 +76,7 @@ If using the `trace_processor`, these logs will be in the [android\_logs](/docs/
 select * from android_logs where tag = “perfetto”
 ```
 
-## Sys stats
+## Sys Stats
 
 This data source allows periodic polling of system data from 
 
@@ -84,9 +84,40 @@ This data source allows periodic polling of system data from
 - `proc/vmstat`
 - `proc/meminfo`
 
-TODO: Add UI screenshot
+![](/docs/images/sys_stat_counters.png)
+
+The polling period and specific counters to include in the trace can be set in the trace config.
+
+```
+data_sources: {
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_MEM_AVAILABLE
+            vmstat_period_ms: 1000
+            vmstat_counters: VMSTAT_NR_FREE_PAGES
+            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
+            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
+            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
+            stat_period_ms: 2500
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+        }
+    }
+}
+```
 
 All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
+
+When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables#counter_track) table.
+
+TODO: Add example query
+
+
+
 
 
 
