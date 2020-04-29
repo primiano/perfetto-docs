@@ -611,3 +611,57 @@ Information about the Java Heap is written to the following tables:
 * [`heap_graph_class`](/docs/reference/sql-tables.md#heap_graph_class)
 * [`heap_graph_object`](/docs/reference/sql-tables.md#heap_graph_object)
 * [`heap_graph_reference`](/docs/reference/sql-tables.md#heap_graph_reference)
+
+For instance, to get the bytes used by class name, run the following query.
+This will usually be very generic, as most of the bytes in Java objects will
+be in primitive arrays or Strings.
+
+```
+> select c.name, sum(o.self_size)
+         from heap_graph_object o join
+         heap_graph_class c on (o.type_id = c.id)
+         where reachable = 1 group by 1 order by 2 desc;
+```
+
+|name                |sum(o.self_size)    |
+|--------------------|--------------------|
+|java.lang.String    |             2770504|
+|long[]              |             1500048|
+|int[]               |             1181164|
+|java.lang.Object[]  |              624812|
+|char[]              |              357720|
+|byte[]              |              350423|
+
+We can use `experimental_flamegraph` to normalize the graph into a tree, always
+taking the shortest path to the root. Note that this is **experimental** and
+the **API is subject to change**, so only use that for one-offs. From this we
+can see how much memory is being hold on by objects of a type.
+
+```
+> select name, cumulative_size
+  from experimental_flamegraph(56785646801, 1, 'graph')
+  order by 2 desc;
+```
+
+| name | cumulative_size |
+|------|-----------------|
+|"java.lang.String"|1431688|
+|"java.lang.Class<android.icu.text.Transliterator>"|1120227|
+|"android.icu.text.TransliteratorRegistry"|1119600|
+|"com.android.systemui.statusbar.phone.StatusBarNotificationPresenter$2"|1086209|
+|"com.android.systemui.statusbar.phone.StatusBarNotificationPresenter"|1085593|
+|"java.util.Collections$SynchronizedMap"|1063376|
+|"java.util.HashMap"|1063292|
+|"java.util.HashMap$Node[]"|1063212|
+|"java.util.HashMap$Node"|1058068|
+|"com.android.systemui.statusbar.CommandQueue"|820460|
+|"java.util.ArrayList"|815834|
+|"java.lang.Object[]"|815814|
+|"java.lang.Object[]"|653160|
+|"com.android.systemui.qs.QSFragment"|628304|
+|"java.lang.Class<android.icu.impl.coll.CollationRoot>"|577426|
+|"android.icu.impl.coll.CollationTailoring"|577194|
+|"android.icu.text.TransliteratorRegistry$ResourceEntry"|532920|
+|"java.lang.String"|528264|
+|"com.google.android.systemui.statusbar.phone.StatusBarGoogle"|486460|
+|"com.android.systemui.statusbar.phone.LockscreenWallpaper"|481924|
