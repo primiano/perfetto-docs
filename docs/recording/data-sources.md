@@ -47,6 +47,47 @@ TODO: Add example query for proc stat counters
 
 ## Logcat
 
+Include Android Logcat messages in the trace and view them in conjunction with other trace data.
+
+TODO: Add UI screenshot
+
+You can configure which log buffers are included in the trace. If no buffers are specified, all will be included.
+
+```
+data_sources: {
+    config {
+        name: "android.log"
+        android_log_config {
+             log_ids: LID_DEFAULT
+            log_ids: LID_SYSTEM
+            log_ids: LID_CRASH
+        }
+    }
+}
+```
+
+You may also want to add filtering on a tags using the filter_tags parameter or set a min priority to be included in the trace using min_prio. For details about configuration options, see [android\_log\_config.proto](/protos/perfetto/config/android/android_log_config.proto). 
+
+The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
+
+If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql_tables#android_logs) table. To take a look at the logs with the tag ‘perfetto’ you would use the following query:
+
+```
+select * from android_logs where tag = “perfetto”
+```
+
+## Sys stats
+
+This data source allows periodic polling of system data from 
+
+- `proc/stat`
+- `proc/vmstat`
+- `proc/meminfo`
+
+TODO: Add UI screenshot
+
+All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
+
 
 
 
@@ -125,8 +166,9 @@ The resulting profile proto contains four views on the data
   were done at this callstack.
 
 **Googlers:** Head to http://pprof/ and upload the gzipped protos to get a
-visualization. *Tip: you might want to put `libart.so` as a "Hide regex" when
-profiling apps.*
+visualization. 
+
+TIP: you might want to put `libart.so` as a "Hide regex" when profiling apps.
 
 You can use the [Perfetto UI](https://ui.perfetto.dev) to visualize heap dumps.
 Upload the `raw-trace` file in your output directory. You will see all heap
@@ -134,7 +176,8 @@ dumps as diamonds on the timeline, click any of them to get a flamegraph.
 
 Alternatively [Speedscope](https://speedscope.app) can be used to visualize
 the gzipped protos, but will only show the space view.
-*Tip: Click Left Heavy on the top left for a good visualisation.*
+
+TIP: Click Left Heavy on the top left for a good visualisation.
 
 ### Sampling interval
 heapprofd samples heap allocations. Given a sampling interval of n bytes,
