@@ -207,7 +207,7 @@ is renamed or an enum is turned into an integer)
 #### Binary format
 
 It is the preferred format for machine-to-machine (M2M) interaction. It involves
-passing the protobuf-encoded bynary of the TraceConfig message.
+passing the protobuf-encoded binary of the TraceConfig message.
 This can be obtained passing the PBTX in input to the protobuf's `protoc`
 compiler (which can be downloaded
 [here](https://github.com/protocolbuffers/protobuf/releases)).
