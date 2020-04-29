@@ -440,6 +440,8 @@ that the library has unwind information. We need one of
 * `.eh_frame` (+ preferably `.eh_frame_hdr`)
 * `.debug_frame`.
 
+Frame-pointer unwinding is *not supported*.
+
 To check if an ELF file has any of those, run
 
 ```console
