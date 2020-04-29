@@ -53,6 +53,23 @@ ts                   value
 ...
 ```
 
+## Scheduling slices
+
+Scheduling slices are slices which indicate which thread was scheduled on which CPU at which time.
+
+![](/docs/images/sched-slices.png)
+
+```console
+> SELECT ts, dur, cpu, utid FROM sched
+ts                   dur                  cpu                  utid
+-------------------- -------------------- -------------------- --------------------
+     261187012170995               247188                    2                  767
+     261187012418183                12812                    2                 2790
+     261187012421099               220000                    4                  683
+     261187012430995                72396                    2                 2791
+...
+```
+
 ## Threads and processes
 
 Threads and processes are each given their own table and uniquely identified by the `utid` and `upid` columns respectively; `tids` and `pids` cannot be used directly as they can be reused over the course of a trace. For more details on this, see the trace processor [table documentation](/docs/analysis/trace-processor.md).
@@ -86,4 +103,4 @@ tid                  thread_name          pid                  process_name
 
 ## Next steps
 
-TODO(lalitm): link to trace processor documentation and reference
+TODO: link to trace processor documentation and reference

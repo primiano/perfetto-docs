@@ -38,7 +38,20 @@ select * from thread join process using(upid)
 If you also have scheduling data in your trace you can see the CPU time broken down by process by running this query:
 
 ```sql
-select process.name, tot_proc/1e9 as cpu_sec from (select upid, sum(tot_thd) as tot_proc from (select utid, sum(dur) as tot_thd from sched group by utid) join thread using(utid) group by upid) join process using(upid) order by cpu_sec desc limit 100
+select process.name, tot_proc/1e9 as cpu_sec
+from (
+  select upid, sum(tot_thd) as tot_proc
+  from (
+    select utid, sum(dur) as tot_thd
+    from sched
+    group by utid
+  )
+  join thread using(utid)
+  group by upid
+)
+join process using(upid)
+order by cpu_sec desc
+limit 100
 ```
 
 To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
