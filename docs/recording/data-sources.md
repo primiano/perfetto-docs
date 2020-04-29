@@ -39,6 +39,8 @@ The allocations themselves are written to
 Offline symbolization data is stored in
 [`stack_profile_symbol`](/docs/reference/sql-tables.md#stack_profile_symbol).
 
+See [Example Queries](#heapprofd-example-queries) for example SQL queries.
+
 ### Recording
 On Linux / MacOS, use the `tools/heap_profile` script to heap profile a
 process. If you are having trouble make sure you are using the
@@ -294,9 +296,32 @@ be used for symbolization.
 If it does, try moving somelib.so to the root of `PERFETTO_BINARY_PATH` and
 try again.
 
+#### Only one frame shown
+If you only see a single frame for functions in a specific library, make sure
+that the library has unwind information. We need one of
+
+* `.gnu_debugdata`
+* `.eh_frame` (+ preferably `.eh_frame_hdr`)
+* `.debug_frame`.
+
+To check if an ELF file has any of those, run
+
+```
+$ readelf -S file.so | grep "gnu_debugdata\|eh_frame\|debug_frame"
+  [12] .eh_frame_hdr     PROGBITS         000000000000c2b0  0000c2b0
+  [13] .eh_frame         PROGBITS         0000000000011000  00011000
+  [24] .gnu_debugdata    PROGBITS         0000000000000000  000f7292
+```
+
+
+If this does not show one or more of the sections, change your build system
+to not strip them.
+
 ### Known Issues
 
 #### Android 10
+* On ARM32, the bottom-most frame is always `ERROR 2`. This is harmless and
+  the callstacks are still complete.
 * Does not work on x86 platforms (including the Android cuttlefish emulator).
 * If heapprofd is run standalone (by running `heapprofd` in a root shell, rather
   than through init), `/dev/socket/heapprofd` get assigned an incorrect SELinux
@@ -344,60 +369,15 @@ looking at the "Private Dirty" column.
 If you observe high RSS or malloc\_info metrics but heapprofd does not match,
 there might be a problem with fragmentation or the allocator.
 
-### Manual instructions
-*It is not recommended to use these instructions unless you have advanced
-requirements or are developing heapprofd. Proceed with caution*
-
-#### Download trace\_to\_text
-Download the latest trace\_to\_text for [Linux](
-https://storage.googleapis.com/perfetto/trace_to_text-4ab1d18e69bc70e211d27064505ed547aa82f919)
-or [MacOS](https://storage.googleapis.com/perfetto/trace_to_text-mac-2ba325f95c08e8cd5a78e04fa85ee7f2a97c847e).
-This is needed to convert the Perfetto trace to a pprof-compatible file.
-
-Compare the `sha1sum` of this file to the one contained in the file name.
-
-#### Start profiling
-To start profiling the process `${PID}`, run the following sequence of commands.
-Adjust the `INTERVAL` to trade-off runtime impact for higher accuracy of the
-results. If `INTERVAL=1`, every allocation is sampled for maximum accuracy.
-Otherwise, a sample is taken every `INTERVAL` bytes on average.
-
-
-```bash
-INTERVAL=4096
-
-echo '
-buffers {
-  size_kb: 102400
-}
-
-data_sources {
-  config {
-    name: "android.heapprofd"
-    target_buffer: 0
-    heapprofd_config {
-      sampling_interval_bytes: '${INTERVAL}'
-      pid: '${PID}'
-    }
-  }
-}
-
-duration_ms: 20000
-' | adb shell perfetto --txt -c - -o /data/misc/perfetto-traces/profile
-
-adb pull /data/misc/perfetto-traces/profile /tmp/profile
-```
-
-#### Convert to pprof compatible file
-
-While we work on UI support, you can convert the trace into pprof compatible
-heap dumps.
-
-Use the trace\_to\_text file downloaded above, with XXXXXXX replaced with the
-`sha1sum` of the file.
+### Convert to pprof
+You can use
+[traceconv](https://raw.githubusercontent.com/google/perfetto/master/tools/traceconv) to
+convert the heap dumps in a trace into the [pprof](
+https://github.com/google/pprof) format. These can then be viewed using
+the pprof CLI or a UI (e.g. Speedscope, or Google-internally pprof/).
 
 ```
-trace_to_text-linux-XXXXXXX profile /tmp/profile
+tools/traceconv profile /tmp/profile
 ```
 
 This will create a directory in `/tmp/` containing the heap dumps. Run
@@ -408,8 +388,65 @@ gzip /tmp/heap_profile-XXXXXX/*.pb
 
 to get gzipped protos, which tools handling pprof profile protos expect.
 
-Follow the instructions in [Viewing the Data](#viewing-the-data) to visualise
-the results.
+### {#heapprofd-example-queries} Example SQL Queries
+<!--
+echo 'select a.ts, a.upid, a.count, a.size, c.depth, c.parent_id, f.name, f.rel_pc, m.build_id, m.name from heap_profile_allocation a join stack_profile_callsite c ON (a.callsite_id = c.id) join stack_profile_frame f ON (c.frame_id = f.id) join stack_profile_mapping m ON (f.mapping = m.id) order by abs(size) desc;' | out/linux_clang_release/trace_processor_shell -q /dev/stdin /tmp/profile-0dd6cc73-05ad-4064-af05-82691adedb4c/raw-trace | head -n10 | sed 's/,/|/g'
+
+-->
+
+We can get the callstacks that allocated using an SQL Query in the
+Trace Processor. For each frame we get one row for the number of allocated
+bytes, where `count` and `size` is positive, and, if any of them were already
+freed, another line with negative `count` and `size`. The sum of those gets us
+the `space` view.
+
+```
+> select a.callsite_id, a.ts, a.upid, f.name, f.rel_pc, m.build_id, m.name as mapping_name,
+         sum(a.size) as space_size, sum(a.count) as space_count
+        from heap_profile_allocation a join
+             stack_profile_callsite c ON (a.callsite_id = c.id) join
+             stack_profile_frame f ON (c.frame_id = f.id) join
+             stack_profile_mapping m ON (f.mapping = m.id)
+        group by 1, 2, 3, 4, 5, 6, 7 order by space_size desc;
+```
+
+| callsite_id | ts | upid | name | rel_pc | build_id | mapping_name | space_size | space_count |
+|-------------|----|------|-------|-----------|------|--------|----------|------|
+|6660|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|106496|4|
+|192 |5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
+|1421|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
+|1537|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
+|8843|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26424 |1|
+|8618|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|24576 |4|
+|3750|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|12288 |1|
+|2820|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|8192  |2|
+|3788|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|8192  |2|
+
+We can see all the functions are "malloc" and "realloc", which is not terribly
+informative. Usually we are interested in the _cumulative_ bytes allocated in
+a function (otherwise, we will always only see malloc / realloc).
+
+There is an **experimental** table that surfaces this information.
+
+```
+> select name, map_name, cumulative_size
+         from experimental_flamegraph(8300973884377,1,'native')
+         order by abs(cumulative_size) desc;
+```
+
+| name | map_name | cumulative_size |
+|------|----------|----------------|
+|"__start_thread"|"/apex/com.android.runtime/lib64/bionic/libc.so"|392608|
+|"_ZL15__pthread_startPv"|"/apex/com.android.runtime/lib64/bionic/libc.so"|392608|
+|"_ZN13thread_data_t10trampolineEPKS_"|"/system/lib64/libutils.so"|199496|
+|"_ZN7android14AndroidRuntime15javaThreadShellEPv"|"/system/lib64/libandroid_runtime.so"|199496|
+|"_ZN7android6Thread11_threadLoopEPv"|"/system/lib64/libutils.so"|199496|
+|"_ZN3art6Thread14CreateCallbackEPv"|"/apex/com.android.art/lib64/libart.so"|193112|
+|"_ZN3art35InvokeVirtualOrInterface..."|"/apex/com.android.art/lib64/libart.so"|193112|
+|"_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc"|"/apex/com.android.art/lib64/libart.so"|193112|
+|"art_quick_invoke_stub"|"/apex/com.android.art/lib64/libart.so"|193112|
+
+
 
 ## {#java-hprof} Java Heap Graphs
 
