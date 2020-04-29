@@ -46,7 +46,6 @@
     * [Trace processor](old/trace-processor-old.md)
     * [Trace analysis](old/analysis-old.md)
     * [Trace-based metrics](old/metrics-old.md)
-    * [Trace conversion](old/traceconv-old.md)
   * [Architectural docs](#)
     * [Key concepts](old/architecture.md)
     * [Life of a tracing session](old/life-of-a-tracing-session.md)

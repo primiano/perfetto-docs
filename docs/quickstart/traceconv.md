@@ -1,5 +1,7 @@
 # Quickstart: trace conversion
 
+-------
+
 _**TLDR**: This quickstart demonstrates how Perfetto traces can be converted into other trace formats using the `traceconv` tool._
 
 ## Prerequistes
