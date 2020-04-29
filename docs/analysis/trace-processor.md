@@ -23,10 +23,10 @@ Features of the trace processor include:
 
 The formats supported by trace processor include:
 
-- Perfetto's native protobuf format
-- Android's systrace
-- Linux's ftrace
-- Chrome's JSON (including with embedded Android traces)
+- Perfetto native protobuf format
+- Android systrace
+- Linux ftrace
+- Chrome JSON (including with embedded Android traces)
 - Fuchsia binary format
 - Ninja logs
 
@@ -38,11 +38,9 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 - Android Studio
 - Internal pipelines for batch processing
 
-## Tables
+## Table hierarchies
 
-Before reading this section, it's recommended to read the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
-
-### Hierarchies
+Before reading this section, readers should be familar with the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
 
 Modelling an object with many types  is a common problem in trace processor. For example, tracks can come in many varieties (thread tracks, process tracks, counter tracks etc). Each type has a piece of data associated to it unique to that type; for example, thread tracks have a `utid` of the thread, counter tracks have the `unit` of the counter.
 
@@ -77,6 +75,8 @@ The above rules are best summarised in this diagram.
 TODO: add a diagram with the columns in SQL hierarchy
 
 NOTE: To ensure that inheritance is performance efficient, the trace processor does not actually duplicate rows behind the scenes. Instead, it stores data in each row only once in large arrays and uses efficient data structures (e.g. bitvectors) to index into the arrays.
+
+## Writing Queries
 
 ### Tracks
 
@@ -175,6 +175,12 @@ ORDER BY ts
 ```
 
 This query returns just the rows in the `counter` table which are associated to a CPU.
+
+## Metrics
+
+TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
+
+Metrics are a significant part of trace processor so have their own [dedicated page](/docs/analysis/metrics.md).
 
 ## Annotations
 
