@@ -11,8 +11,8 @@ If what you are looking for is just a way to grab a trace in background (e.g.,
 while the USB cable / adb is disconnected) from the adb shell simply use
 `--background`.
 
-Use case
---------
+## Use case
+
 By default the tracing service `traced` keeps the lifetime of a tracing session
 attached to the lifetime of the `perfetto` cmdline client that started it.
 This means that a `killall perfetto` or `kill $PID_OF_PERFETTO` is sufficient
@@ -29,8 +29,8 @@ because the Android framework kills any other process in the same process group
 when tearing down an app/service, and this would including killing forked
 `perfetto` client obtained via `--background`.
 
-Operation
----------
+## Operation
+
 `--detach=key` decouples the lifetime of the cmdline client from the lifetime
 of the tracing session.
 
@@ -40,9 +40,9 @@ re-identify the session using `--attach=key`.
 Once detached, the cmdline client will exit (without forking any bg process) and
 the `traced` service will keep the tracing session alive.  
 Because of the exit, a client that wants to use `--detach` needs to set the
-[`write_into_file`](long-traces.md) flag in the trace config, which transfers
-the output trace file descriptor to the service (see the [examples](#examples)
-section).
+[`write_into_file`](config.md#long-traces) flag in the trace config, which
+transfers the output trace file descriptor to the service (see the
+[examples](#examples) section).
 
 A detached session will run until either:
 
@@ -80,8 +80,7 @@ exit code:
 - 1 in case of a general error (e.g. wrong cmdline, cannot reach the service).
 - 2 if no detached session with the given `key` is found.
 
-Examples
---------
+## Examples
 
 ### Capturing a long trace in detached mode
 
