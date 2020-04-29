@@ -2,9 +2,11 @@
 
 -------
 
-<write introduction to trace analysis here>
+## Introduction
 
-## Background
+TODO: write introduction to trace analysis here
+
+## Concepts
 
 ### Events
 
@@ -15,7 +17,7 @@ be interpreted and analysed.
 Events form the foundation of trace processor and are one of two types: slices
 and counters.
 
-<TODO add a picture from the UI>
+TODO: add a picture from the UI
 
 A slice refers to an interval of time with some data describing what was
 happening in that interval. Some example of slices include:
@@ -24,7 +26,7 @@ happening in that interval. Some example of slices include:
 - Atrace slices on Android
 - Userspace slices from Chrome
 
-<TODO add a picture from the UI>
+TODOL: add a picture from the UI
 
 A counter is a continuous value which varies over time. Some examples of
 counters include:
@@ -48,7 +50,7 @@ The most intuitive way to think of a track is to imagine how they would be drawn
 in a UI; if all the events are in a single row, they belong to the same track.
 For example, all the scheduling events for CPU 0 are on the same track:
 
-<TODO add a picture from the UI>
+TODO: add a picture from the UI
 
 Tracks can be split into various types based on the type of event they contain
 and the context they are assocated with. Examples include:

@@ -2,7 +2,11 @@
 
 ------
 
-_**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and allows SQL queries on trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with new events and deriving new events from the contents of the trace._
+**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and allows SQL queries on trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with new events and deriving new events from the contents of the trace.
+
+## Quickstart
+
+TODO: link to trace analysis quickstart
 
 ## Introduction
 
@@ -34,13 +38,9 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 - Android Studio
 - Internal pipelines for batch processing
 
-## Quickstart
-
-TODO: link to trace analysis quickstart
-
 ## Tables
 
-Before reading this section, it's recommended to read the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover concepts like events and tracks which are important to understand before reading this section.
+Before reading this section, it's recommended to read the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
 
 ### Hierarchies
 
