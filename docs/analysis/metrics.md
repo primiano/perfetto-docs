@@ -2,66 +2,38 @@
 
 ## Background
 
-Using traces allows computation of reproducible metrics in a wide range of
-situations; examples include benchmarks, lab tests and on large corpuses of
-traces. In these cases, these metrics allow for direct root-causing when a
-regression is detected.
+Using traces allows computation of reproducible metrics in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected.
 
 ## Computing metrics
 
-The metrics subsystem is a part of the [trace processor](trace-processor.md)
-allows metrics authors to write SQL queries to generate metrics in the form of
-protobuf messages or proto text.
+The metrics subsystem is a part of the [trace processor](trace-processor.md) allows metrics authors to write SQL queries to generate metrics in the form of protobuf messages or proto text.
 
-Authors are strongly encouraged to add all metrics derived on Perfetto traces to
-the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why
-these metrics should not be publicly available.
+Authors are strongly encouraged to add all metrics derived on Perfetto traces to the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why these metrics should not be publicly available.
 
-In return for upstreaming metrics, authors will have first class support for
-running metrics locally and the confidence that their metrics will remain stable
-as trace processor is developed.
+In return for upstreaming metrics, authors will have first class support for running metrics locally and the confidence that their metrics will remain stable as trace processor is developed.
 
-For example, generating the full (human readable) set of Android memory metrics
-on a trace is as simple as:
+For example, generating the full (human readable) set of Android memory metrics on a trace is as simple as:
 
 ```shell
 trace_processor_shell --run-metrics android_mem <trace>
 ```
 
-As well as scaling upwards while developing from running on a single trace
-locally to running on a large set of traces, the reverse is also very useful.
-When an anomaly is observed in the metrics of a lab benchmark, a representative
-trace can be downloaded and the same metric can be run locally in shell.
+As well as scaling upwards while developing from running on a single trace locally to running on a large set of traces, the reverse is also very useful. When an anomaly is observed in the metrics of a lab benchmark, a representative trace can be downloaded and the same metric can be run locally in trace processor.
 
-Since the same code is running locally and remotely, developers can be confident
-in reproducing the issue and use the trace processor and/or the Perfetto UI to
-identify the problem.
+Since the same code is running locally and remotely, developers can be confident in reproducing the issue and use the trace processor and/or the Perfetto UI to identify the problem.
 
 ## Writing an experimental metric
 
-This guide will demonstrate how to write a metric which computes the CPU time
-for every process in the trace and lists the names of the top 5 processes (by
-CPU time) and the number of threads which were associated with those processes
-over its lifetime.
+This walkthrough will demonstrate writing a metric to compute the CPU time for every process in the trace and list the names of the top 5 processes (by CPU time) and the number of threads created by the process.
 
-_Note:_
+NOTE: See this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080) to see how the code should look at the end of the walkthrough. The prerequistes and Step 4 below give instructions on how to get trace processor and run it to output the metrics.
 
-- If you want to jump straight to the code, at the end of this guide, your
-  workspace should look something like this
-  [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080).
-  See Step 0 and 4 below as to where to get trace processor and how to run it to
-  output the metrics.
+### Prerequisites
 
-### Step 0
+As a setup step, you'll want to create a folder to act as a scratch workspace; this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
 
-As a setup step, you'll want to create a folder to act as a scratch workspace;
-this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
-
-The other thing you'll need is trace processor shell. You can download this
-[here](https://get.perfetto.dev/trace_processor) or you can build from source
-using the instructions [here](trace-processor.md). Whichever method is chosen,
-\$TRACE_PROCESSOR env variable will be used to refer to the location of the
-binary in Step 4.
+The other thing you'll need is trace processor shell. You can download this [here](https://get.perfetto.dev/trace_processor) or you can build from source
+using the instructions [here](trace-processor.md). Whichever method is chosen, $TRACE_PROCESSOR env variable will be used to refer to the location of the binary in Step 4.
 
 ### Step 1
 
@@ -351,7 +323,3 @@ links may be useful:
 
 - To understand what data is available to you and how the SQL tables are
   structured see the [trace processor](trace-processor.md) docs.
-- To see how you can use the RUN_METRIC function to extract common snippets of
-  SQL and reuse them for writing bigger metrics, continue reading!
-- To see how you can add your own metrics to the platform or edit an existing
-  metric, continue reading!

@@ -1,5 +1,132 @@
 # Available data sources
 
+
+## Process Stats
+
+The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
+
+TODO: Add UI screenshot
+
+Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
+
+To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in your process stats config. X must be greater than 100ms to avoid excessive CPU usage. Details about the specific counters being collected can be found in [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto).
+
+Example config: 
+
+```
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+			  proc_stats_poll_ms: 1000
+        }
+    }
+}
+```
+
+For more configuration options see [process_stats_config.proto](/protos/perfetto/config/process_stats/process_stats_config.proto). See [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto) and [process_tree.proto](/protos/perfetto/trace/ps/process_tree.proto) for more detailed information about all the information that can be collected.
+
+The process/thread associations end up in the process and thread tables in the trace processor.
+Run the following query to see them:
+
+``` 
+select * from thread join process using(upid)
+```
+
+If you also have scheduling data in your trace you can see the CPU time broken down by process by running this query:
+
+```
+select process.name, tot_proc/1e9 as cpu_sec from (select upid, sum(tot_thd) as tot_proc from (select utid, sum(dur) as tot_thd from sched group by utid) join thread using(utid) group by upid) join process using(upid) order by cpu_sec desc limit 100
+```
+
+To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql_tables#process_counter_track). table.
+
+TODO: Add example query for proc stat counters
+
+## Logcat
+
+Include Android Logcat messages in the trace and view them in conjunction with other trace data.
+
+TODO: Add UI screenshot
+
+You can configure which log buffers are included in the trace. If no buffers are specified, all will be included.
+
+```
+data_sources: {
+    config {
+        name: "android.log"
+        android_log_config {
+             log_ids: LID_DEFAULT
+            log_ids: LID_SYSTEM
+            log_ids: LID_CRASH
+        }
+    }
+}
+```
+
+You may also want to add filtering on a tags using the filter_tags parameter or set a min priority to be included in the trace using min_prio. For details about configuration options, see [android\_log\_config.proto](/protos/perfetto/config/android/android_log_config.proto). 
+
+The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
+
+If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql_tables#android_logs) table. To take a look at the logs with the tag ‘perfetto’ you would use the following query:
+
+```
+select * from android_logs where tag = “perfetto”
+```
+
+## Sys Stats
+
+This data source allows periodic polling of system data from 
+
+- `proc/stat`
+- `proc/vmstat`
+- `proc/meminfo`
+
+![](/docs/images/sys_stat_counters.png)
+
+The polling period and specific counters to include in the trace can be set in the trace config.
+
+```
+data_sources: {
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_MEM_AVAILABLE
+            vmstat_period_ms: 1000
+            vmstat_counters: VMSTAT_NR_FREE_PAGES
+            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
+            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
+            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
+            stat_period_ms: 2500
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+        }
+    }
+}
+```
+
+All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
+
+When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables#counter_track) table.
+
+TODO: Add example query
+
+
+
+
+
+
+
+
+
+
+
+
 ## {#heapprofd} heapprofd - Android Heap Profiler
 
 NOTE: **heapprofd requires Android 10.**
@@ -72,8 +199,9 @@ The resulting profile proto contains four views on the data
   were done at this callstack.
 
 **Googlers:** Head to http://pprof/ and upload the gzipped protos to get a
-visualization. *Tip: you might want to put `libart.so` as a "Hide regex" when
-profiling apps.*
+visualization. 
+
+TIP: you might want to put `libart.so` as a "Hide regex" when profiling apps.
 
 You can use the [Perfetto UI](https://ui.perfetto.dev) to visualize heap dumps.
 Upload the `raw-trace` file in your output directory. You will see all heap
@@ -81,7 +209,8 @@ dumps as diamonds on the timeline, click any of them to get a flamegraph.
 
 Alternatively [Speedscope](https://speedscope.app) can be used to visualize
 the gzipped protos, but will only show the space view.
-*Tip: Click Left Heavy on the top left for a good visualisation.*
+
+TIP: Click Left Heavy on the top left for a good visualisation.
 
 ### Sampling interval
 heapprofd samples heap allocations. Given a sampling interval of n bytes,
