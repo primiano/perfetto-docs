@@ -9,7 +9,7 @@ _**TLDR**: This quickstart will give some example SQL queries showing how to ret
 - A device running macOS/Linux
 - A trace file in a [supported format](). [This trace]() is used throughout this guide.
 
-## Starting trace processor
+## Setup
 
 To begin, download the trace processor [here](). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
 
