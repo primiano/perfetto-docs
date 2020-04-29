@@ -553,9 +553,12 @@ the `space` view.
 
 We can see all the functions are "malloc" and "realloc", which is not terribly
 informative. Usually we are interested in the _cumulative_ bytes allocated in
-a function (otherwise, we will always only see malloc / realloc).
+a function (otherwise, we will always only see malloc / realloc). Chasing the
+parent_id of a callsite (not shown in this table) recursively is very hard in
+SQL.
 
-There is an **experimental** table that surfaces this information.
+There is an **experimental** table that surfaces this information. The API is
+subject to change, so only use this in one-off situations.
 
 ```
 > select name, map_name, cumulative_size
