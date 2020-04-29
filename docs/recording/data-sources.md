@@ -616,7 +616,7 @@ For instance, to get the bytes used by class name, run the following query.
 This will usually be very generic, as most of the bytes in Java objects will
 be in primitive arrays or Strings.
 
-```
+```sql
 > select c.name, sum(o.self_size)
          from heap_graph_object o join
          heap_graph_class c on (o.type_id = c.id)
@@ -637,7 +637,7 @@ taking the shortest path to the root. Note that this is **experimental** and
 the **API is subject to change**, so only use that for one-offs. From this we
 can see how much memory is being hold on by objects of a type.
 
-```
+```sql
 > select name, cumulative_size
   from experimental_flamegraph(56785646801, 1, 'graph')
   order by 2 desc;
