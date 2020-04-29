@@ -219,15 +219,10 @@ reduce the performance impact on the target process. The default sampling rate
 is 4096 bytes.
 
 The easiest way to reason about this is to imagine the memory allocations as a
-steady stream of one byte allocations. From this stream, every n-th byte is
-selected as a sample, and the corresponding allocation gets attributed the
-complete n bytes. As an optimization, we sample allocations larger than the
-sampling interval with their true size.
-
-To make this statistically more meaningful, Poisson sampling is employed.
-Instead of a static parameter of n bytes, the user can only choose the mean
-value around which the interval is distributed. This makes sure frequent small
-allocations get sampled as well as infrequent large ones.
+steady stream of one byte allocations. From this stream, every byte has a 1/n
+probability of being selected as a sample, and the corresponding callstack
+gets attributed the complete n bytes. As an optimization, we sample allocations
+larger than the sampling interval with their true size.
 
 ### Startup profiling
 When a profile session names processes by name and a matching process is
