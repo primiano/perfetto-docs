@@ -123,10 +123,9 @@ Supported platforms
 
 Build configurations
 --------------------
-*** 
-`tools/build_all_configs.py` can be used to generate out/XXX folders for most of
+
+TIP: `tools/build_all_configs.py` can be used to generate out/XXX folders for most of
 the supported configurations.
-***
 
 The following [GN args][gn-quickstart] are supported:
 
