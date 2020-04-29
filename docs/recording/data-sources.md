@@ -238,7 +238,7 @@ that point in zygote specialization and the end of the profiling session.
 Some allocations done early in the specialization process are not accounted
 for.
 
-The Resulting `ProfileProto` will have `from_startup` set  to true in the
+The Resulting `ProfilePacket` will have `from_startup` set  to true in the
 corresponding `ProcessHeapSamples` message. This does not get surfaced in the
 converted pprof compatible proto.
 
@@ -248,7 +248,7 @@ are enumerated and profiling is enabled. The resulting profile will contain
 all allocations done between the beginning and the end of the profiling
 session.
 
-The Resulting `ProfileProto` will have `from_startup` set  to false in the
+The resulting `ProfilePacket` will have `from_startup` set to false in the
 corresponding `ProcessHeapSamples` message. This does not get surfaced in the
 converted pprof compatible proto.
 
@@ -264,8 +264,7 @@ adb shell killall perfetto
 ```
 to stop any concurrent sessions that may be running.
 
-
-The Resulting `ProfileProto` will have `rejected_concurrent` set  to true in
+The resulting `ProfilePacket` will have `rejected_concurrent` set  to true in
 otherwise empty corresponding `ProcessHeapSamples` message. This does not get
 surfaced in the converted pprof compatible proto.
 
