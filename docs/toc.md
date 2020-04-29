@@ -43,8 +43,6 @@
     * [Advanced trace config](old/trace-config.md)
     * [Native Heap Profiling](old/heapprofd.md)
     * [Java Heap Profiling](old/java-hprof.md)
-  * [Trace analysis](#)
-    * [Trace processor](old/trace-processor-old.md)
   * [Architectural docs](#)
     * [Key concepts](old/architecture.md)
     * [Life of a tracing session](old/life-of-a-tracing-session.md)
