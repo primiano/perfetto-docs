@@ -566,8 +566,8 @@ a function (otherwise, we will always only see malloc / realloc). Chasing the
 parent_id of a callsite (not shown in this table) recursively is very hard in
 SQL.
 
-There is an **experimental** table that surfaces this information. The API is
-subject to change, so only use this in one-off situations.
+There is an **experimental** table that surfaces this information. The **API is
+subject to change**, so only use this in one-off situations.
 
 ```sql
 > select name, map_name, cumulative_size
@@ -633,9 +633,10 @@ be in primitive arrays or Strings.
 |byte[]              |              350423|
 
 We can use `experimental_flamegraph` to normalize the graph into a tree, always
-taking the shortest path to the root. Note that this is **experimental** and
-the **API is subject to change**, so only use that for one-offs. From this we
-can see how much memory is being hold on by objects of a type.
+taking the shortest path to the root and get cumulative sizes.
+Note that this is **experimental** and the **API is subject to change**, so
+only use that for one-offs. From this we can see how much memory is being
+hold on by objects of a type.
 
 ```sql
 > select name, cumulative_size
@@ -652,16 +653,3 @@ can see how much memory is being hold on by objects of a type.
 |"com.android.systemui.statusbar.phone.StatusBarNotificationPresenter"|1085593|
 |"java.util.Collections$SynchronizedMap"|1063376|
 |"java.util.HashMap"|1063292|
-|"java.util.HashMap$Node[]"|1063212|
-|"java.util.HashMap$Node"|1058068|
-|"com.android.systemui.statusbar.CommandQueue"|820460|
-|"java.util.ArrayList"|815834|
-|"java.lang.Object[]"|815814|
-|"java.lang.Object[]"|653160|
-|"com.android.systemui.qs.QSFragment"|628304|
-|"java.lang.Class<android.icu.impl.coll.CollationRoot>"|577426|
-|"android.icu.impl.coll.CollationTailoring"|577194|
-|"android.icu.text.TransliteratorRegistry$ResourceEntry"|532920|
-|"java.lang.String"|528264|
-|"com.google.android.systemui.statusbar.phone.StatusBarGoogle"|486460|
-|"com.android.systemui.statusbar.phone.LockscreenWallpaper"|481924|
