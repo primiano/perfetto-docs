@@ -550,15 +550,15 @@ the `space` view.
 
 | callsite_id | ts | upid | name | rel_pc | build_id | mapping_name | space_size | space_count |
 |-------------|----|------|-------|-----------|------|--------|----------|------|
-|6660|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|106496|4|
-|192 |5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
-|1421|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
-|1537|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26624 |1|
-|8843|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|26424 |1|
-|8618|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|24576 |4|
-|3750|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|12288 |1|
-|2820|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|8192  |2|
-|3788|5|1|"malloc"|244716|"8126fd.."|"/apex/com.android.runtime/lib64/bionic/libc.so"|8192  |2|
+|6660|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |106496|4|
+|192 |5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |26624 |1|
+|1421|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |26624 |1|
+|1537|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |26624 |1|
+|8843|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |26424 |1|
+|8618|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |24576 |4|
+|3750|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |12288 |1|
+|2820|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |8192  |2|
+|3788|5|1| malloc |244716| 8126fd.. | /apex/com.android.runtime/lib64/bionic/libc.so |8192  |2|
 
 We can see all the functions are "malloc" and "realloc", which is not terribly
 informative. Usually we are interested in the _cumulative_ bytes allocated in
@@ -577,17 +577,15 @@ subject to change**, so only use this in one-off situations.
 
 | name | map_name | cumulative_size |
 |------|----------|----------------|
-|"__start_thread"|"/apex/com.android.runtime/lib64/bionic/libc.so"|392608|
-|"_ZL15__pthread_startPv"|"/apex/com.android.runtime/lib64/bionic/libc.so"|392608|
-|"_ZN13thread_data_t10trampolineEPKS_"|"/system/lib64/libutils.so"|199496|
-|"_ZN7android14AndroidRuntime15javaThreadShellEPv"|"/system/lib64/libandroid_runtime.so"|199496|
-|"_ZN7android6Thread11_threadLoopEPv"|"/system/lib64/libutils.so"|199496|
-|"_ZN3art6Thread14CreateCallbackEPv"|"/apex/com.android.art/lib64/libart.so"|193112|
-|"_ZN3art35InvokeVirtualOrInterface..."|"/apex/com.android.art/lib64/libart.so"|193112|
-|"_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc"|"/apex/com.android.art/lib64/libart.so"|193112|
-|"art_quick_invoke_stub"|"/apex/com.android.art/lib64/libart.so"|193112|
-
-
+|__start_thread|/apex/com.android.runtime/lib64/bionic/libc.so|392608|
+|_ZL15__pthread_startPv|/apex/com.android.runtime/lib64/bionic/libc.so|392608|
+|_ZN13thread_data_t10trampolineEPKS_|/system/lib64/libutils.so|199496|
+|_ZN7android14AndroidRuntime15javaThreadShellEPv|/system/lib64/libandroid_runtime.so|199496|
+|_ZN7android6Thread11_threadLoopEPv|/system/lib64/libutils.so|199496|
+|_ZN3art6Thread14CreateCallbackEPv|/apex/com.android.art/lib64/libart.so|193112|
+|_ZN3art35InvokeVirtualOrInterface...|/apex/com.android.art/lib64/libart.so|193112|
+|_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc|/apex/com.android.art/lib64/libart.so|193112|
+|art_quick_invoke_stub|/apex/com.android.art/lib64/libart.so|193112|
 
 ## {#java-hprof} Java Heap Graphs
 
@@ -646,10 +644,10 @@ hold on by objects of a type.
 
 | name | cumulative_size |
 |------|-----------------|
-|"java.lang.String"|1431688|
-|"java.lang.Class<android.icu.text.Transliterator>"|1120227|
-|"android.icu.text.TransliteratorRegistry"|1119600|
-|"com.android.systemui.statusbar.phone.StatusBarNotificationPresenter$2"|1086209|
-|"com.android.systemui.statusbar.phone.StatusBarNotificationPresenter"|1085593|
-|"java.util.Collections$SynchronizedMap"|1063376|
-|"java.util.HashMap"|1063292|
+|java.lang.String|1431688|
+|java.lang.Class<android.icu.text.Transliterator>|1120227|
+|android.icu.text.TransliteratorRegistry|1119600|
+|com.android.systemui.statusbar.phone.StatusBarNotificationPresenter$2|1086209|
+|com.android.systemui.statusbar.phone.StatusBarNotificationPresenter|1085593|
+|java.util.Collections$SynchronizedMap|1063376|
+|java.util.HashMap|1063292|
