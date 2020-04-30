@@ -1,8 +1,42 @@
 # Available data sources
+Perfetto provides a number of built in data sources on Android and Linux.
+These include [integration with Linux kernel tracing](#ftrace), [various process data](#process-stats) exposed via the `proc` filesystem, [logcat](#logcat) (Android only), [system data](#sys-stats) exposed by the `proc` filesystem, [native allocation profiling](#heapprofd), [Java heap graph dumps](#java-hprof) (Android only), and information about [power use](#power) (Android only).
 
 ## Ftrace
+Perfetto integrates with [Linux Kernel event tracing](https://www.kernel.org/doc/Documentation/trace/ftrace.txt).
+
+This example config collects four Linux kernel events: 
+
+```
+data_sources {
+  config {
+    name: "linux.ftrace"
+    target_buffer: 0
+    ftrace_config {
+      ftrace_events: "ftrace/print"
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "task/task_newtask"
+      ftrace_events: "task/task_rename"
+    }
+  }
+}
+```
 
 ### CPU Scheduling
+There is special support for the high volume events `sched/sched_switch` and `sched/sched_waking`, it can be enabled as follows:
+
+```
+data_sources {
+  config {
+    name: "linux.ftrace"
+    target_buffer: 0
+    ftrace_config {
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "sched/sched_waking"
+    }
+  }
+}
+```
 
 ### CPU Frequency
 
