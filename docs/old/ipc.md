@@ -1,9 +1,6 @@
 # Perfetto IPC
 
-*** note
-**This doc is WIP**, stay tuned.
-<!-- TODO(primiano): write IPC doc. -->
-***
+TODO: **This doc is WIP**, stay tuned.
 
 **TL;DR**  
 We needed an IPC for Android and Linux which was small, simple, controllable,

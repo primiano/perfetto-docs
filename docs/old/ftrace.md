@@ -1,9 +1,6 @@
 # Perfetto <-> Ftrace interoperability
 
-*** note
-**This doc is WIP**, stay tuned.
-<!-- TODO(primiano): write ftrace doc. -->
-***
+TODO: **This doc is WIP**, stay tuned
 
 This doc should:
 - Describe the ftrace trace_pipe_raw -> protobuf translation.

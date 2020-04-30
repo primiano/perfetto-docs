@@ -1,10 +1,7 @@
 ProtoZero
 ---------
 
-*** note
-**This doc is WIP**, stay tuned.
-<!-- TODO(primiano): write protozero doc. -->
-***
+TODO: **This doc is WIP**, stay tuned.
 
 ProtoZero is an almost* zero-copy zero-malloc append-only protobuf library.
 It's designed to be fast and efficient at the cost of a reduced API
