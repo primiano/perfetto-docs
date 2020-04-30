@@ -5,7 +5,7 @@
 
 The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
 
-TODO: Add UI screenshot
+![](/docs/images/proc_stat.png)
 
 Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
 
@@ -62,7 +62,7 @@ TODO: Add example query for proc stat counters
 
 Include Android Logcat messages in the trace and view them in conjunction with other trace data.
 
-TODO: Add UI screenshot
+![](/docs/images/android_logs.png)
 
 You can configure which log buffers are included in the trace. If no buffers are specified, all will be included.
 
@@ -83,7 +83,7 @@ You may also want to add filtering on a tags using the filter_tags parameter or 
 
 The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
 
-If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To take a look at the logs with the tag ‘perfetto’ you would use the following query:
+If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
 
 ```sql
 select * from android_logs where tag = “perfetto”
