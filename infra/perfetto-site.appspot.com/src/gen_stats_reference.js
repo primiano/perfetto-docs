@@ -33,7 +33,7 @@ function singleLineComment(comment) {
 
 function parseTablesInCppFile(filePath) {
   const hdr = fs.readFileSync(filePath, 'UTF8');
-  const regex = /^(\s*\/\/.*\n)*\s*F\((.*)\),\s*\\/mg;
+  const regex = /^((?:\s*\/\/.*\n)*)\s*F\((.*)\),\s*\\/mg;
   let match;
   let table = [];
   while ((match = regex.exec(hdr)) !== null) {

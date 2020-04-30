@@ -26,6 +26,7 @@ namespace stats {
 // Compile time list of parsing and processing stats.
 // clang-format off
 #define PERFETTO_TP_STATS(F)                                                     \
+  // Test1 \
   // Test \
   F(android_log_num_failed,                   kSingle,  kError,    kTrace),    \
   F(android_log_num_skipped,                  kSingle,  kError,    kTrace),    \
