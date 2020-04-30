@@ -2,6 +2,7 @@
 * [Quickstart](#)
   * [System tracing on Android](quickstart/android-tracing.md)
   * [Trace analysis](quickstart/trace-analysis.md)
+  * [Trace-based metrics](quickstart/metrics.md)
   * [Trace conversion](quickstart/traceconv.md)
 * [Guides](#)
   * [Memory Usage on Android](guides/memory.md)
