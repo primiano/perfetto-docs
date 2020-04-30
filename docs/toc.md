@@ -20,6 +20,7 @@
   * [Trace Config Proto](reference/trace-config-proto.md)
   * [Trace Packet Proto](reference/trace-packet-proto.md)
   * [SQL Tables](reference/sql-tables.md)
+  * [Trace Processor Stats](reference/stats.md)
   * [Command Line](#)
   	 * [Perfetto CLI](reference/cmdline/perfetto-cli.md)
   	 * [heap_profile CLI](reference/cmdline/heap_profile-cli.md)
