@@ -31,22 +31,36 @@ function singleLineComment(comment) {
   return comment;
 }
 
+function trimQuotes(s) {
+  if (s === undefined) {
+    return s;
+  }
+  let start = 0;
+  let length = s.length;
+  if (s[0] == '"') {
+    start++;
+    length--;
+  }
+  if (s[s.length - 1] == '"') {
+    length--;
+  }
+  return s.substr(start, length);
+}
+
 function parseTablesInCppFile(filePath) {
   const hdr = fs.readFileSync(filePath, 'UTF8');
-  const regex = /^((?:\s*\/\/.*\n)*)\s*F\((.*)\),\s*\\/mg;
+  const regex = /^\s*F\((.*)\),\s*\\/mg;
   let match;
   let table = [];
   while ((match = regex.exec(hdr)) !== null) {
-    let comment = match[1];
-    let stripped_comment = comment === undefined ? undefined : comment.replace(/^\s*\/\//mg, "").replace(/\s*\\$/mg, "");
-    let def = match[2];
+    let def = match[1];
     let s = def.split(",").map(s => s.trim());
     table.push({
       name: s[0],
       cardinality: s[1],
       type: s[2],
       scope: s[3],
-      comment: stripped_comment
+      comment: trimQuotes(s[4]),
     });
   }
   return table;
