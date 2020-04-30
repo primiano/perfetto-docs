@@ -30,6 +30,12 @@ handlers:
   mime_type: text/html
   secure: always
   redirect_http_response_code: 301
+- url: /docs/(.*[.]svg)$
+  static_files: dist/docs/\1
+  mime_type: image/svg+xml
+  upload: dist/docs/.*
+  secure: always
+  redirect_http_response_code: 301
 - url: /docs/(.*)$
   static_files: dist/docs/\1
   mime_type: text/html

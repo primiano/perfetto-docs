@@ -136,6 +136,9 @@ function renderImage(originalImgFn, href, title, text) {
     fs.ensureDirSync(outParDir);
     fs.copyFileSync(ROOT_DIR + docsHref, outFile);
   }
+  if (href.endsWith('.svg')) {
+    return `<object type="image/svg+xml" data="${href}"></object>`
+  }
   return originalImgFn(href, title, text);
 }
 
