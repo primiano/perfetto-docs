@@ -127,10 +127,7 @@ Buffer 0
 
 ### Load the trace in the UI
 
-*** note
-**The UI and trace processor are WIP, targeting end of Q3-18**.
-<!-- TODO(primiano): update this doc. -->
-***
+TODO: **This doc is WIP**, stay tuned.
 
 Open https://ui.perfetto.dev and load the trace there.
 

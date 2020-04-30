@@ -1,9 +1,6 @@
 # Multi layer tracing
 
-*** note
-**This doc is WIP**, stay tuned.
-<!-- TODO(primiano): write multi-layer tracing doc. -->
-***
+TODO: **This doc is WIP**, stay tuned.
 
 This doc should explain how is possible to compose a hierarchy of tracing
 services. The concrete use case is combining multiprocess tracing in Chromium

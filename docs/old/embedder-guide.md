@@ -1,10 +1,6 @@
 # Embedding Perfetto in another project
 
-*** note
-**This doc is WIP**, stay tuned
-<!-- TODO(primiano): write embedder guide doc. -->
-***
-
+TODO: **This doc is WIP**, stay tuned
 
 This doc should:
 - Contain tech details of the Producer(Endpoint), Consumer(Endpoint) and Service

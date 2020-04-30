@@ -30,13 +30,11 @@ consumer(s). A producer knows nothing about:
 - How many other producer(s) are registered or active.
 - Trace data written by other producer(s).
 
-*** aside
-In rare circumstances a process can host more than one producer and hence more
+NOTE: In rare circumstances a process can host more than one producer and hence more
 than one shared memory buffer. This can be the case for a process bundling
 third-party libraries that in turn include the Perfetto client library.  
 Concrete example: at some point in the future Chrome might expose one Producer for tracing within the main project, one for V8 and one for Skia (for each child
 process).
-***
 
 **Consumer**  
 A consumer is a trusted entity (a cmdline client on Linux/Android, an interface
@@ -70,7 +68,7 @@ At some point in the near future we might offer, as part of Perfetto, a library
 for in-process heap profiling. In such case more than one producer, linking
 against the updated Perfetto library, will expose the heap profiler data source,
 for its own process.
-***
+**
 
 **IPC channel**  
 In a multiprocess scenario, each producer and each consumer interact with the
@@ -85,7 +83,7 @@ Perfetto allows the embedder:
 - Not use an IPC mechanism at all and just short circuit the
   Producer <> Service <> Consumer interaction via `PostTask(s)`.
 
-See [embedder-guide.md](embedder-guide.md) for more details.
+See [embedder-guide](embedder-guide.md) for more details.
 
 
 **Shared memory buffer**  
@@ -108,7 +106,7 @@ Each chunk:
 - Can be owned and written by exactly one `TraceWriter`.
 - Is part of a reliable and ordered sequence, identified by the `WriterID`:
   packets in a sequence are guaranteed to be read back in order, without gaps
-  and without repetitions (see [trace-format.md](trace-format.md) for more).
+  and without repetitions (see [trace-format](trace-format.md) for more).
 
 See the comments in
 [shared_memory_abi.h](/include/perfetto/ext/tracing/core/shared_memory_abi.h)

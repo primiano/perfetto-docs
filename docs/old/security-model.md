@@ -1,9 +1,6 @@
 # Perfetto security model
 
-*** note
-**This doc is WIP**, stay tuned.
-<!-- TODO(primiano): expand security model doc. -->
-***
+TODO: **This doc is WIP**, stay tuned.
 
 ![Security overview](https://storage.googleapis.com/perfetto/markdown_img/security-overview.png)
 
