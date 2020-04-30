@@ -26,8 +26,6 @@ namespace stats {
 // Compile time list of parsing and processing stats.
 // clang-format off
 #define PERFETTO_TP_STATS(F)                                                     \
-  // Test1 \
-  // Test \
   F(android_log_num_failed,                   kSingle,  kError,    kTrace),    \
   F(android_log_num_skipped,                  kSingle,  kError,    kTrace),    \
   F(android_log_num_total,                    kSingle,  kInfo,     kTrace),    \
@@ -125,6 +123,7 @@ namespace stats {
   F(heapprofd_malformed_packet,               kIndexed, kError,    kTrace),    \
   F(heapprofd_missing_packet,                 kSingle,  kError,    kTrace),    \
   F(heapprofd_rejected_concurrent,            kIndexed, kError,    kTrace),    \
+  // Heap profile was truncated at the end.                                    \
   F(heapprofd_non_finalized_profile,          kSingle,  kError,    kTrace),    \
   F(metatrace_overruns,                       kSingle,  kError,    kTrace),    \
   F(packages_list_has_parse_errors,           kSingle,  kError,    kTrace),    \

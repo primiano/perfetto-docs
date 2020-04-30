@@ -270,8 +270,8 @@ md_to_html("sql_tables_reference") {
 action("stats_reference_md") {
   js_src = "src/gen_stats_reference.js"
   script = "../../gn/standalone/build_tool_wrapper.py"
-  tp_table_hdrs = read_file(tp_tables_list, "list lines")
-  inputs = tp_table_hdrs + [js_src]
+  input = "../../src/trace_processor/storage/stats.h"
+  inputs = [input, js_src]
   outputs = [ "$target_out_dir/stats.md" ]
   args = [
     "--path=$nodejs_bin",
