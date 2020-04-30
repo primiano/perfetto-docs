@@ -26,7 +26,9 @@ The C++ header for this class is split between two files:  [include/perfetto/tra
 
 ### Reading traces
 
-The `
+To ingest a trace into trace processor, the `Parse` function can be called multiple times to with chunks of the trace and `NotifyEndOfFile` can be called at the end.
+
+As this is a common task, a helper function `ReadTrace` is provided in [include/perfetto/trace_processor/read_trace.h](/include/perfetto/trace_processor/read_trace.h). This will read a trace file directly from the filesystem and calls into appropriate `TraceProcessor`functions to perform parsing.
 
 ### Execucting queries
 
@@ -66,6 +68,5 @@ where name = 'measure'
 
 As creating derived events is tied to the metrics subsystem, the `ComputeMetrics` function in the trace processor API should be called with the appropriate metrics. This will create the `<metric_name>_annotations` table/view which can then be queried using the `ExectueQuery` function.
 
-NOTE: We plan at some point to have an API which does not create and return the full metrics proto but instead just executes the queries in the metric.
+NOTE: At some point, there are plans to add an API which does not create the metrics proto but just executes the queries in the metric.
 
-## 
