@@ -1,5 +1,13 @@
 # Available data sources
 
+## Ftrace
+
+### CPU Scheduling
+
+### CPU Frequency
+
+### Binder transactions
+
 
 ## Process Stats
 
@@ -129,10 +137,53 @@ When investigating a trace using the `trace_processor`, the counters can be foun
 
 TODO: Add example query
 
+## Power
 
+This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails.
 
+TODO: Add UI screenshot
 
+The config required to enable this is:
 
+```
+data_sources: {
+    config {
+        name: "android.power"
+        android_power_config {
+            battery_poll_ms: 100
+            collect_power_rails: true
+            battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
+            battery_counters: BATTERY_COUNTER_CHARGE
+            battery_counters: BATTERY_COUNTER_CURRENT
+        }
+    }
+}
+```
+
+For more details on the configuration options see [android\_power\_config.proto](/protos/perfetto/config/power/android_power_config.proto). The data output format can be seen in [battery\_counters.proto](/protos/perfetto/trace/power/battery_counters.proto) and [power_rails.proto](/protos/perfetto/trace/power/power_rails.proto).
+
+When using `trace_processor` these counter will be in the `counter_track` table. To look at a specific counter use a query like:
+
+TODO: insert example query
+
+## Inode Map
+
+The inode map data source provides inode to filename resolution.
+
+TODO: UI screenshot? + more details
+
+```
+data_sources: {
+    config {
+        name: "linux.inode_file_map"
+        inode_file_config {
+            scan_interval_ms: 1000
+        }
+    }
+}
+```
+
+The configuration options can be found in [inode\_file\_config.proto](/protos/perfetto/config/inode_file/inode_file_config.proto). The output data format is specified in [inode\_file\_map.proto](/protos/perfetto/trace/filesystem/inode_file_map.proto).
 
 
 
