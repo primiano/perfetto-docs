@@ -1,23 +1,28 @@
 # Buffers and dataflow
 
-This page describes the overall dataflow of trace data in Perfetto highlighting
-... TODO the buffers involved and giving advice on how to size them.
+This page describes the dataflow in Perfetto when recording traces. It describes
+all the buffering stages, explains how to size the buffers and how to debug
+data losses.
 
-Perfetto tracing is an asynchronous multiple-writer single-reader pipeline. In
-many senses, its architecture is very similar to modern GPU's command buffers.
+## Concepts
 
-In a nutshell, the design principles of the tracing dataflow are:
+Tracing in Perfetto is an asynchronous multiple-writer single-reader pipeline.
+In many senses, its architecture is very similar to modern GPUs' command
+buffers.
+
+The design principles of the tracing dataflow are:
 
 * The tracing fastpath is based on direct writes into a shared memory buffer.
 * Highly optimized for low-overhead writing. NOT optimized for low-latency
   reading.
 * Trace data is eventually committed in the central trace buffer by the end
-  of the trace.
-* An IPC channel allows synchronization and fencing of data writes if
-  needed.
+  of the trace or when explicit flush requests are issued via the IPC channel.
+* Producers are untrusted and should not be able to see each-other's trace data,
+  as that would leak sensitive information.
 
-In the general case there are two types buffers involved in a perfetto trace
-(three when pulling data from the Linux kernel's ftrace infrastructure):
+In the general case, there are two types buffers involved in a trace. When
+pulling data from the Linux kernel's ftrace infrastructure, there is a third
+stage of buffering (one per-CPU) involved:
 
 ![Buffers](/docs/images/buffers.png)
 
@@ -32,63 +37,63 @@ This is the place where the tracing data is ultimately kept, while in memory,
 whether it comes from the kernel ftrace infrastructure, from some other data
 source in `traced_probes` or from another userspace process using the
 [Perfetto Client Library](/docs/TODO.md).
-At the end of the trace (or during, if in [streaming mode]) these buffers will
-be written into the output trace file.
+At the end of the trace (or during, if in [streaming mode]) these buffers are
+written into the output trace file.
 
-These buffers will potentially contain a mixture of trace packets coming from
-different data sources and even different producer processes. What-goes-where
-is defined in the [buffers mapping section](#dynamic-buffer-mapping) of the
-trace config. Because of this, the tracing buffers are not shared across
-processes, to avoid cross-talking and information leaking across producer
-processes that can't trust each other.
+These buffers can contain a mixture of trace packets coming from different data
+sources and even different producer processes. What-goes-where is defined in the
+[buffers mapping section](config.md#dynamic-buffer-mapping) of the trace config.
+Because of this, the tracing buffers are not shared across processes, to avoid
+cross-talking and information leaking across producer processes.
 
 #### Shared memory buffers
 
-Each producer process has one (and only one) memory buffer shared 1:1 with the
-tracing service, regardless of the number of data sources it hosts (blue, in the
-picture above). This buffer is a temporary staging buffer and has two purposes:
+Each producer process has one memory buffer shared 1:1 with the tracing service
+(blue, in the picture above), regardless of the number of data sources it hosts.
+This buffer is a temporary staging buffer and has two purposes:
 
-1. Allowing direct serialization of the data in a buffer that the tracing
-   service can read (i.e. zero-copy on the write path)
+1. Zero-copy on the writer path. This buffer allows direct serialization of the
+   tracing data from the writer fastpath in a memory region directly readable by
+   the tracing service.
 
-2. Decupling writes from reads of the tracing service.
-
-The tracing service has the job of moving trace packets from the shared memory
-buffer (blue) into the final memory buffer (yellow) as fast as it can.
-
-The shared memory buffer hides the scheduling and response latencies of the
-tracing service, allowing the producer to keep writing without losing data when
-the tracing service is temporarily blocked.
+2. Decupling writes from reads of the tracing service. The tracing service has
+   the job of moving trace packets from the shared memory buffer (blue) into the
+   cental buffer (yellow) as fast as it can.
+   The shared memory buffer hides the scheduling and response latencies of the
+   tracing service, allowing the producer to keep writing without losing data
+   when the tracing service is temporarily blocked.
 
 #### Ftrace buffer
 
 When the `linux.ftrace` data source is enabled, the kernel will have its own
-per-CPU buffers. The `traced_probes` process will periodically read those
-buffers, convert the data into binary protos and follow the same dataflow of
-userspace tracing. These buffers need to be just large enough to hold data
+per-CPU buffers. These are unavoidable because the kenel cannot write directly
+into user-space buffers. The `traced_probes` process will periodically read
+those buffers, convert the data into binary protos and follow the same dataflow
+of userspace tracing. These buffers need to be just large enough to hold data
 between two frace read cycles (`TraceConfig.FtraceConfig.drain_period_ms`).
 
 ## Life of a trace packet
 
-Here is a step-by-step example to fully understand the dataflow of trace packets
-across buffers. Let's assume a producer process with two data sources writing
-packets at a different rate, both targeting the same central buffer.
+Here is a summary to understand the dataflow of trace packets across buffers.
+Consider the case of a producer process hosting two data sources writing packets
+at a different rates, both targeting the same central buffer.
 
 1. When each data source starts writing, it will grab a free page of the shared
    memory buffer and directly serialize proto-encoded tracing data onto it.
 
-2. When the shared memory buffer page is filled, the producer will send an async
-   IPC to the service, asking it to copy the shared memory page just written,
-   and grab the next free page in the shared memory buffer.
+2. When a page of the shared memory buffer is filled, the producer will send an
+   async IPC to the service, asking it to copy the shared memory page just
+   written. Then the producer will grab the next free page in the shared memory
+   buffer and keep writing.
 
-3. When the service receives the IPC it will copy the shared memory page into
-   the central buffer and mark the shared memory buffer page as free. Another
-   data source within that producer will be able to reuse that page.
+3. When the service receives the IPC it copies the shared memory page into
+   the central buffer and mark the shared memory buffer page as free again. Data
+   sources within the producer are be able to reuse that page at this point.
 
-4. When the tracing session ends, the service will send a `Flush` request to all
-   the data sources. This will cause all outstanding shared memory pages to be
-   committed, even if not completely full, and copied into the service's central
-   buffer.
+4. When the tracing session ends, the service sends a `Flush` request to all
+   data sources. In reaction to this, data sources will commit all outstanding
+   shared memory pages, even if not completely full. The services copies these
+   pages into the service's central buffer.
 
 ![Dataflow animation](/docs/images/dataflow.svg)
 
@@ -97,8 +102,8 @@ packets at a different rate, both targeting the same central buffer.
 #### Central buffer sizing
 
 The math for sizing the central buffer is quite straightforward: in the default
-case tracing without `write_into_file` (i.e. when the trace file is written at
-the end of the trace), the buffer will hold as much data as it has been
+case of tracing without `write_into_file` (when the trace file is written only
+at the end of the trace), the buffer will hold as much data as it has been
 written by the various data sources.
 
 The total length of the trace will be `(buffer size) / (aggregated write rate)`.
@@ -106,7 +111,7 @@ If all producers write at a combined rate of 2 MB/s, a 16 MB buffer will hold
 ~ 8 seconds of tracing data.
 
 The write rate is highly dependent on the data sources configured and by the
-activity of the system. 1-2 MB/s are typical figures on Android traces with
+activity of the system. 1-2 MB/s is a typical figure on Android traces with
 scheduler tracing, but can go up easily by 1+ orders of magnitude if chattier
 data sources are enabled (e.g., syscall of pagefault tracing).
 
@@ -259,14 +264,157 @@ Summary: the best way to detect and debug data losses is to use Trace Processor
 and issue the query:
 `select * from stats where severity = 'data_loss' and value != 0`
 
-## Metadata invalidtaion
+## Atomicity and ordering guarantees
 
-## Ordering
+A "writer sequence" is the sequence of trace packets emitted by a given
+TraceWriter from a data source. In almost most all cases 1 data source ==
+1+ TraceWriter(s). Some data source that support writing from multiple threads
+typically create one TraceWriter per thread.
 
-## Atomicity guarantees
+* Trace packets written from a sequence are emitted in the trace file in the
+  same order they have been written, without gaps.
+
+* There is no ordering guarantee between packets written by different sequences.
+  Sequences are, by design, concurrent and more than one linearizaion is
+  possible. The service does NOT respect global timestamp ordering across
+  different sequences. If two packets from two sequences were emitted in
+  global timestamp order, the service can still emit them in the trace file in
+  the opposite order.
+
+* Trace packets are atomic. If a trace packet is emitted in the trace file, it
+  is guaranteed to be contain all the field that the data source wrote. If a
+  trace packet is large and spans across several shared memory buffer pages, the
+  service will save it in the trace file only if it can observe that all
+  fragments have been committed without gaps.
+
+* If a trace packet is lost (e.g. because of wrapping in the ring buffer
+  or losses in the shared memory buffer), no further trace packet will be
+  emitted for that sequence, until all packets before are dropped as well.
+  In other words, if the tracing service ends up in a situation where it sees
+  packets 1,2,5,6 for a sequence, it will only emit 1, 2. If, however, new
+  packets (e.g., 7, 8, 9) are written and they overwrite 1, 2, clearing the gap,
+  the full sequence 5, 6, 7, 8, 9 will be emitted.
+  This behavior, however, doesn't hold when using [streaming mode] because,
+  in that case, the periodic read will consume the packets in the buffer and
+  clear the gaps, allowing the sequence to restart.
+
+## Incremental state in trace packets
+
+In many cases trace packets are fully independent of each other and can be
+processed and interpreted without further context.
+In some cases, however, trace packets can be behaves more like inter-frame video
+encoding techniques, where some frames require the keyframe to be present to be
+meaningfully decoded.
+
+Here are are two concrete examples:
+
+1. Ftrace scheduling slices and /proc/pid scans. ftrace scheduling events are
+   keyed by thread id. In most cases users want to map those events back to the
+   parent process (the thread-group). To solve this, when both the
+   `linux.ftrace` and the `linux.process_stats` data sources are enabled in a
+   Perfetto trace, the latter does capture proces<>thread associations from
+   the /proc pseudo-filesystem, whenever a new thread-id is seen by ftrace.
+   A typipcal trace in this case looks as follows:
+   ```
+  # From process_stats's /proc scanner.
+  pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"
+
+  # From ftrace
+  timestamp: 95054961131912; sched_wakeup: pid: 610;     target_cpu: 2;
+  timestamp: 95054977528943; sched_switch: prev_pid: 610 prev_prio: 98
+```
+  The /proc entry is emitted only once per process to avoid bloating the size of
+  the trace. In lack of data losses this is fine to be able to reconstruct all
+  scheduling events for that pid. If, however, the process_stats packet gets
+  dropped in the ring buffer, there will be no way left to work out the process
+  details for all the other ftrace events that refer to that PID.
+
+2. The Perfetto Client Libraries, makes extensive use of string interning. Most
+   strings and descriptors (e.g. details about processes / threads) are emitted
+   only once and later referred to using a monotonic ID. In case a loss of the
+   descriptor packet, it is not possible to make fully sense of those events.
+
+Trace Processor has built-in mechanism that detect loss of interning data and
+skips ingesting packets that refer to missing interned strings or descriptors.
+
+When using tracing in ring-buffer mode, these types of losses are very likely to
+happen.
+
+There are two mitigations for this:
+
+1. Issuing periodic invalidations of the incremental state via
+   [`TraceConfig.IncrementalStateConfig.clear_period_ms`][IncrStateConfig].
+   This will cause the data sources that make use of incremental state to
+   periodically drop the interning / process mapping tables and re-emit the
+   descriptors / strings on the next occurence. This mitigates quite well the
+   problem in the context of ring-buffer traces, as long as the
+   `clear_period_ms` is one order of magnitude lower than the estimated length
+   of trace data in the central trace buffer.
+
+2. Recording the incremental state into a dedicated buffer (via
+   `DataSourceConfig.target_buffer`). This technique is quite commonly used with
+   in the ftrace + process_stats example mentioned before, recording the
+   process_stats packet in a dedicated buffer less likely to wrap (ftrace events
+   are way more frequent than descriptors for new processes).
+
+## Flushes and windowed trace importing
+
+Another common problem experienced in traces that involve multiple data sources
+is the non-synchronous nature of trace commits. As explained in the
+[Life of a trace packet](#life-of-a-trace-packet) section above, trace data is
+commited only when a full memory page of the shared memory buffer is filled (or
+at when the tracing session ends). In most cases, if data sources produce events
+at a regular cadence, pages are filled quite quickly and events are committed
+in the central buffers within seconds.
+
+In some other cases, however, a data source can emit events only sporadically.
+Imagine the case of a data source that emits events when the display is turned
+on/off. Such an infequent event might end up being staged in the shared memory
+buffer for very long times and can end up being commited in the trace buffer
+hours after it happened.
+
+Another scenario where this can happen is when using ftrace and when a
+particular CPU is idle most of the time or gets hot-unplugged (ftrace uses
+per-cpu buffers). In this case a CPU might record little-or-no data for several
+minutes while the other CPUs pump thousands of new trace events per second.
+
+This causes two side effects that end up breaking user expectations or causing
+bugs:
+
+* The UI can show an abnormally long timeline with a huge gap in the middle.
+  The packet ordering of events doesn't matter for the UI because events are
+  sorted by timestamp at import time. The trace in this case will contain very
+  recent events plus a handful of stale events that happened hours before. The
+  UI, for correctness, will try to display all events, showing a handful of
+  early events, followed by a huge temporal gap when nothing happened,
+  followed by the stream of recent events.
+
+* When recording long traces, Trace Processor can show import errors of the form
+  "XXX event out-of-order". This is because. in order to limit the memory usage
+  at import time, Trace Processor sorts events using a sliding window. If trace
+  packets are too out-of-order (trace file order vs timestamp order), the
+  sorting will fail and some packets will be dropped.
+
+#### Mitigations
+
+The best mitigation for these sort of problems is to specify a
+[`flush_period_ms`][TraceConfig] in the trace config (10-30 seconds is usually
+good enough for most cases), especially when recording long traces.
+
+This will cause the tracing service to issue periodic flush requests to data
+sources. A flush requests causes the data source to commit the shared memory
+buffer pages into the central buffer, even if they are not completely full.
+By default, a flush issued only at the end of the trace.
+
+In case of long traces recorded without `flush_period_ms`, another option is to
+pass the `--full-sort` option to `trace_processor_shell` when importing the
+trace. Doing so will disable the windowed sorting at the cost of a higher
+memory usage (the trace file will be fully buffered in memory before parsing).
 
 [streaming mode]: /docs/recording/config#long-traces
+[TraceConfig]: /docs/reference/trace-config-proto#TraceConfig
 [FtraceConfig]: /docs/reference/trace-config-proto#FtraceConfig
+[IncrStateConfig]: /docs/reference/trace-config-proto#FtraceConfig.IncrementalStateConfig
 [FtraceCpuStats]: /docs/reference/trace-packet-proto#FtraceCpuStats
 [FtraceEventBundle]: /docs/reference/trace-packet-proto#FtraceEventBundle
 [TracePacket]: /docs/reference/trace-packet-proto#TracePacket
