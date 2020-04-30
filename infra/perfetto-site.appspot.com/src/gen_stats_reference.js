@@ -35,21 +35,17 @@ function trimQuotes(s) {
   if (s === undefined) {
     return s;
   }
-  let start = 0;
-  let length = s.length;
-  if (s[0] == '"') {
-    start++;
-    length--;
+  const regex = /\"(.*)"/;
+  let m = regex.exec(s);
+  if (m === null) {
+    return null;
   }
-  if (s[s.length - 1] == '"') {
-    length--;
-  }
-  return s.substr(start, length);
+  return m[1]
 }
 
 function parseTablesInCppFile(filePath) {
   const hdr = fs.readFileSync(filePath, 'UTF8');
-  const regex = /^\s*F\((.*)\),\s*\\/mg;
+  const regex = /^\s*F\(([\s\S]*?)\),\s*\\/mg;
   let match;
   let table = [];
   while ((match = regex.exec(hdr)) !== null) {
@@ -60,7 +56,7 @@ function parseTablesInCppFile(filePath) {
       cardinality: s[1],
       type: s[2],
       scope: s[3],
-      comment: trimQuotes(s[4]),
+      comment: s[4] === undefined ? undefined : s[4].split("\n").map(trimQuotes).join(" "),
     });
   }
   return table;

@@ -116,7 +116,9 @@ namespace stats {
   F(heap_graph_malformed_packet,              kIndexed, kError,    kTrace),    \
   F(heap_graph_missing_packet,                kIndexed, kError,    kTrace),    \
   F(heap_graph_location_parse_error,          kSingle,  kError,    kTrace),    \
-  F(heapprofd_buffer_corrupted,               kIndexed, kError,    kTrace, "Shared memory buffer corrupted. This is a bug or memory corruption in the target."),    \
+  F(heapprofd_buffer_corrupted,               kIndexed, kError,    kTrace,     \
+      "Shared memory buffer corrupted."                                        \
+      "This is a bug or memory corruption in the target."),                    \
   F(heapprofd_hit_guardrail,                  kIndexed, kError,    kTrace),    \
   F(heapprofd_buffer_overran,                 kIndexed, kDataLoss, kTrace),    \
   F(heapprofd_client_disconnected,            kIndexed, kInfo,     kTrace),    \
