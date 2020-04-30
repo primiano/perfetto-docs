@@ -4,6 +4,38 @@
 
 ## Trace Processor
 
+### Building
+
+As with all components in Perfetto, the trace processor can be built in several build systems:
+
+- GN (the native system)
+- Bazel
+- As part of the Android tree
+
+The trace processor is exposed as a static library `//:trace_processor` to Bazel and `src/trace_processor:trace_processor` in GN; it is not exposed to Android (but patches to add support for this are welcome).
+
+The trace processor is also built as a WASM target `src/trace_processor:trace_processor_wasm` for the Perfetto UI; patches for adding support for other supported build systems are welcome.
+
+The trace processor is also built as a shell binary, `trace_processor_shell` which backs the `trace_processor` tool described in other parts of the documentation. This is exposed as the `trace_processor_shell` target to Android, `//:trace_processor_shell` to Bazel and `src/trace_processor:trace_processor_shell` in GN.
+
+### Library structure
+
+The trace processor library is structured around the `TraceProcessor` class; all API methods exposed by trace processor are member functions on this class.
+
+The C++ header for this class is split between two files:  [include/perfetto/trace_processor/trace_processor_storage.h](/include/perfetto/trace_processor/trace_processor_storage.h) and [include/perfetto/trace_processor/trace_processor.h](/include/perfetto/trace_processor/trace_processor.h).
+
+### Reading traces
+
+The `
+
+### Execucting queries
+
+
+
+### Metrics
+
+
+
 ### Annotations
 
 The `DescribeSlice` function is exposed to SQL through the `describe_slice` table. This table has the following schema:
