@@ -182,6 +182,10 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SYMBOL_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_PROFILE_ALLOCATION_DEF);
 
+// Table used to render flamegraphs. This gives cumulative sizes of nodes in
+// the flamegraph.
+//
+// WARNING: This is experimental and the API is subject to change.
 #define PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES(NAME, PARENT, C)        \
   NAME(ExperimentalFlamegraphNodesTable, "experimental_flamegraph_nodes") \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                                       \
