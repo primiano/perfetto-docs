@@ -32,11 +32,19 @@ As this is a common task, a helper function `ReadTrace` is provided in [include/
 
 ### Execucting queries
 
+The `ExecuteQuery` function can be called with an SQL statement to execute. This will return an iterator which can be used to retrive rows in a streaming fashion.
 
+WARNING: embedders should ensure that the iterator is forwarded using `Next` before any other functions are called on the iterator.
+
+WARNING: embedders should ensure that the status of the iterator is checked after every row and at the end of iteration to verify that the query was successful.
 
 ### Metrics
 
+Any registered metrics can be computed using using the `ComputeMetric` function. Any metric in `src/trace_processor/metrics` is built-in to trace processor so can be called without any other steps.
 
+Metrics can also be registered at run time using the `RegisterMetric` and `ExtendMetricsProto` functions. These can subsequently be executed with `ComputeMetric`.
+
+WARNING: embedders should ensure that the path of any registered metric is consistent with the the name used to execute the metric and output view in the SQL.
 
 ### Annotations
 
