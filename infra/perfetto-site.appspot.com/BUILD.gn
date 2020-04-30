@@ -267,6 +267,30 @@ md_to_html("sql_tables_reference") {
   html_template = rebase_path("src/template_markdown.html", root_build_dir)
 }
 
+action("stats_reference_md") {
+  js_src = "src/gen_stats_reference.js"
+  script = "../../gn/standalone/build_tool_wrapper.py"
+  tp_table_hdrs = read_file(tp_tables_list, "list lines")
+  inputs = tp_table_hdrs + [js_src]
+  outputs = [ "$target_out_dir/stats.md" ]
+  args = [
+    "--path=$nodejs_bin",
+    "node",
+    rebase_path(js_src, root_build_dir),
+    "-o",
+    rebase_path(outputs[0], root_build_dir),
+    "-i",
+    "../../src/trace_processor/storage/stats.h",
+  ]
+}
+
+md_to_html("stats_reference") {
+  deps = [ ":stats_reference_md", ":navmap" ]
+  markdown = "$target_out_dir/stats.md"
+  out_html = "$dist_dir/docs/reference/stats"
+  html_template = rebase_path("src/template_markdown.html", root_build_dir)
+}
+
 # Generates a HTML file for each //docs/**/*.md.
 md_file_list = "$target_out_dir/docs.deps"
 exec_script("../../gn/standalone/glob.py",
@@ -295,6 +319,7 @@ group("markdown") {
   deps += [
       ":trace_config_reference",
       ":trace_packet_reference",
-      ":sql_tables_reference"
+      ":sql_tables_reference",
+      ":stats_reference",
   ]
 }
