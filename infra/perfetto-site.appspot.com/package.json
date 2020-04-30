@@ -24,7 +24,7 @@
     "setup": "ln -fns ../../out/perfetto.dev/site dist",
     "serve": "npm run setup; dev_appserver.py .",
     "build": "npm run setup; ../../tools/gn gen --args='' ../../out/perfetto.dev; ../../tools/ninja -C ../../out/perfetto.dev infra/perfetto-site.appspot.com:node_modules; ../../tools/ninja -C ../../out/perfetto.dev site",
-    "watch": "onchange -v '../../docs/**' '**' -e 'dist' -- npm run build",
+    "watch": "onchange -v '../../docs/**' '**' '../../src/trace_processor/tables/**' '../../protos/**' -e 'dist' -- npm run build",
     "start": "npm run build; concurrently \"npm run serve\" \"npm run watch\""
   }
 }
