@@ -6,22 +6,27 @@ This page describes the overall dataflow of trace data in Perfetto highlighting
 Perfetto tracing is an asynchronous multiple-writer single-reader pipeline. In
 many senses, its architecture is very similar to modern GPU's command buffers.
 
-In a nutshell, the design philosophy is the following:
+In a nutshell, the design principles of the tracing dataflow are:
 
-* Highly optimized for low-overhead writing.
-* NOT optimized for low-latency reading.
-* An IPC channel is used for synchronization and fencing of data writes if
+* The tracing fastpath is based on direct writes into a shared memory buffer.
+* Highly optimized for low-overhead writing. NOT optimized for low-latency
+  reading.
+* Trace data is eventually committed in the central trace buffer by the end
+  of the trace.
+* An IPC channel allows synchronization and fencing of data writes if
   needed.
 
-In the general case there are two types buffers involved in a perfetto trace:
+In the general case there are two types buffers involved in a perfetto trace
+(three when pulling data from the Linux kernel's ftrace infrastructure):
 
 ![Buffers](/docs/images/buffers.png)
 
-#### Central buffers
+#### Tracing service's central buffers
 
-These buffers are defined by the user in the `buffers` section of the
-[trace config](config.md). In the most simple cases, one tracing session =
-one buffer, regardless of the number of data sources and producers.
+These buffers (yellow, in the picture above) are defined by the user in the
+`buffers` section of the [trace config](config.md). In the most simple cases,
+one tracing session = one buffer, regardless of the number of data sources and
+producers.
 
 This is the place where the tracing data is ultimately kept, while in memory,
 whether it comes from the kernel ftrace infrastructure, from some other data
@@ -40,10 +45,10 @@ processes that can't trust each other.
 #### Shared memory buffers
 
 Each producer process has one (and only one) memory buffer shared 1:1 with the
-tracing service, regardless of the number of data sources it hosts. This buffer
-is a temporary staging buffer and has two purposes:
+tracing service, regardless of the number of data sources it hosts (blue, in the
+picture above). This buffer is a temporary staging buffer and has two purposes:
 
-1. Allowing direct serialization of the data in a buffer that the tracing 
+1. Allowing direct serialization of the data in a buffer that the tracing
    service can read (i.e. zero-copy on the write path)
 
 2. Decupling writes from reads of the tracing service.
@@ -54,6 +59,38 @@ buffer (blue) into the final memory buffer (yellow) as fast as it can.
 The shared memory buffer hides the scheduling and response latencies of the
 tracing service, allowing the producer to keep writing without losing data when
 the tracing service is temporarily blocked.
+
+#### Ftrace buffer
+
+When the `linux.ftrace` data source is enabled, the kernel will have its own
+per-CPU buffers. The `traced_probes` process will periodically read those
+buffers, convert the data into binary protos and follow the same dataflow of
+userspace tracing. These buffers need to be just large enough to hold data
+between two frace read cycles (`TraceConfig.FtraceConfig.drain_period_ms`).
+
+## Life of a trace packet
+
+Here is a step-by-step example to fully understand the dataflow of trace packets
+across buffers. Let's assume a producer process with two data sources writing
+packets at a different rate, both targeting the same central buffer.
+
+1. When each data source starts writing, it will grab a free page of the shared
+   memory buffer and directly serialize proto-encoded tracing data onto it.
+
+2. When the shared memory buffer page is filled, the producer will send an async
+   IPC to the service, asking it to copy the shared memory page just written,
+   and grab the next free page in the shared memory buffer.
+
+3. When the service receives the IPC it will copy the shared memory page into
+   the central buffer and mark the shared memory buffer page as free. Another
+   data source within that producer will be able to reuse that page.
+
+4. When the tracing session ends, the service will send a `Flush` request to all
+   the data sources. This will cause all outstanding shared memory pages to be
+   committed, even if not completely full, and copied into the service's central
+   buffer.
+
+![Dataflow animation](/docs/images/dataflow.svg)
 
 ## Buffer sizing
 
@@ -135,14 +172,92 @@ class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
 ```
 
 
-## Life of a trace packet
+## Debugging data losses
 
-Here is a step-by-step example to fully understand the dataflow of trace packets
-across buffers. Let's assume a producer process with two data sources writing
-packets at a different rate, both targeting the same central buffer.
+#### Ftrace kernel buffer losses
 
+When using the Linux kernel ftrace data source, losses can occur in the
+kernel -> userspace path if the `traced_probes` process gets blocked for too
+long.
 
-## Debugging data losses.
+At the trace proto level, losses in this path are recorded:
+* In the [`FtraceCpuStats`][FtraceCpuStats] messages, emitted both at the
+  beginning and end of the trace. If the `overrun` field is non-zero, data has
+  been lost.
+* In the [`FtraceEventBundle.lost_events`][FtraceEventBundle] field. This allows
+  to locate precisely the point where data loss happened.
+
+At the TraceProcessor SQL level, this data is available in the `stats` table:
+
+```sql
+> select * from stats where name like 'ftrace_cpu_overrun_end'
+name                 idx                  severity             source value
+-------------------- -------------------- -------------------- ------ ------
+ftrace_cpu_overrun_e                    0 data_loss            trace       0
+ftrace_cpu_overrun_e                    1 data_loss            trace       0
+ftrace_cpu_overrun_e                    2 data_loss            trace       0
+ftrace_cpu_overrun_e                    3 data_loss            trace       0
+ftrace_cpu_overrun_e                    4 data_loss            trace       0
+ftrace_cpu_overrun_e                    5 data_loss            trace       0
+ftrace_cpu_overrun_e                    6 data_loss            trace       0
+ftrace_cpu_overrun_e                    7 data_loss            trace       0
+```
+
+These losses can be mitigated either increasing
+[`TraceConfig.FtraceConfig.buffer_size_kb`][FtraceConfig]
+ or decreasing 
+[`TraceConfig.FtraceConfig.drain_period_ms`][FtraceConfig]
+
+#### Shared memory losses
+
+Tracing data can be lost in the shared memory due to bursts while traced is
+blocked.
+
+At the trace proto level, losses in this path are recorded:
+
+* In [`TraceStats.BufferStats.trace_writer_packet_loss`][BufferStats].
+* In [`TracePacket.previous_packet_dropped`][TracePacket].
+  Caveat: the very first packet emitted by every data source is also marked as
+  `previous_packet_dropped=true`. This is because the sevice has no way to
+  tell if that was the truly first packet or everything else before that was
+  lost.
+
+At the TraceProcessor SQL level, this data is available in the `stats` table:
+```sql
+> select * from stats where name = 'traced_buf_trace_writer_packet_loss'
+name                 idx                  severity             source    value
+-------------------- -------------------- -------------------- --------- -----
+traced_buf_trace_wri                    0 data_loss            trace         0
+```
+
+#### Central buffer losses
+
+Data losses in the central buffer can happen for two different reasons:
+
+1. When using `fill_policy: RING_BUFFER`, older tracing data is overwritten by
+   virtue of wrapping in the ring buffer.
+   These losses are recorded, at the trace proto level, in
+   [`TraceStats.BufferStats.chunks_overwritten`][BufferStats].
+
+2. When using `fill_policy: DISCARD`, newer tacing data committed after the
+   buffer is full is dropped.
+   These losses are recorded, at the trace proto level, in
+   [`TraceStats.BufferStats.chunks_discarded`][BufferStats].
+
+At the TraceProcessor SQL level, this data is available in the `stats` table,
+one entry per central buffer:
+
+```sql
+> select * from stats where name = 'traced_buf_chunks_overwritten' or name = 'traced_buf_chunks_discarded'
+name                 idx                  severity             source  value
+-------------------- -------------------- -------------------- ------- -----
+traced_buf_chunks_di                    0 info                 trace       0
+traced_buf_chunks_ov                    0 data_loss            trace       0
+```
+
+Summary: the best way to detect and debug data losses is to use Trace Processor
+and issue the query:
+`select * from stats where severity = 'data_loss' and value != 0`
 
 ## Metadata invalidtaion
 
@@ -150,5 +265,9 @@ packets at a different rate, both targeting the same central buffer.
 
 ## Atomicity guarantees
 
-
 [streaming mode]: /docs/recording/config#long-traces
+[FtraceConfig]: /docs/reference/trace-config-proto#FtraceConfig
+[FtraceCpuStats]: /docs/reference/trace-packet-proto#FtraceCpuStats
+[FtraceEventBundle]: /docs/reference/trace-packet-proto#FtraceEventBundle
+[TracePacket]: /docs/reference/trace-packet-proto#TracePacket
+[BufferStats]: /docs/reference/trace-packet-proto#TraceStats.BufferStats

@@ -319,7 +319,6 @@ a range of fields for non-upstream extensions and provide generic templated
 accessors for client code. Until then, we accept patches upstream to introduce
 ad-hoc configurations for your own data sources.
 
-
 ## Multi-process data sources
 
 Some data sources are singletons. E.g., in the case of scheruler tracing that
