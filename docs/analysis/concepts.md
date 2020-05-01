@@ -44,3 +44,7 @@ Tracks can be split into various types based on the type of event they contain a
 - Thread tracks are associated to a single thread and contain slices
 - Counter tracks are not assocated to any context and contain counters
 - CPU counter tracks are associated to a single CPU and contain counters
+
+## Threads and processes
+
+TODO: talk about utids and upids here
