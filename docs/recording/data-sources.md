@@ -204,7 +204,7 @@ TODO: insert example query
 
 The inode map data source provides inode to filename resolution.
 
-TODO: UI screenshot? + more details
+WARNING: Enabling this data source will negatively affect tracing performance.
 
 ```
 data_sources: {
