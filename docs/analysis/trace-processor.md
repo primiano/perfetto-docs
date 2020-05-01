@@ -112,7 +112,7 @@ While obtaining `utid`s and `upid`s are a step in the right direction, generally
 
 The `thread` and `process` tables map `utid`s and `upid`s to threads and processes respectively. For example, to lookup the thread with `utid `10
 
-```sqlite
+```sql
 SELECT tid, name
 FROM thread
 WHERE utid = 10
@@ -122,7 +122,7 @@ The `thread` and `process` tables can also be joined with the associated track t
 
 For example, to get a list of all the threads which emitted a `measure` slice
 
-```sqlite
+```sql
 SELECT thread.name AS thread_name
 FROM slice
 JOIN thread_track ON slice.track_id = thread_track.id
