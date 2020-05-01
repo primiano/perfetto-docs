@@ -1,6 +1,7 @@
 * [Introduction](README.md)
 * [Quickstart](#)
   * [System tracing on Android](quickstart/android-tracing.md)
+  * [App Instrumentation](quickstart/app-tracing.md)
   * [Trace analysis](quickstart/trace-analysis.md)
   * [Trace-based metrics](quickstart/metrics.md)
   * [Trace conversion](quickstart/traceconv.md)
