@@ -208,6 +208,10 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_PROFILE_ALLOCATION_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES);
 
+// @param name (potentially obfuscated) name of the class.
+// @param deobfuscated_name if class name was obfuscated and deobfuscation map
+// for it provided, the deobfuscated name.
+// @param location the APK / Dex / JAR file the class is contained in.
 #define PERFETTO_TP_HEAP_GRAPH_CLASS_DEF(NAME, PARENT, C) \
   NAME(HeapGraphClassTable, "heap_graph_class")           \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                       \
@@ -217,6 +221,20 @@ PERFETTO_TP_TABLE(PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 
+// The objects on the Dalvik heap.
+//
+// All rows with the same (upid, graph_sample_ts) are one dump.
+// @param upid UniquePid of the target.
+// @param graph_sample_ts timestamp this dump was taken at.
+// @param self_size size this object uses on the Java Heap.
+// @param retained_size DO NOT USE.
+// @param unique_retained_size DO NOT USE.
+// @param reference_set_id join key with heap_graph_reference containing all
+// objects referred in this object's fields.
+// @param reachable bool whether this object is reachable from a GC root. If
+// false, this object is uncollected garbage.
+// @param type_id class this object is an instance of.
+// @param root_type if not NULL, this object is a GC root.
 #define PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF(NAME, PARENT, C) \
   NAME(HeapGraphObjectTable, "heap_graph_object")          \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                        \
@@ -233,6 +251,17 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF);
 
+// Many-to-many mapping between heap_graph_object.
+//
+// This associates the object with given reference_set_id with the objects
+// that are referred to by its fields.
+// @param reference_set_id join key to heap_graph_object.
+// @param owner_id id of object that has this reference_set_id.
+// @param owned_id id of object that is referred to.
+// @param field_name the field that refers to the object. E.g. Foo.name.
+// @param field_type_name the static type of the field. E.g. java.lang.String.
+// @param deobfuscated_field_name if field_name was obfuscated and a
+// deobfuscation mapping was provided for it, the deobfuscated name.
 #define PERFETTO_TP_HEAP_GRAPH_REFERENCE_DEF(NAME, PARENT, C) \
   NAME(HeapGraphReferenceTable, "heap_graph_reference")       \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \

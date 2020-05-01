@@ -30,6 +30,7 @@ namespace tables {
 //
 // @param ts timestamp of log entry.
 // @param utid thread writing the log entry.
+// @param prio priority of the log. 3=DEBUG, 4=INFO, 5=WARN, 6=ERROR.
 // @param tag tag of the log entry.
 // @param msg content of the log entry.
 #define PERFETTO_TP_ANDROID_LOG_TABLE_DEF(NAME, PARENT, C) \
