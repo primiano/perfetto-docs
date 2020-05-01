@@ -27,3 +27,8 @@ https://ui.perfetto.dev) and click on diamond marker that shows.
 
 ![Profile Diamond](/docs/images/profile-diamond.png)
 ![Native Flamegraph](/docs/images/syssrv-apk-assets-two.png)
+
+## Next steps
+Learn more about memory debugging in the [Memory Usage on Android Guide](
+/docs/guides/memory.md) and more about the [heapprofd data-source](
+/docs/TODO.md).
