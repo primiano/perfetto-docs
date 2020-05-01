@@ -2,6 +2,8 @@
 
 -------
 
+_**TLDR**: this page summarises various concepts which are used throughout trace processor._
+
 ## Events
 
 In the most general sense, a trace is simply a collection of "events" on a timeline. Events can have associated metadata and context which allows them to be interpreted and analysed.
