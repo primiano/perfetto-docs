@@ -6,6 +6,8 @@
 
 Using traces allows computation of reproducible metrics in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected.
 
+TODO: add a picture showing trace to metrics
+
 ## Computing metrics
 
 The metrics subsystem is a part of the [trace processor](trace-processor.md) allows metrics authors to write SQL queries to generate metrics in the form of protobuf messages or proto text.
@@ -19,6 +21,8 @@ For example, generating the full (human readable) set of Android memory metrics 
 ```shell
 trace_processor_shell --run-metrics android_mem <trace>
 ```
+
+TODO: add output here this metric here.
 
 As well as scaling upwards while developing from running on a single trace locally to running on a large set of traces, the reverse is also very useful. When an anomaly is observed in the metrics of a lab benchmark, a representative trace can be downloaded and the same metric can be run locally in trace processor.
 
