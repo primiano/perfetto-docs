@@ -11,6 +11,11 @@ debuggable in its manifest. See the [heapprofd documentation](
 details on which applications can be targeted.
 
 ## Get a profile
+
+Download and run the [`tools/heap_profile`](
+https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile)
+script.
+
 ```
 $ tools/heap_profile -n system_server
 
