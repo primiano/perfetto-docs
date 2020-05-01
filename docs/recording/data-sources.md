@@ -109,9 +109,13 @@ This is displayed in the UI as a bar graph showing the frequency with idle state
 
 ### Atrace Userspace Annotations
 
-You can also enable atrace through Perfetto. Add required categories to `atrace_categories` and set `atrace_apps` to a specific app to collect userspace annotations from that app.
+You can also enable atrace through Perfetto. 
 
-```
+![](/docs/images/userspace.png)
+
+Add required categories to `atrace_categories` and set `atrace_apps` to a specific app to collect userspace annotations from that app.
+
+```protobuf
 data_sources: {
     config {
         name: "linux.ftrace"
@@ -122,6 +126,26 @@ data_sources: {
             atrace_categories: "am"
             atrace_categories: "sm"
             atrace_apps: "com.android.phone"
+        }
+    }
+}
+```
+
+### Syscalls
+
+The enter and exit of all syscalls can be tracked in Perfetto traces.
+
+![](/docs/images/sys-calls.png)
+
+The following ftrace events need to added to the trace config to collect syscalls.
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "raw_syscalls/sys_enter"
+            ftrace_events: "raw_syscalls/sys_exit"
         }
     }
 }
