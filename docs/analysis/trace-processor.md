@@ -38,9 +38,11 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 - Android Studio
 - Internal pipelines for batch processing
 
-## Table inheritance
+## Object-oriented tables
 
-NOTE: Before reading the rest of this page, it is recommanded that readers be familar with the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
+NOTE: Before reading this section (and the rest of this page), it is recommanded that readers be familar with the [quickstart](/docs/quickstart/trace-analysis.md) and [trace analysis concepts](/docs/TODO.md).
+
+### Overview
 
 Modelling an object with many types  is a common problem in trace processor. For example, tracks can come in many varieties (thread tracks, process tracks, counter tracks etc). Each type has a piece of data associated to it unique to that type; for example, thread tracks have a `utid` of the thread, counter tracks have the `unit` of the counter.
 
@@ -56,9 +58,49 @@ TODO: add a diagram with the SQL hierarchy
 
 This [appendix](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
 
+### Tracks
+
+
+
 ## Writing Queries
 
+TIP: the [quickstart](/docs/quickstart/trace-analysis.md) provides an introduction to writing queries on the most widely used tables.
 
+### Context using tracks
+
+A common question when querying tables in trace processor is: "how do I obtain the process or thread for a slice?". Phrased more generally, the question is "how do I get the context for an event?".
+
+In trace processor, any context associated with all events on a track is found on the associated `track` tables.
+
+For example, to obtain the `utid` of any thread which emitted a `measure` slice, the following query could be used
+
+```sql
+SELECT utid
+FROM slice
+JOIN thread_track ON thread_track.id = slice.track_id
+WHERE slice.name = 'measure'
+```
+
+Similarily, to obtain the `upid`s of any process which has a `mem.swap` counter greater than 1000,
+
+```sql
+SELECT upid
+FROM counter
+JOIN process_counter_track ON process_counter_track.id = slice.track_id
+WHERE process_counter_track.name = 'mem.swap' AND value > 1000
+```
+
+If the source and type of the event is known beforehand (which is generally the case),  this table can be used to find the track table to join with
+
+
+
+On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column gives the context 
+
+### Thread and process tables
+
+While obtaining `utid`s and `upid`s are a step in the right direction, generally users want the more widely applicable `tid`, `pid` or process/thread names.
+
+The `thread` and `process` 
 
 ## Metrics
 
