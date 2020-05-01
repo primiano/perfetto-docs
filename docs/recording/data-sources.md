@@ -268,7 +268,7 @@ TODO: Add example query
 
 ## Power
 
-This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails.
+This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails on selected devices.
 
 TODO: Add UI screenshot
 
