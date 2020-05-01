@@ -2,7 +2,7 @@
 
 ------
 
-**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and allows SQL queries on trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with new events and deriving new events from the contents of the trace.
+_**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and allows SQL queries on trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with new events and deriving new events from the contents of the trace._
 
 ## Quickstart
 
@@ -38,9 +38,9 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 - Android Studio
 - Internal pipelines for batch processing
 
-## Table hierarchies
+## Table inheritance
 
-Before reading this section, readers should be familar with the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
+NOTE: Before reading the rest of this page, it is recommanded that readers be familar with the trace analysis [quickstart](/docs/quickstart/trace-analysis.md) and [introduction](); these cover necessary foundational concepts like events and tracks.
 
 Modelling an object with many types  is a common problem in trace processor. For example, tracks can come in many varieties (thread tracks, process tracks, counter tracks etc). Each type has a piece of data associated to it unique to that type; for example, thread tracks have a `utid` of the thread, counter tracks have the `unit` of the counter.
 
@@ -50,137 +50,21 @@ TODO: add a diagram with the hierarchy.
 
 In trace processor,  this "object-oriented" approach is replicated by having different tables for each type of object. For example, we have a `track` table as the "root" of the heirarchy with the `thread_track` and `counter_track` tables "inheriting from" the `track` table.
 
+Inheritance between the tables works in the natural way (i.e. how it works in OO languages) and is best summarised by a diagram
+
 TODO: add a diagram with the SQL hierarchy
 
-Concretely, inheritance between tables works like so:
-
-* Every row in a table has an `id` which is unique for a hierarchy of tables.
-  * For example, every `track` will have an `id` which is unique among all tracks (regardless of the type of track)
-* If a table C inherits from P, each row in C will also be in P _with the same id_
-  * This allows for ids to act as "pointers" to rows; lookups by id can be performed on any table which has that row
-  * For example, every `process_counter_track` row will have a matching row in `counter_track` which will itself have matching rows in `track`
-* If a table C with columns `A` and `B` inherits from P with column `A`, `A` will have the same data in both C and P
-  * For example, suppose
-    *  `process_counter_track` has columns `name`, `unit` and `upid`
-    * `counter_track` has `name` and `unit`
-    * `track` has `name`
-  * Every row in `process_counter_track` will have the same `name`  for the row with the same id in  `track` and `counter_track`
-  * Similarily, every row in `process_counter_track` will have both the same `name ` and `unit` for the row with the same id in `counter_track`
-* Every row in a table has a `type` column. This specifies the _most specific_ table this row belongs to.
-  * This allows _dynamic casting_ of a row to its most specific type
-  * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
-
-The above rules are best summarised in this diagram.
-
-TODO: add a diagram with the columns in SQL hierarchy
-
-NOTE: To ensure that inheritance is performance efficient, the trace processor does not actually duplicate rows behind the scenes. Instead, it stores data in each row only once in large arrays and uses efficient data structures (e.g. bitvectors) to index into the arrays.
+This [appendix](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
 
 ## Writing Queries
 
-### Tracks
 
-Tracks allow grouping all events which have the same context onto a single timeline. Every track has a `name` and `id` and they form the backbone of the Perfetto UI.
-
-![](/docs/images/tracks.png)
-
-```console
-> SELECT id, name FROM track
-id                   name
--------------------- --------------------
-                   0 cpuidle
-                   1 cpuidle
-                   2 cpuidle
-...
-                  13 mem.virt
-                  14 mem.rss
-...
-                  21 oom_score_adj
-```
-
-### Combining tracks with slices/counters
-
-Tracks can come in many varieties (thread tracks, process tracks, CPU counter tracks etc) and each of these have their own table.
-
-Using the `track_id` column, these tables can be joined with the `slice` and `counter` tables to obtain the slices or counters for a single track. This is most useful when the track tables are further joined with other metadata tables (e.g. the `thread` and `process` tables).
-
-For example, we can obtain all the app slices for the GoogleCamera process
-
-![](/docs/images/camera-slices.png)
-
-```console
-> SELECT ts, dur, slice.name FROM slice JOIN thread_track ON thread_track.id = slice.track_id JOIN thread USING (utid) WHERE thread.name = 'id.GoogleCamera'
-ts                   dur                  name
--------------------- -------------------- --------------------
-     261195282509319                82448 disconnect
-     261195301397967                63177 query
-     261195301463279                42605 query
-     261195301528800                37761 query
-     261196464210635                17916 unlockAsync
-...
-```
-
-For more information on the types of tracks and how to combine them with the `slice` and `counter` tables, see the [trace processor documentation](/docs/analysis/trace-processor.md)
-
-### Scheduling slices
-
-SQL joins can be used to obtain more information about the running thread and process in each slice.
-
-```console
-> SELECT ts, dur, cpu, tid, thread.name AS thread_name, pid, process.name AS process_name FROM sched JOIN thread USING (utid) JOIN process USING (upid) ORDER BY ts
-ts                   dur                  cpu                  tid                  thread_name          pid                  process_name
--------------------- -------------------- -------------------- -------------------- -------------------- -------------------- --------------------
-     261187012170995               247188                    2                  627 logd.klogd                            600 /system/bin/logd
-     261187012418183                12812                    2                20614 traced_probes0                      25434 /system/bin/traced_p
-     261187012421099               220000                    4                12428 kworker/u16:2                           2 kthreadd
-...
-```
-
-As noted in the [introduction to trace analysis](/docs/analysis/index.md), slices, counters and tracks are core concepts to analysing traces. The trace processor exposes these as tables which can be queried using SQL.
-
-For example, all counter events in the trace are in the `counter` table. For example, to obtain the first 10 counter events in the trace
-
-```sql
-SELECT * FROM counter ORDER BY ts LIMIT 10
-```
-
-Similarily, slices are located in the `slice` table
-
-```sql
-SELECT * FROM slice ORDER BY ts LIMIT 10
-```
-
-As tracks come in many types, this is reflected in their structure in trace processor. Every type of track has its own table and they form a "object-oriented" heirarchy of tables.
-
-TODO: diagram
-
-Note how every column in the parent tables is also present in the child tables. Moreover, every row in child tables is also present in the parent tables and has the same `id`.
-
-For example, all the CPU counter tracks can be found in the `cpu_counter_track` table
-
-```sql
-SELECT * FROM cpu_counter_track ORDER BY ts LIMIT 10
-```
-
-Note how the `slice` and `counter` tables only contain the information which is unique to that event. Any information which is shared by all events in a track are located in the track tables. The `track_id` column present on both of these tables acts as an SQL foreign key to the track tables.
-
-We can recover the context for the events in the `slice` or `counter` tables by performing an SQL join. For example, we can obtain the CPU for a CPU counter events
-
-```sql
-SELECT ts, cpu, value
-FROM counter
-JOIN cpu_counter_track ON counter.track_id = cpu_counter_track.id
-LIMIT 10
-ORDER BY ts
-```
-
-This query returns just the rows in the `counter` table which are associated to a CPU.
 
 ## Metrics
 
 TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
 
-Metrics are a significant part of trace processor so have their own [dedicated page](/docs/analysis/metrics.md).
+Metrics are a significant part of trace processor so are documented on a [dedicated page](/docs/analysis/metrics.md).
 
 ## Annotations
 
@@ -217,3 +101,29 @@ Alerts are used to draw the attention of the user to interesting parts of the tr
 Currently, alerts are not implemented in the trace processor but the API to create derived events was designed with them in mind. We plan on adding another column `alert_type` (name to be finalized) to the annotations table which can have the value `warning`, `error` or `null`. Depending on this value, the Perfetto UI will flag these events to the user.
 
 NOTE: we do not plan on supporting case where alerts need to be added to existing events. Instead, new events should be created using annotations and alerts added on these instead; this is because the trace processor storage is append-only.
+
+## Appendix: table inheritance rules
+
+Concretely, inheritance between tables works like so:
+
+* Every row in a table has an `id` which is unique for a hierarchy of tables.
+  * For example, every `track` will have an `id` which is unique among all tracks (regardless of the type of track)
+* If a table C inherits from P, each row in C will also be in P _with the same id_
+  * This allows for ids to act as "pointers" to rows; lookups by id can be performed on any table which has that row
+  * For example, every `process_counter_track` row will have a matching row in `counter_track` which will itself have matching rows in `track`
+* If a table C with columns `A` and `B` inherits from P with column `A`, `A` will have the same data in both C and P
+  * For example, suppose
+    *  `process_counter_track` has columns `name`, `unit` and `upid`
+    *  `counter_track` has `name` and `unit`
+    *  `track` has `name`
+  * Every row in `process_counter_track` will have the same `name`  for the row with the same id in  `track` and `counter_track`
+  * Similarily, every row in `process_counter_track` will have both the same `name ` and `unit` for the row with the same id in `counter_track`
+* Every row in a table has a `type` column. This specifies the _most specific_ table this row belongs to.
+  * This allows _dynamic casting_ of a row to its most specific type
+  * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
+
+The above rules are best summarised in this diagram.
+
+TODO: add a diagram with the columns in SQL hierarchy
+
+NOTE: To ensure that inheritance is performance efficient, the trace processor does not actually duplicate rows behind the scenes. Instead, it stores data in each row only once in large arrays and uses efficient data structures (e.g. bitvectors) to index into the arrays.
