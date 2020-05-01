@@ -70,37 +70,6 @@ ts                   dur                  cpu                  utid
 ...
 ```
 
-## Threads and processes
-
-Threads and processes are each given their own table and uniquely identified by the `utid` and `upid` columns respectively; `tids` and `pids` cannot be used directly as they can be reused over the course of a trace. For more details on this, see the trace processor [table documentation](/docs/analysis/trace-processor.md).
-
-```console
-> SELECT utid, tid, name FROM thread
-utid                 tid                  name
--------------------- -------------------- --------------------
-                   0                    0 swapper/0
-                   1                    1 init
-                   2                    2 kthreadd
-...
-
-> SELECT upid, pid, name FROM process
-upid                 pid                  name
--------------------- -------------------- --------------------
-                   0                    0 [NULL]
-                   1                    1 /system/bin/init
-                   2                    2 kthreadd
-...
-```
-
-A common task is to look for a specific thread and its assocated proces. For example, looking for the `android.fg` thread from the `system_server` process
-
-```console
-> SELECT tid, thread.name as thread_name, pid, process.name as process_name FROM thread JOIN process USING (upid) WHERE thread_name = 'android.fg' AND process_name = 'system_server'
-tid                  thread_name          pid                  process_name
--------------------- -------------------- -------------------- --------------------
-                1313 android.fg                           1282 system_server
-```
-
 ## Next steps
 
 TODO: link to trace processor documentation and reference
