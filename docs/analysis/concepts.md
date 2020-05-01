@@ -1,14 +1,8 @@
-# Trace Analysis
+# Trace Analysis: Concepts
 
 -------
 
-## Introduction
-
-TODO: write introduction to trace analysis here
-
-## Concepts
-
-### Events
+## Events
 
 In the most general sense, a trace is simply a collection of "events" on a
 timeline. Events can have associated metadata and context which allows them to
@@ -36,7 +30,7 @@ counters include:
 - Atrace counter events from Android
 - Chrome counter events
 
-### Tracks
+## Tracks
 
 A track is a named partition of events of the same type and the same associated
 context. For example:
