@@ -226,6 +226,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 // All rows with the same (upid, graph_sample_ts) are one dump.
 // @param upid UniquePid of the target.
 // @param graph_sample_ts timestamp this dump was taken at.
+// @param object_id ARTs ID of the object. Either a pointer or a hashCode.
 // @param self_size size this object uses on the Java Heap.
 // @param retained_size DO NOT USE.
 // @param unique_retained_size DO NOT USE.
