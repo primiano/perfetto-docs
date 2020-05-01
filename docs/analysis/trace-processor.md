@@ -90,9 +90,13 @@ JOIN process_counter_track ON process_counter_track.id = slice.track_id
 WHERE process_counter_track.name = 'mem.swap' AND value > 1000
 ```
 
-If the source and type of the event is known beforehand (which is generally the case),  this table can be used to find the track table to join with
+If the source and type of the event is known beforehand (which is generally the case),  the following can be used to find the `track` table to join with
 
-
+| Event type | Associated with |
+| :--------- | --------------- |
+| slice      | process         |
+| slice      | thread          |
+| slice      |                 |
 
 On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column gives the context 
 
