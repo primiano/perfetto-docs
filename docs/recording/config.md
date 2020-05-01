@@ -466,11 +466,8 @@ buffers { ... }
 data_sources { ... }
 ```
 
-### DISCARD and flushes
-
-TODO: describe `flush_period_ms` and link to the trace buffering page.
-
 ## Other resources
 
 * [TraceConfig Reference](/docs/reference/trace-config-proto)
-* [Config for Perfetto system data sources](/docs/recording/data-sources)
+* [Config for Perfetto system data sources](/docs/recording/data-sources.md)
+* [Buffers and dataflow](/docs/recording/buffers.md)

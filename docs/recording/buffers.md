@@ -167,7 +167,8 @@ In a case like this thes options are:
   data source.
 * Split the write into chunks spaced by some delay.
 * Adopt the `BufferExhaustedPolicy::kStall` when defining the data source:
-  ```c++
+
+```c++
 class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
  public:
   constexpr static BufferExhaustedPolicy kBufferExhaustedPolicy =
@@ -175,7 +176,6 @@ class ScreenshotDataSource : public perfetto::DataSource<ScreenshotDataSource> {
  ...
 };
 ```
-
 
 ## Debugging data losses
 
@@ -316,13 +316,13 @@ Here are are two concrete examples:
    the /proc pseudo-filesystem, whenever a new thread-id is seen by ftrace.
    A typipcal trace in this case looks as follows:
    ```
-  # From process_stats's /proc scanner.
-  pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"
+    # From process_stats's /proc scanner.
+    pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"
 
-  # From ftrace
-  timestamp: 95054961131912; sched_wakeup: pid: 610;     target_cpu: 2;
-  timestamp: 95054977528943; sched_switch: prev_pid: 610 prev_prio: 98
-```
+    # From ftrace
+    timestamp: 95054961131912; sched_wakeup: pid: 610;     target_cpu: 2;
+    timestamp: 95054977528943; sched_switch: prev_pid: 610 prev_prio: 98
+  ```
   The /proc entry is emitted only once per process to avoid bloating the size of
   the trace. In lack of data losses this is fine to be able to reconstruct all
   scheduling events for that pid. If, however, the process_stats packet gets
