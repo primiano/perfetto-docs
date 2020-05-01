@@ -5,6 +5,7 @@
   * [Trace analysis](quickstart/trace-analysis.md)
   * [Trace-based metrics](quickstart/metrics.md)
   * [Trace conversion](quickstart/traceconv.md)
+  * [Heap Profiling](quickstart/profiling.md)
 * [Guides](#)
   * [Memory Usage on Android](guides/memory.md)
 * [Recording traces](#)
