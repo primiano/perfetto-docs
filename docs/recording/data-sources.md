@@ -2,16 +2,17 @@
 Perfetto provides a number of built in data sources on Android and Linux.
 These include [integration with Linux kernel tracing](#ftrace), [various process data](#process-stats) exposed via the `proc` filesystem, [logcat](#logcat) (Android only), [system data](#sys-stats) exposed by the `proc` filesystem, [native allocation profiling](#heapprofd), [Java heap graph dumps](#java-hprof) (Android only), and information about [power use](#power) (Android only).
 
+This page will include some examples of how to enable different data sources in your trace. For a full explanation of trace configuration, see the [trace configuration](/docs/recording/config) page.
+
 ## Ftrace
 Perfetto integrates with [Linux Kernel event tracing](https://www.kernel.org/doc/Documentation/trace/ftrace.txt).
 
 This example config collects four Linux kernel events: 
 
-```
+```protobuf
 data_sources {
   config {
     name: "linux.ftrace"
-    target_buffer: 0
     ftrace_config {
       ftrace_events: "ftrace/print"
       ftrace_events: "sched/sched_switch"
@@ -22,14 +23,28 @@ data_sources {
 }
 ```
 
-### CPU Scheduling
-There is special support for the high volume events `sched/sched_switch` and `sched/sched_waking`, it can be enabled as follows:
+A wildcard can be used to collect all events of a category:
 
-```
+```protobuf
 data_sources {
   config {
     name: "linux.ftrace"
-    target_buffer: 0
+    ftrace_config {
+      ftrace_events: "ftrace/print"
+      ftrace_events: "sched/*"
+    }
+  }
+}
+```
+The full configuration options for ftrace can be seen in [ftrace_config.proto](/protos/perfetto/config/ftrace/ftrace_config.proto).
+
+### CPU Scheduling
+There is special support for the high volume events `sched/sched_switch` and `sched/sched_waking`, it can be enabled as follows:
+
+```protobuf
+data_sources {
+  config {
+    name: "linux.ftrace"
     ftrace_config {
       ftrace_events: "sched/sched_switch"
       ftrace_events: "sched/sched_waking"
@@ -38,10 +53,79 @@ data_sources {
 }
 ```
 
+CPU scheduling is the displayed in the most prominent tracks in the UI. When zoomed out the activity will be displayed in a bar graph as below:
+
+![](/docs/images/cpu-bar-graphs.png)
+
+But once zoomed in you can see the individual scheduling slices:
+
+![](/docs/images/cpu-zoomed.png)
+
+To investigate the CPU scheduling from the `trace_processor` there is a specialised table call `sched`. You can query it as follows:
+
+```sql
+select * from sched where cpu = 0
+```
+
+A common use case might be to find the CPU time broken down by process. You can do this with the following query:
+
+```sql
+select process.name, tot_proc/1e9 as cpu_sec
+from (
+  select upid, sum(tot_thd) as tot_proc
+  from (
+    select utid, sum(dur) as tot_thd
+    from sched
+    group by utid
+  )
+  join thread using(utid)
+  group by upid
+)
+join process using(upid)
+order by cpu_sec desc
+limit 100
+```
+
 ### CPU Frequency
 
-### Binder transactions
+Including the following events in your trace config with allow investigation of CPU frequency and idle time:
 
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "power/cpu_frequency"
+            ftrace_events: "power/cpu_idle"
+            ftrace_events: "power/suspend_resume"
+        }
+    }
+}
+```
+
+This is displayed in the UI as a bar graph showing the frequency with idle states marked by the grey color.
+
+![](/docs/images/cpu-frequency.png)
+
+### Atrace Userspace Annotations
+
+You can also enable atrace through Perfetto. Add required categories to `atrace_categories` and set `atrace_apps` to a specific app to collect userspace annotations from that app.
+
+```
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            atrace_categories: "view"
+            atrace_categories: "webview"
+            atrace_categories: "wm"
+            atrace_categories: "am"
+            atrace_categories: "sm"
+            atrace_apps: "com.android.phone"
+        }
+    }
+}
+```
 
 ## Process Stats
 
@@ -59,7 +143,6 @@ Example config:
 data_sources: {
     config {
         name: "linux.process_stats"
-        target_buffer: 1
         process_stats_config {
             scan_all_processes_on_start: true
             proc_stats_poll_ms: 1000
@@ -75,25 +158,6 @@ Run the following query to see them:
 
 ``` sql
 select * from thread join process using(upid)
-```
-
-If you also have scheduling data in your trace you can see the CPU time broken down by process by running this query:
-
-```sql
-select process.name, tot_proc/1e9 as cpu_sec
-from (
-  select upid, sum(tot_thd) as tot_proc
-  from (
-    select utid, sum(dur) as tot_thd
-    from sched
-    group by utid
-  )
-  join thread using(utid)
-  group by upid
-)
-join process using(upid)
-order by cpu_sec desc
-limit 100
 ```
 
 To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
@@ -179,7 +243,7 @@ TODO: Add UI screenshot
 
 The config required to enable this is:
 
-```
+```protobuf
 data_sources: {
     config {
         name: "android.power"
@@ -200,13 +264,15 @@ When using `trace_processor` these counter will be in the `counter_track` table.
 
 TODO: insert example query
 
+## Syscall tracing
+
 ## Inode Map
 
 The inode map data source provides inode to filename resolution.
 
 WARNING: Enabling this data source will negatively affect tracing performance.
 
-```
+```protobuf
 data_sources: {
     config {
         name: "linux.inode_file_map"
