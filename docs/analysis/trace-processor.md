@@ -60,7 +60,9 @@ This [appendix](/docs/TODO.md) gives the exact rules for inheritance between tab
 
 ### Tracks
 
+The following diagram gives the full hierarchy of track tables in the trace processor:
 
+TODO: add a diagram with the track hierarchy
 
 ## Writing Queries
 
@@ -92,19 +94,42 @@ WHERE process_counter_track.name = 'mem.swap' AND value > 1000
 
 If the source and type of the event is known beforehand (which is generally the case),  the following can be used to find the `track` table to join with
 
-| Event type | Associated with |
-| :--------- | --------------- |
-| slice      | process         |
-| slice      | thread          |
-| slice      |                 |
+| Event type | Associated with    | Track table           | Constraint in WHERE clause |
+| :--------- | ------------------ | --------------------- | -------------------------- |
+| slice      | N/A (global scope) | track                 | `type = 'track'`           |
+| slice      | thread             | thread_track          | N/A                        |
+| slice      | process            | process_track         | N/A                        |
+| counter    | N/A (global scope) | counter_track         | `type = 'counter_track'`   |
+| counter    | thread             | thread_counter_track  | N/A                        |
+| counter    | process            | process_counter_track | N/A                        |
+| counter    | cpu                | cpu_counter_track     | N/A                        |
 
-On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column gives the context 
+On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column will give the exact track table to join with.
 
 ### Thread and process tables
 
 While obtaining `utid`s and `upid`s are a step in the right direction, generally users want the more widely applicable `tid`, `pid` or process/thread names.
 
-The `thread` and `process` 
+The `thread` and `process` tables map `utid`s and `upid`s to threads and processes respectively. For example, to lookup the thread with `utid `10
+
+```sqlite
+SELECT tid, name
+FROM thread
+WHERE utid = 10
+```
+
+The `thread` and `process` tables can also be joined with the associated track tables directly to jump directly from the slice or counter to the information about processes and threads.
+
+For example, to get a list of all the threads which emitted a `measure` slice
+
+```sqlite
+SELECT thread.name AS thread_name
+FROM slice
+JOIN thread_track ON slice.track_id = thread_track.id
+JOIN thread USING(utid)
+WHERE slice.name = 'measure'
+GROUP BY thread_name
+```
 
 ## Metrics
 
