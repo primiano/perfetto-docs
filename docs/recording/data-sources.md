@@ -1,6 +1,13 @@
 # Available data sources
 Perfetto provides a number of built in data sources on Android and Linux.
-These include [integration with Linux kernel tracing](#ftrace), [various process data](#process-stats) exposed via the `proc` filesystem, [logcat](#logcat) (Android only), [system data](#sys-stats) exposed by the `proc` filesystem, [native allocation profiling](#heapprofd), [Java heap graph dumps](#java-hprof) (Android only), and information about [power use](#power) (Android only).
+These include 
+* [integration with Linux kernel tracing](#ftrace)
+* [various process data](#process-stats) exposed via the `proc` filesystem
+* [logcat](#logcat) (Android only)
+* [system data](#sys-stats) exposed by the `proc` filesystem
+* [native allocation profiling](#heapprofd)
+* [Java heap graph dumps](#java-hprof) (Android only)
+* information about [power use](#power) (Android only).
 
 This page will include some examples of how to enable different data sources in your trace. For a full explanation of trace configuration, see the [trace configuration](/docs/recording/config) page.
 
