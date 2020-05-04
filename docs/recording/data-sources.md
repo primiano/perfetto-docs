@@ -295,8 +295,6 @@ When using `trace_processor` these counter will be in the `counter_track` table.
 
 TODO: insert example query
 
-## Syscall tracing
-
 ## Inode Map
 
 The inode map data source provides inode to filename resolution.
