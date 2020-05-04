@@ -1,6 +1,7 @@
 * [Introduction](README.md)
 * [Quickstart](#)
   * [System tracing on Android](quickstart/android-tracing.md)
+  * [System tracing on Linux](quickstart/linux-tracing.md)
   * [App Instrumentation](quickstart/app-tracing.md)
   * [Trace analysis](quickstart/trace-analysis.md)
   * [Trace-based metrics](quickstart/metrics.md)

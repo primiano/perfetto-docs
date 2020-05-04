@@ -52,7 +52,7 @@ The TraceConfig is a protobuf message
     * The max size of the output trace file.
 
 2. Which data sources to enable and their configuration, e.g.:
-    * For the [kernel tracring data source](/docs/TODO.md), which ftrace events
+    * For the [kernel tracing data source](/docs/TODO.md), which ftrace events
       to enable.
     * For the [heap profiler](/docs/TODO.md), the target process name and
       sampling rate.
