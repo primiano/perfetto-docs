@@ -16,7 +16,6 @@
     * [Clock synchronization](recording/clock-sync.md)
     * [Detached mode](recording/detached-mode.md)
 * [Trace Analysis](#)
-    * [Concepts](analysis/concepts.md)
     * [Trace processor](analysis/trace-processor.md)
     * [Metrics](analysis/metrics.md)
 * [Reference](#)
