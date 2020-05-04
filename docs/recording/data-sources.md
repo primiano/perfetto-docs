@@ -1,5 +1,11 @@
 # Available data sources
+
 Perfetto provides a number of built in data sources on Android and Linux.
+This page shows some examples of how to enable these in your trace.
+For a full explanation of recording a trace see [trace configuration](/docs/recording/config).
+To see detailed information on all known data sources see the [TraceConfig reference](/docs/reference/trace-config-proto).
+
+<!--
 These include 
 * [integration with Linux kernel tracing](#ftrace)
 * [various process data](#process-stats) exposed via the `proc` filesystem
@@ -8,45 +14,10 @@ These include
 * [native allocation profiling](#heapprofd)
 * [Java heap graph dumps](#java-hprof) (Android only)
 * information about [power use](#power) (Android only).
-
-This page will include some examples of how to enable different data sources in your trace. For a full explanation of trace configuration, see the [trace configuration](/docs/recording/config) page.
-
-## Ftrace
-Perfetto integrates with [Linux Kernel event tracing](https://www.kernel.org/doc/Documentation/trace/ftrace.txt).
-
-This example config collects four Linux kernel events: 
-
-```protobuf
-data_sources {
-  config {
-    name: "linux.ftrace"
-    ftrace_config {
-      ftrace_events: "ftrace/print"
-      ftrace_events: "sched/sched_switch"
-      ftrace_events: "task/task_newtask"
-      ftrace_events: "task/task_rename"
-    }
-  }
-}
-```
-
-A wildcard can be used to collect all events of a category:
-
-```protobuf
-data_sources {
-  config {
-    name: "linux.ftrace"
-    ftrace_config {
-      ftrace_events: "ftrace/print"
-      ftrace_events: "sched/*"
-    }
-  }
-}
-```
-The full configuration options for ftrace can be seen in [ftrace_config.proto](/protos/perfetto/config/ftrace/ftrace_config.proto).
-
-### CPU Scheduling
-There is special support for the high volume events `sched/sched_switch` and `sched/sched_waking`, it can be enabled as follows:
+-->
+## CPU scheduling
+Perfetto can show information about what threads were scheduled, on which cores they ran, for how long they ran, and what caused them to
+scheduled and de-scheduled. Here is an example config:
 
 ```protobuf
 data_sources {
@@ -68,7 +39,7 @@ But once zoomed in you can see the individual scheduling slices:
 
 ![](/docs/images/cpu-zoomed.png)
 
-To investigate the CPU scheduling from the `trace_processor` there is a specialised table call `sched`. You can query it as follows:
+To investigate CPU scheduling from the `trace_processor` there is a specialised table called `sched`. You can query it as follows:
 
 ```sql
 select * from sched where cpu = 0
@@ -93,9 +64,8 @@ order by cpu_sec desc
 limit 100
 ```
 
-### CPU Frequency
-
-Including the following events in your trace config with allow investigation of CPU frequency and idle time:
+## CPU frequency & power states
+Including the following events in your trace config will allow investigation of CPU frequency and idle time:
 
 ```protobuf
 data_sources: {
@@ -114,8 +84,29 @@ This is displayed in the UI as a bar graph showing the frequency with idle state
 
 ![](/docs/images/cpu-frequency.png)
 
-### Atrace Userspace Annotations
+## GPU frequency
+TODO: Fill in
 
+## Syscalls
+The enter and exit of all syscalls can be tracked in Perfetto traces.
+
+![](/docs/images/sys-calls.png)
+
+The following ftrace events need to added to the trace config to collect syscalls.
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "raw_syscalls/sys_enter"
+            ftrace_events: "raw_syscalls/sys_exit"
+        }
+    }
+}
+```
+
+## Android application tracing
 You can also enable atrace through Perfetto. 
 
 ![](/docs/images/userspace.png)
@@ -138,65 +129,7 @@ data_sources: {
 }
 ```
 
-### Syscalls
-
-The enter and exit of all syscalls can be tracked in Perfetto traces.
-
-![](/docs/images/sys-calls.png)
-
-The following ftrace events need to added to the trace config to collect syscalls.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "raw_syscalls/sys_enter"
-            ftrace_events: "raw_syscalls/sys_exit"
-        }
-    }
-}
-```
-
-## Process Stats
-
-The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
-
-![](/docs/images/proc_stat.png)
-
-Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
-
-To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in your process stats config. X must be greater than 100ms to avoid excessive CPU usage. Details about the specific counters being collected can be found in [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto).
-
-Example config: 
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.process_stats"
-        process_stats_config {
-            scan_all_processes_on_start: true
-            proc_stats_poll_ms: 1000
-        }
-    }
-}
-```
-
-For more configuration options see [process_stats_config.proto](/protos/perfetto/config/process_stats/process_stats_config.proto). See [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto) and [process_tree.proto](/protos/perfetto/trace/ps/process_tree.proto) for more detailed information about all the information that can be collected.
-
-The process/thread associations end up in the process and thread tables in the trace processor.
-Run the following query to see them:
-
-``` sql
-select * from thread join process using(upid)
-```
-
-To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
-
-TODO: Add example query for proc stat counters
-
-## Logcat
-
+## Android logcat
 Include Android Logcat messages in the trace and view them in conjunction with other trace data.
 
 ![](/docs/images/android_logs.png)
@@ -216,112 +149,19 @@ data_sources: {
 }
 ```
 
-You may also want to add filtering on a tags using the filter_tags parameter or set a min priority to be included in the trace using min_prio. For details about configuration options, see [android\_log\_config.proto](/protos/perfetto/config/android/android_log_config.proto). 
+You may also want to add filtering on a tags using the `filter_tags` parameter or set a min priority to be included in the trace using `min_prio`.
+For details about configuration options, see [android\_log\_config.proto](/protos/perfetto/config/android/android_log_config.proto). 
 
 The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
 
 If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
 
 ```sql
-select * from android_logs where tag = “perfetto”
+select * from android_logs where tag = "perfetto"
 ```
 
-## Sys Stats
 
-This data source allows periodic polling of system data from 
-
-- `proc/stat`
-- `proc/vmstat`
-- `proc/meminfo`
-
-![](/docs/images/sys_stat_counters.png)
-
-The polling period and specific counters to include in the trace can be set in the trace config.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.sys_stats"
-        sys_stats_config {
-            meminfo_period_ms: 1000
-            meminfo_counters: MEMINFO_MEM_TOTAL
-            meminfo_counters: MEMINFO_MEM_FREE
-            meminfo_counters: MEMINFO_MEM_AVAILABLE
-            vmstat_period_ms: 1000
-            vmstat_counters: VMSTAT_NR_FREE_PAGES
-            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
-            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
-            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
-            stat_period_ms: 2500
-            stat_counters: STAT_CPU_TIMES
-            stat_counters: STAT_FORK_COUNT
-        }
-    }
-}
-```
-
-All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
-
-When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables.md#counter_track) table.
-
-TODO: Add example query
-
-## Power
-
-This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails on selected devices.
-
-TODO: Add UI screenshot
-
-The config required to enable this is:
-
-```protobuf
-data_sources: {
-    config {
-        name: "android.power"
-        android_power_config {
-            battery_poll_ms: 100
-            collect_power_rails: true
-            battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
-            battery_counters: BATTERY_COUNTER_CHARGE
-            battery_counters: BATTERY_COUNTER_CURRENT
-        }
-    }
-}
-```
-
-For more details on the configuration options see [android\_power\_config.proto](/protos/perfetto/config/power/android_power_config.proto). The data output format can be seen in [battery\_counters.proto](/protos/perfetto/trace/power/battery_counters.proto) and [power_rails.proto](/protos/perfetto/trace/power/power_rails.proto).
-
-When using `trace_processor` these counter will be in the `counter_track` table. To look at a specific counter use a query like:
-
-TODO: insert example query
-
-## Inode Map
-
-The inode map data source provides inode to filename resolution.
-
-WARNING: Enabling this data source will negatively affect tracing performance.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.inode_file_map"
-        inode_file_config {
-            scan_interval_ms: 1000
-        }
-    }
-}
-```
-
-The configuration options can be found in [inode\_file\_config.proto](/protos/perfetto/config/inode_file/inode_file_config.proto). The output data format is specified in [inode\_file\_map.proto](/protos/perfetto/trace/filesystem/inode_file_map.proto).
-
-
-
-
-
-
-
-## {#heapprofd} heapprofd - Android Heap Profiler
-
+## {#heapprofd} Memory: Native heap profiler
 NOTE: **heapprofd requires Android 10.**
 
 heapprofd is a tool that tracks native heap allocations & deallocations of an
@@ -753,13 +593,13 @@ subject to change**, so only use this in one-off situations.
 > select name, map_name, cumulative_size
          from experimental_flamegraph(8300973884377,1,'native')
          order by abs(cumulative_size) desc;
-```
+``` 
 
 | name | map_name | cumulative_size |
 |------|----------|----------------|
 |__start_thread|/apex/com.android.runtime/lib64/bionic/libc.so|392608|
 |_ZL15__pthread_startPv|/apex/com.android.runtime/lib64/bionic/libc.so|392608|
-|_ZN13thread_data_t10trampolineEPKS_|/system/lib64/libutils.so|199496|
+|_ZN13thread_data_t10trampolineEPKS|/system/lib64/libutils.so|199496|
 |_ZN7android14AndroidRuntime15javaThreadShellEPv|/system/lib64/libandroid_runtime.so|199496|
 |_ZN7android6Thread11_threadLoopEPv|/system/lib64/libutils.so|199496|
 |_ZN3art6Thread14CreateCallbackEPv|/apex/com.android.art/lib64/libart.so|193112|
@@ -767,7 +607,7 @@ subject to change**, so only use this in one-off situations.
 |_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc|/apex/com.android.art/lib64/libart.so|193112|
 |art_quick_invoke_stub|/apex/com.android.art/lib64/libart.so|193112|
 
-## {#java-hprof} Java Heap Graphs
+## {#java-hprof} Memory: Java heap graphs
 
 NOTE: **Java Heap Graphs require Android 11.**
 
@@ -831,3 +671,176 @@ hold on by objects of a type.
 |com.android.systemui.statusbar.phone.StatusBarNotificationPresenter|1085593|
 |java.util.Collections$SynchronizedMap|1063376|
 |java.util.HashMap|1063292|
+
+## Memory: System wide
+### LMK
+### meminfo
+### per-process-stats
+### virtual memory stats
+
+## Sys Stats
+This data source allows periodic polling of system data from 
+
+- `proc/stat`
+- `proc/vmstat`
+- `proc/meminfo`
+
+![](/docs/images/sys_stat_counters.png)
+
+The polling period and specific counters to include in the trace can be set in the trace config.
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.sys_stats"
+        sys_stats_config {
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_MEM_AVAILABLE
+            vmstat_period_ms: 1000
+            vmstat_counters: VMSTAT_NR_FREE_PAGES
+            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
+            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
+            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
+            stat_period_ms: 2500
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+        }
+    }
+}
+```
+
+All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
+
+When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables.md#counter_track) table.
+
+TODO: Add example query
+
+
+
+## Process name tracking
+
+## Power
+This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails on selected devices.
+
+TODO: Add UI screenshot
+
+The config required to enable this is:
+
+```protobuf
+data_sources: {
+    config {
+        name: "android.power"
+        android_power_config {
+            battery_poll_ms: 100
+            collect_power_rails: true
+            battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
+            battery_counters: BATTERY_COUNTER_CHARGE
+            battery_counters: BATTERY_COUNTER_CURRENT
+        }
+    }
+}
+```
+
+For more details on the configuration options see [android\_power\_config.proto](/protos/perfetto/config/power/android_power_config.proto). The data output format can be seen in [battery\_counters.proto](/protos/perfetto/trace/power/battery_counters.proto) and [power_rails.proto](/protos/perfetto/trace/power/power_rails.proto).
+
+When using `trace_processor` these counter will be in the `counter_track` table. To look at a specific counter use a query like:
+
+TODO: insert example query
+
+## Linux kernel tracing
+Perfetto integrates with [Linux kernel event tracing](https://www.kernel.org/doc/Documentation/trace/ftrace.txt).
+While Perfetto has special support for some events (for example see [CPU Scheduling](#cpu-scheduling)) Perfetto can collect arbitrary events.
+This config collects four Linux kernel events: 
+
+```protobuf
+data_sources {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "ftrace/print"
+      ftrace_events: "sched/sched_switch"
+      ftrace_events: "task/task_newtask"
+      ftrace_events: "task/task_rename"
+    }
+  }
+}
+```
+
+A wildcard can be used to collect all events in a category:
+
+```protobuf
+data_sources {
+  config {
+    name: "linux.ftrace"
+    ftrace_config {
+      ftrace_events: "ftrace/print"
+      ftrace_events: "sched/*"
+    }
+  }
+}
+```
+
+The full configuration options for ftrace can be seen in [ftrace_config.proto](/protos/perfetto/config/ftrace/ftrace_config.proto).
+
+
+## Process Stats
+
+The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
+
+![](/docs/images/proc_stat.png)
+
+Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
+
+To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in your process stats config. X must be greater than 100ms to avoid excessive CPU usage. Details about the specific counters being collected can be found in [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto).
+
+Example config: 
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        process_stats_config {
+            scan_all_processes_on_start: true
+            proc_stats_poll_ms: 1000
+        }
+    }
+}
+```
+
+For more configuration options see [process_stats_config.proto](/protos/perfetto/config/process_stats/process_stats_config.proto). See [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto) and [process_tree.proto](/protos/perfetto/trace/ps/process_tree.proto) for more detailed information about all the information that can be collected.
+
+The process/thread associations end up in the process and thread tables in the trace processor.
+Run the following query to see them:
+
+``` sql
+select * from thread join process using(upid)
+```
+
+To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
+
+TODO: Add example query for proc stat counters
+
+
+## Inode Map
+TODO: Cut inode map? Maybe we don't want to support it.
+
+The inode map data source provides inode to filename resolution.
+
+WARNING: Enabling this data source will negatively affect tracing performance.
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.inode_file_map"
+        inode_file_config {
+            scan_interval_ms: 1000
+        }
+    }
+}
+```
+
+The configuration options can be found in [inode\_file\_config.proto](/protos/perfetto/config/inode_file/inode_file_config.proto). The output data format is specified in [inode\_file\_map.proto](/protos/perfetto/trace/filesystem/inode_file_map.proto).
+
+
