@@ -2,7 +2,7 @@
 
 ------
 
-_**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and allows SQL queries on trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with new events and deriving new events from the contents of the trace._
+_**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and exposes an SQL interface for querying trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with user-friendly descriptions and deriving new events from the contents of the trace._
 
 ## Quickstart
 
@@ -87,11 +87,11 @@ Tracks can be split into various types based on the type of event they contain a
 
 ### Threads and processes
 
-TODO: talk about utids and upids here
+The handling of threads and processes needs special care when considered in the context of tracing; identifiers for threads and processes (e.g. `pid`/`tgid` and `tid` in Android/macOS/Linux) can be reused by the operating system over the course of a trace. This means they cannot be relied upon as a unique identifier when querying tables in trace processor.
+
+To solve this problem, the trace processor uses `utid` (_unique_ tid) for threads and `upid` (_unique_ pid) for processes. All references to threads and processes (e.g. in CPU scheduiling data, thread tracks) uses `utid` and `upid` instead of the system identifiers.
 
 ## Object-oriented tables
-
-NOTE: Before reading this section (and the rest of this page), it is recommanded that readers be familar with the [quickstart](/docs/quickstart/trace-analysis.md) and [concepts](/docs/TODO.md) sections.
 
 ### Overview
 
@@ -224,9 +224,9 @@ Currently, alerts are not implemented in the trace processor but the API to crea
 
 NOTE: we do not plan on supporting case where alerts need to be added to existing events. Instead, new events should be created using annotations and alerts added on these instead; this is because the trace processor storage is append-only.
 
-## Appendix: table inheritance rules
+## Appendix: table inheritance
 
-Concretely, inheritance between tables works like so:
+Concretely, the rules for inheritance between tables works are as follows:
 
 * Every row in a table has an `id` which is unique for a hierarchy of tables.
   * For example, every `track` will have an `id` which is unique among all tracks (regardless of the type of track)
@@ -244,8 +244,6 @@ Concretely, inheritance between tables works like so:
   * This allows _dynamic casting_ of a row to its most specific type
   * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
 
-The above rules are best summarised in this diagram.
+This is best summarised in this diagram.
 
 TODO: add a diagram with the columns in SQL hierarchy
-
-NOTE: To ensure that inheritance is performance efficient, the trace processor does not actually duplicate rows behind the scenes. Instead, it stores data in each row only once in large arrays and uses efficient data structures (e.g. bitvectors) to index into the arrays.
