@@ -35,6 +35,7 @@
 * [Design documents](#)
     * [heapprofd design](design-docs/heapprofd-design.md)
     * [heapprofd design: wire protocol](design-docs/heapprofd-wire-protocol.md)
+    * [C++ API and Tracing Protocol ABI](design-docs/api-and-abi.md)
 * [Old Stuff](#)
   * [Development workflow](#)
     * [Build instructions](old/build-instructions-old.md)
