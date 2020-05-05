@@ -82,7 +82,7 @@ function genType(pType, depth) {
       const field = pType.fields[fieldName];
       let type = field.type;
       if (field.repeated) {
-        type = "[" + type + "]";
+        type = `${type}[]`;
       }
       if (field.resolvedType) {
         // The TraceConfig proto is linked from the TracePacket reference.

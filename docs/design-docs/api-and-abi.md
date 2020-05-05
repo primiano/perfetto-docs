@@ -1,4 +1,4 @@
-# C++ API and Tracing Protocol ABI
+# Tracing API and ABI: surfaces and stabillity
 
 This document describes the API and ABI surface of the
 [Perfetto Client Library][cli_lib], what can be expected to be stable long-term
@@ -8,27 +8,30 @@ and what not.
 
 * The public C++ API in `include/perfetto/tracing/` is mostly stable but can
   occasionally break at compile-time throughout 2020.
-* The C++ API within `include/perfetto/ext/` is internal-only and reserved to
-  to Chromium.
+* The C++ API within `include/perfetto/ext/` is internal-only and exposed only
+  for Chromium.
 * The tracing protocol ABI is based on protobuf-over-UNIX-socket and shared
   memory. It is long-term stable and maintains compatiblility in both directions
   (old service + newer client and viceversa).
-* The [`TracePacket`][trace-packet-proto] proto is updated maintaining backwards
-  compatibility unless a packet is marked as experimental. Trace Processor
+* The [DataSourceDescriptor][data_source_descriptor.proto],
+  [DataSourceConfig][data_source_config.proto] and
+  [TracePacket][trace-packet-ref] protos ae updated maintaining backwards
+  compatibility unless a message is marked as experimental. Trace Processor
   deals with importing older trace formats.
 * There isn't a version number neither in the trace file nor in the tracing
   protocol and there will never be one. Feature flags are used when necessary.
 
 ## C++ API
 
+The Client Library C++ API allows an app to contribute to the trace with custom
+trace events. Its headers live under [`include/perfetto/`](/include/perfetto).
 
-The API of the client library is a set of C++ interfaces defined in
-[`include/perfetto/`](/include/perfetto) that allow an app to contribute to the
-trace with custom trace events.
-There are different tiers of this API, offering increasingly higher expressive
-power and complexity, built on top of each other.
+There are three different tiers of this API, offering increasingly higher
+expressive power, at the cost of increased complexity. The three tiers are built
+on top of each other. (Googlers, for more details see also
+[go/perfetto-client-api](http://go/perfetto-client-api)).
 
-![C++ API](/docs/images/cpp-api.png)
+![C++ API](/docs/images/api-and-abi.png)
 
 #### Track Event (public)
 
@@ -53,9 +56,9 @@ Both the Track Event API and the custom data source are meant to be a public
 API.
 
 WARNING: The team is still iterating on this API surface. While we try to avoid
-deliberate breakages, some occasional compile-time breakages might be
-encountered when updating the library. The interface is expected to fully
-stabilize by the end of 2020.
+         deliberate breakages, some occasional compile-time breakages might be
+         encountered when updating the library. The interface is expected to
+         stabilize by the end of 2020.
 
 #### Producer / Consumer API (internal)
 
@@ -64,11 +67,11 @@ This consists of all the interfaces defined in the
 to the lowest levels of the Perfetto internals (manually registering producers
 and data sources, handling all IPCs).
 
-These interfaces are and will always be highly unstable. We highly discourage
-any project from depending on this API because it is too wide and extremely
+These interfaces will always be highly unstable. We highly discourage
+any project from depending on this API because it is too complex and extremely
 hard to get right.
-This API surface exists only for the chromium project. Chromium has unique
-challenges (e.g., its own IPC system, complex sandboxing model) and has dozens
+This API surface exists only for the Chromium project, which has unique
+challenges (e.g., its own IPC system, complex sandboxing models) and has dozens
 of subtle use cases accumulated thtough over ten years of legacy of
 chrome://tracing. The team is continuously reshaping this surface to gradually
 migrate all Chrome Tracing use cases over to Perfetto.
@@ -81,21 +84,20 @@ inject tracing data into the tracing service:
 
  * [Socket protocol](#socket-protocol)
  * [Shared memory layout](#shmem-abi)
- * [Protobuf messages](#protos): `DataSourceConfig`, `DataSourceDescriptor`,
-   `TracePacket` and their nested message types.
+ * [Protobuf messages](#protos)
 
-The tracing protocol is long-term and binary stable across platforms and doesn't
-depend on the language (although it has been designed with C++ clients in mind).
-The protocol ABI evolves maintaining backwards compatiblility.
+The whole tracing protocol ABI is binary stable across platforms and is updated
+maintaining both backwards and forward compatiblility. No breaking changes
+have been introduced since its first revision in Android 9 (Pie, 2018).
+See also the [ABI Stability](#abi-stability) section below.
 
 ![Tracing protocol](/docs/images/tracing-protocol.png)
 
 ### {#socket-protocol} Socket protocol
 
 At the lowest level, the tracing protocol is initiated with a UNIX socket of
-type `SOCK_STREAM` to the tracing service (`traced`).
-The tracing service listens on two distinct sockets: the producer and consumer
-socket, described below.
+type `SOCK_STREAM` to the tracing service.
+The tracing service listens on two distinct sockets: producer and consumer.
 
 ![Socket protocol](/docs/images/socket-protocol.png)
 
@@ -138,7 +140,7 @@ the folllwing frame types:
     `has_more: true`, to notify the client more responses for the same invocation
     will follow.
 
-Here is how a typical data flow looks like:
+Here is how the traffic over the IPC socket looks like:
 
 ```
 # [Prd > Svc] Bind request for the remote service named "producer_port"
@@ -255,13 +257,12 @@ Mojo endpoints [`Producer{Client,Host}` and `Consumer{Client,Host}`][mojom].
 This section describes the binary interface of the memory buffer shared between
 a producer process and the tracing service (SMB).
 
-More details about the rationale of the shared memory buffer and instructions on
-how to tweak it are available in the
-[buffers and dataflow doc](/docs/recording/buffers.md)
-
 The SMB is a staging area to decouple data sources living in the Producer
 and allow them to do non-blocking async writes. A SMB is small-ish, typically
 hundreds of KB. Its size is configurable by the producer when connecting.
+For more architectural details about the SMB see also the
+[buffers and dataflow doc](/docs/recording/buffers.md) and the
+[shared_memory_abi.h] sources.
 
 #### Obtaining the SMB
 
@@ -279,25 +280,24 @@ service supports this, it acks the request setting
 time of writing this feature is used only by Chrome for dealing with lazy
 Mojo initialization during startup tracing.
 
-#### SMB memory layout: pages and chunks
+#### SMB memory layout: pages, chunks, fragments and packets
 
 The SMB is partitioned into fixed-size pages. A SMB page must be an integer
 multiple of 4KB. The only valid sizes are: 4KB, 8KB, 16KB, 32KB.
-The size of a SMB page is determined by each Producer at connection time, via
-the `InitializeConnectionRequest.shared_memory_page_size_hint_bytes` and cannot
-be changed afterwards.
-Different producers can have SMB(s) that have a page size different from each
-other's, but the page size will be constant throughout all the lifetime of the
-producer process.
 
-Page(s) are partitioned by the Producer into variable size Chunk(s).
+The size of a SMB page is determined by each Producer at connection time, via
+the `shared_memory_page_size_hint_bytes` field of `InitializeConnectionRequest`
+and cannot be changed afterwards. All pages in the SMB have the same size,
+constant throughout the lifetime of the producer process.
 
 ![Shared Memory ABI Overview](/docs/images/shmem-abi-overview.png)
 
-**A page** is a portion of the shared memory buffer and defines the granularity
-of the interaction between the Producer and tracing Service.
-When a producer fills a SMB page it sends `CommitData` IPC to the service,
-asking it to copy its contents into the central non-shared buffers.
+**A page** is a fixed-sized partition of the shared memory buffer and is just a
+container of chunks.
+The Producer can partition each Page SMB using a limited number of predetermined
+layouts (1 page : 1 chunk; 1 page : 2 chunks and so on).
+The page layout is stored in a 32-bit atomic word in the page header. The same
+32-bit word contains also the state of each chunk (2 bits per chunk).
 
 Having fixed the total SMB size (hence the total memory overhead), the page
 size is a triangular tradeoff between:
@@ -309,82 +309,129 @@ size is a triangular tradeoff between:
    Service won't manage to drain them and the SMB remains full.
 
 The page size, on the other side, has no implications on memory wasted due to
-fragmentations (see Chunk below).
+fragmentation (see Chunk below).
 
-**A chunk** A chunk is a portion of a Page which is written by a Producer.
-A chunk contains a linear sequence of [`TracePacket(s)`][trace-packet-proto]
-(the root trace proto). A chunk is owned exclusively by one data source on
-a per-thread basis.
+**A chunk** A chunk is a portion of a Page and contains a linear sequence of
+[`TracePacket(s)`][trace-packet-ref] (the root trace proto).
+
+A Chunk defines the granularity of the interaction between the Producer and
+tracing Service. When a producer fills a chunk it sends `CommitData` IPC to the
+service, asking it to copy its contents into the central non-shared buffers.
+
+A a chunk can be in one of the following four states:
+
+* `Free` : The Chunk is free. The Service shall never touch it, the Producer
+   can acquire it when writing and transition it into the `BeingWritten` state.
+
+* `BeingWritten`: The Chunk is being written by the Producer and is not
+    complete yet (i.e. there is still room to write other trace packets).
+    The Service never alter the state of chunks in the `BeingWritten` state
+    (but will still read them when flusing even if incomplete).
+
+* `Complete`: The Producer is done writing the chunk and won't touch it
+  again. The Service can move it to its non-shared ring buffer and mark the
+  chunk as `BeingRead` -> `Free` when done.
+
+* `BeingRead`: The Service is moving the page into its non-shared ring
+  buffer. Producers never touch chunks in this state.
+  _Note: this state ended up being never used as the service directly
+   transitions chunks from `Complete` back to `Free`_.
+
+A chunk is owned exclusively by one thread of one data source of the producer.
 
 Chunks are essentially single-writer single-thread lock-free arenas. Locking
 happens only when a Chunk is full and a new one needs to be acquired.
-Locking happens only within the scope of a Producer process.
 
+Locking happens only within the scope of a Producer process.
 Inter-process locking is not generally allowed. The Producer cannot lock the
 Service and viceversa. In the worst case, any of the two can starve the SMB, by
 marking all chunks as either being read or written. But that has the only side
-effect of losing the trace data. The only case when locking can occur is when
+effect of losing the trace data.
+The only case when stalling on the writer-side (the Producer) can occur is when
 a data source in a producer opts in into using the
-[`BufferExhaustedPolicy.kStall`](/docs/recording/buffers.md) policy.
+[`BufferExhaustedPolicy.kStall`](/docs/recording/buffers.md) policy and the SMB
+is full.
 
-A chunk cannot be written concurrently by two data sources. Protobufs must be
-encoded as contiguous byte streams and cannot be interleaved. Therefore, on
-the Producer side, a chunk is almost always owned exclusively by one thread.
-
-The Producer can decide to partition each page into a number of limited
-configurations (e.g., 1 page == 1 chunk, 1 page == 2 chunks and so on). This
-layout is stored in the page header.
-
-**[`TracePacket`][trace-packet-proto]** is the atom of tracing. Putting aside
+**[TracePacket][trace-packet-ref]** is the atom of tracing. Putting aside
 pages and chunks a trace is conceptually just a concatenation of TracePacket(s).
 A TracePacket can be big (up to 64 MB) and can span across several chunks, hence
 across several pages.
 A TracePacket can therefore be >> chunk size, >> page size and even >> SMB size.
-
 The Chunk header carries metadata to deal with the TracePacket splitting.
 
-The memory layout of a Page is the following:
+Overview of the Page, Chunk, Fragment and Packet concepts:<br>
+![Shared Memory ABI concepts](/docs/images/shmem-abi-concepts.png)
 
-```
- +===================================================+
- | Page header [8 bytes]                             |
- | Tells how many chunks there are, how big they are |
- | and their state (free, read, write, complete).    |
- +===================================================+
- +***************************************************+
- | Chunk #0 header [8 bytes]                         |
- | Tells how many packets there are and whether the  |
- | whether the 1st and last ones are fragmented.     |
- | Also has a chunk id to reassemble fragments.    |
- +***************************************************+
- +---------------------------------------------------+
- | Packet #0 size [varint, up to 4 bytes]            |
- + - - - - - - - - - - - - - - - - - - - - - - - - - +
- | Packet #0 payload                                 |
- | A TracePacket protobuf message                    |
- +---------------------------------------------------+
-                         ...
- + . . . . . . . . . . . . . . . . . . . . . . . . . +
- |      Optional padding to maintain aligment        |
- + . . . . . . . . . . . . . . . . . . . . . . . . . +
- +---------------------------------------------------+
- | Packet #N size [varint, up to 4 bytes]            |
- + - - - - - - - - - - - - - - - - - - - - - - - - - +
- | Packet #N payload                                 |
- | A TracePacket protobuf message                    |
- +---------------------------------------------------+
-                         ...
- +***************************************************+
- | Chunk #M header [8 bytes]                         |
-                         ...
-```
+Memory layout of a Page:<br>
+![SMB Page layout](/docs/images/shmem-abi-page.png)
+
+Because a packet can be larger than a page, the first and the last packets in
+a chunk can be fragments.
+
+![TracePacket spanning across SMB chunks](/docs/images/shmem-abi-spans.png)
+
+#### Post-facto patching through IPC
+
+If a TracePacket is particularly large, it is very likely that the chunk that
+contains its initial fragments is committed into the central buffers and removed
+from the SMB by the time the last fragments of the same packets is written.
+
+Nested messages in protobuf are prefixed by their length. In a zero-copy
+direct-serialization scenario like tracing, the length is known only when the
+last field of a submessage is written and cannot be known upfront.
+
+Because of this, it is possible that when the last fragment of a packet is
+written, the writer needs to backfill the size prefix in an earlier fragment,
+which now might have disappeared from the SMB.
+
+In order to do this, the tracing protocol allows to patch the contents of a
+chunk through the `CommitData` IPC (see
+[`CommitDataRequest.ChunkToPatch`][commit_data_request.proto]) after the tracing
+service copied it into the central buffer. There is no guarantee that the
+fragment will be still there (e.g., it can be over-written in ring-buffer mode).
+The service will patch the chunk only if it's still in the buffer and only if
+the producer ID that wrote it matches the Producer ID of the patch request over
+IPC (the Producer ID is not spoofable and is tied to the IPC socket file
+descriptor).
 
 ### Proto definitions
 
+The following protobuf messages are part of the overall trace protocol ABI and
+are updated maintaining backward-compatibility, unless marked as experimental
+in the comments.
 
+TIP: See also the _Updating A Message Type_ section of the
+    [Protobuf Language Guide][proto-updating] for valid ABI-compatible changes
+    when updating the schema of a protobuf message.
 
+#### DataSourceDescriptor
 
-## ABI Stability
+Defined in [data_source_descriptor.proto]. This message is sent
+Producer -> Service through IPC on the Producer socket during the Producer
+initialization, before any tracing session is started. This message is used
+to register advertise a data source and its capabilities (e.g., which GPU HW
+counters are supported, their possible sampling rates).
+
+#### DataSourceConfig
+
+Defined in [data_source_config.proto]. This message is sent:
+
+* Consumer -> Service through IPC on the Consumer socket, as part of the
+  [TraceConfig](/docs/recording/config.md) when a Consumer starts a new tracing
+  session.
+
+* Service -> Producer through IPC on the Producer socket, as a reaction to the
+  above. The service passes through each `DataSourceConfig` section defined in
+  the `TraceConfig` to the corresponding Producer(s) that advertise that data
+  source.
+
+#### TracePacket
+
+Defined in [trace_packet.proto]. This is the root object written by any data
+source into the SMB when producing any form of trace event.
+See the [TracePacket reference][trace-packet-ref] for the full details.
+
+## {#abi-stability} ABI Stability
 
 All the layers of the tracing protocol ABI are long-term stable and can only
 be changed maintaining backwards compatiblity.
@@ -437,18 +484,31 @@ service, which might not support some newer features.
   that behavior cannot be inferred by the presence of a method, a new feature
   flag  must be exposed through the `QueryCapabilities()` method.
 
-
 ## Static linking vs shared library
 
-The Perfetto Client Library is only founs in the form  meant to be statically linked.
+The Perfetto Client Library is only available in the form of a static library
+and a single-source amalgamated SDK (which is effectively a static library).
+The library implements the Tracing Protocol ABI so, once statically linked,
+depends only on the socket and shared memory protocol ABI, which are guaranteed
+to be stable.
 
+No shared library distributions are available. We strongly discourage teams from
+attempting to build the tracing library as shared library and use it from a
+different linker unit. It is fine to link AND use the client library within
+the same shared library, as long as none of the perfetto C++ API is exported.
 
------
+The `PERFETTO_EXPORT` annotations are only used when building the third tier of
+the client library in chromium component builds and cannot be easily repurposed
+for delineating shared library boundaries for the other two API tiers.
 
+This is because the C++ the first two tiers of the Client Library C++ API make
+extensive use of inline headers and C++ templates, in order to allow the
+compiler to see through most of the layers of abstraction.
 
-lack of versioning.
-
-Android versions
+Maintaining the C++ ABI across hundreds of inlined functions and a shared
+library is prohibitively expensive and too prone to break in extremely subtle
+ways. For this reason the team has ruled out shared library distributions for
+the time being.
 
 [cli_lib]: /docs/TODO.md
 [selinux_producer]: https://cs.android.com/search?q=perfetto_producer%20f:sepolicy.*%5C.te&sq=
@@ -457,5 +517,10 @@ Android versions
 [proto_rpc]: https://developers.google.com/protocol-buffers/docs/proto#services
 [producer_port.proto]: /protos/perfetto/ipc/producer_port.proto
 [consumer_port.proto]: /protos/perfetto/ipc/consumer_port.proto
+[trace_packet.proto]: /protos/perfetto/trace/trace_packet.proto
 [data_source_descriptor.proto]: /protos/perfetto/common/data_source_descriptor.proto
-[trace-packet-proto]: /docs/reference/trace-packet-proto
+[data_source_config.proto]: /protos/perfetto/config/data_source_config.proto
+[trace-packet-ref]: /docs/reference/trace-packet-proto
+[shared_memory_abi.h]: /include/perfetto/ext/tracing/core/shared_memory_abi.h
+[commit_data_request.proto]: /protos/perfetto/common/commit_data_request.proto
+[proto-updating]: https://developers.google.com/protocol-buffers/docs/proto#updating

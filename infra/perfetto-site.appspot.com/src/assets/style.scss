@@ -508,6 +508,12 @@ h3 {
         * {
             max-width: 100%;
         }
+        code:not(.code-block) {
+            background: #F8F9FA;
+            border: 1px solid #E8EAED;
+            border-radius: 6px;
+            padding: 1px 4px;
+        }
         .code-block {
             overflow-x: auto;
             white-space: pre;
