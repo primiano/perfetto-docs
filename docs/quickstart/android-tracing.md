@@ -1,5 +1,5 @@
 # System Tracing on Android
-------
+
 `perfetto` enables you to collect performance information from your Android devices. 
 These traces contain data collected from a variety of sources such as:
 

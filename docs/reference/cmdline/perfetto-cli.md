@@ -2,8 +2,6 @@
 
 This section describes how to use ADB to call `perfetto` and generate a trace.
 
-----
-
 `perfetto` includes the following two modes that determine the data sources
 it uses to record your trace:
 

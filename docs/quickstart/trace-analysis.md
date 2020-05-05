@@ -1,8 +1,6 @@
 # Quickstart: Trace Analysis
 
--------
-
-_**TLDR**: This quickstart will give some example SQL queries showing how to retrieve data from the trace processor._
+_This quickstart will give some example SQL queries showing how to retrieve data from the trace processor._
 
 ## Prerequistes
 

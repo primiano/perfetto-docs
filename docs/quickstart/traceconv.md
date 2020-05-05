@@ -1,8 +1,6 @@
 # Quickstart: trace conversion
 
--------
-
-_**TLDR**: This quickstart demonstrates how Perfetto traces can be converted into other trace formats using the `traceconv` tool._
+_This quickstart demonstrates how Perfetto traces can be converted into other trace formats using the `traceconv` tool._
 
 ## Prerequistes
 
@@ -18,8 +16,7 @@ The supported output formats are:
 - systrace format: the ftrace text format used by Android systrace
 - profile format (heap profiler only): pprof-like format. This is only valid for traces with [heap profiler](/src/profiling/memory/README.md) dumps
 
-Setup
----------
+## Setup
 
 To begin, download the `traceconv` [here](). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
 

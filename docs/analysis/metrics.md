@@ -1,7 +1,5 @@
 # Trace-based metrics
 
--------
-
 ## Background
 
 Using traces allows computation of reproducible metrics in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected.

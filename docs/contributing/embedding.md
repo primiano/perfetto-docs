@@ -1,7 +1,5 @@
 # Embedding Perfetto
 
-------
-
 ## Trace Processor
 
 ### Building

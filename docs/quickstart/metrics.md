@@ -1,8 +1,7 @@
 # Quickstart: trace-based metrics
 
--------
-
-_**TLDR**: This quickstart demonstrates to run trace-based metrics using `trace_processor`._
+_This quickstart demonstrates to run trace-based metrics using
+`trace_processor_shell`._
 
 ## Prerequistes
 
