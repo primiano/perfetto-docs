@@ -81,6 +81,9 @@ function genType(pType, depth) {
     for (const fieldName in pType.fields) {
       const field = pType.fields[fieldName];
       let type = field.type;
+      if (field.repeated) {
+        type = "[" + type + "]";
+      }
       if (field.resolvedType) {
         // The TraceConfig proto is linked from the TracePacket reference.
         // Instead of recursing and generating the TraceConfig types all over
