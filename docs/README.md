@@ -91,7 +91,8 @@ See [trace-format](old/trace-format.md) for more details.
 
 ## Bugs
 * For bugs affecting Android or the tracing internals use the internal
-bug tracker ([go/perfetto-bugs](http://goto.google.com/perfetto-bugs)).
+bug tracker ([go/perfetto-bugs](http://goto.google.com/perfetto-bugs)) or
+[GitHub issues](https://github.com/google/perfetto/issues).
 * For bugs affecting Chrome use http://crbug.com, Component:Speed>Tracing
 label:Perfetto.
 
