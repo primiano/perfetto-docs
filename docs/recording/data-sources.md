@@ -157,7 +157,7 @@ The logs can be investigated along with other information in the trace using the
 If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
 
 ```sql
-select * from android_logs where tag = "perfetto"
+select * from android_logs where tag = "perfetto" order by ts
 ```
 
 
