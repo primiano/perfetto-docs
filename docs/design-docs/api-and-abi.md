@@ -33,7 +33,7 @@ on top of each other. (Googlers, for more details see also
 
 ![C++ API](/docs/images/api-and-abi.png)
 
-#### Track Event (public)
+### Track Event (public)
 
 This mainly consists of the `TRACE_EVENT*` macros defined in
 [`track_event.h`](/include/perfetto/tracing/track_event.h).
@@ -41,7 +41,7 @@ Those macros provide apps with a quick and easy way to add common types of
 instrumentation points (slices, counters, instant events).
 For details and instructions see the [Client Library doc][cli_lib].
 
-#### Custom Data Sources (public)
+### Custom Data Sources (public)
 
 This consists of the `perfetto::DataSource` base class and the
 `perfetto::Tracing` controller class defined in
@@ -60,7 +60,7 @@ WARNING: The team is still iterating on this API surface. While we try to avoid
          encountered when updating the library. The interface is expected to
          stabilize by the end of 2020.
 
-#### Producer / Consumer API (internal)
+### Producer / Consumer API (internal)
 
 This consists of all the interfaces defined in the
 [`include/perfetto/ext`](/include/perfetto/ext) directory. These provide access

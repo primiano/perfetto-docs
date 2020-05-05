@@ -509,7 +509,7 @@ h3 {
             max-width: 100%;
         }
         code:not(.code-block) {
-            background: #F8F9FA;
+            background: hsla(210, 17%, 90%, 0.2);
             border: 1px solid #E8EAED;
             border-radius: 6px;
             padding: 1px 4px;
@@ -517,7 +517,11 @@ h3 {
         .code-block {
             overflow-x: auto;
             white-space: pre;
+            border-radius: 6px;
+            box-shadow: 1px 1px 6px #999;
+            border-top: 5px solid #8BC34A;
         }
+
         .anchor {
             margin-left: -29px;
             padding-right: 5px;
