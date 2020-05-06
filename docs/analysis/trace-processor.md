@@ -8,7 +8,7 @@ The [quickstart](/docs/TODO.md) provides a quick introduction to queries using t
 
 ## Introduction
 
-Traces files are optimized for fast, low overhead writing. This means, events are written in a format from which it is difficult to query for useful information. This is compounded by the number of legacy formats which are still in use and need to be supported in trace analysis tools.
+Events in a trace are optimized for fast, low-overhead writing. This means they are written in a format from which it is difficult to query for meaningful information. This is compounded by the number of legacy formats which are still in use and need to be supported in trace analysis tools.
 
 The trace processor abstracts this complexity by parsing traces, extracting the data inside and exposing it in a set of database tables which can be queried with SQL.
 
@@ -38,7 +38,7 @@ The trace processor is embedded in a wide variety of trace analysis tools includ
 
 ## Concepts
 
-TODO: write a brief intro to concepts here
+The trace processor has some foundational terminology and concepts which are used in the rest of documentation.
 
 ### Events
 
@@ -54,13 +54,13 @@ A slice refers to an interval of time with some data describing what was happeni
 - Atrace slices on Android
 - Userspace slices from Chrome
 
-TODOL: add a picture from the UI
+TODO: add a picture from the UI
 
 A counter is a continuous value which varies over time. Some examples of counters include:
 
 - CPU frequency for each CPU core
 - RSS memory events - both from the kernel and polled from /proc/stats
-- Atrace counter events from Android
+- atrace counter events from Android
 - Chrome counter events
 
 ### Tracks
@@ -83,15 +83,13 @@ Tracks can be split into various types based on the type of event they contain a
 - Counter tracks are not assocated to any context and contain counters
 - CPU counter tracks are associated to a single CPU and contain counters
 
-### Threads and processes
+### Thread and process identifiers
 
 The handling of threads and processes needs special care when considered in the context of tracing; identifiers for threads and processes (e.g. `pid`/`tgid` and `tid` in Android/macOS/Linux) can be reused by the operating system over the course of a trace. This means they cannot be relied upon as a unique identifier when querying tables in trace processor.
 
 To solve this problem, the trace processor uses `utid` (_unique_ tid) for threads and `upid` (_unique_ pid) for processes. All references to threads and processes (e.g. in CPU scheduiling data, thread tracks) uses `utid` and `upid` instead of the system identifiers.
 
 ## Object-oriented tables
-
-### Overview
 
 Modelling an object with many types  is a common problem in trace processor. For example, tracks can come in many varieties (thread tracks, process tracks, counter tracks etc). Each type has a piece of data associated to it unique to that type; for example, thread tracks have a `utid` of the thread, counter tracks have the `unit` of the counter.
 
@@ -182,7 +180,7 @@ GROUP BY thread_name
 
 TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
 
-Metrics are a significant part of trace processor so are documented on a [dedicated page](/docs/analysis/metrics.md).
+The metrics subsystem is a significant part of trace processor and thus is documented on its own [page](/docs/analysis/metrics.md).
 
 ## Annotations
 
@@ -240,6 +238,5 @@ Concretely, the rules for inheritance between tables works are as follows:
   * This allows _dynamic casting_ of a row to its most specific type
   * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
 
-This is best summarised in this diagram.
+The [track table hierarchy](/docs/TODO.md) above best summarises these rules.
 
-TODO: add a diagram with the columns in SQL hierarchy
