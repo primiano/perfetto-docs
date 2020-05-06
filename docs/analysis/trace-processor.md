@@ -32,7 +32,7 @@ The formats supported by trace processor include:
 
 The trace processor is embedded in a wide variety of trace analysis tools including:
 
-- [trace_processor](/docs/TODO.md), a standalone binary and the reference embedder of the library
+- [trace_processor](/docs/TODO.md), a standalone binary providing a shell interface (and the reference embedder)
 - [Perfetto UI](/docs/TODO.md), in the form of a WebAssembly module
 - [Android Graphics Inspector](/docs/TODO.md)
 - [Android Studio](/docs/TODO.md)
