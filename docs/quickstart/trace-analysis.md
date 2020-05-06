@@ -5,11 +5,11 @@ _This quickstart will give some example SQL queries showing how to retrieve data
 ## Prerequistes
 
 - A device running macOS/Linux
-- A trace file in a [supported format](). This [trace]() can be used as an example for running the queries in this quickstart.
+- A trace file in a [supported format](/docs/TODO.md). This [trace](/docs/TODO.md) can be used as an example for running the queries in this quickstart.
 
 ## Setup
 
-To begin, download the trace processor [here](). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
+To begin, download the trace processor [here](/docs/TODO.md). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
 
 Then, start an interactive prompt for SQL queries
 
