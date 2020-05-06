@@ -5,7 +5,7 @@ _This quickstart will give some example SQL queries showing how to retrieve data
 ## Prerequistes
 
 - A device running macOS/Linux
-- A trace file in a [supported format](). [This trace]() is used throughout this guide.
+- A trace file in a [supported format](). This [trace]() can be used as an example for running the queries in this quickstart.
 
 ## Setup
 
@@ -27,10 +27,12 @@ Slices are events which have name and span some duration of time.
 ```console
 > SELECT ts, dur, name FROM slice
 ts                   dur                  name
--------------------- -------------------- --------------------
-     261187017446933                44323 requestNextVsync
-     261187020818340               358594 onMessageReceived
-     261187020825163                 9948 wait
+-------------------- -------------------- ---------------------------
+     261187017446933               358594 eglSwapBuffersWithDamageKHR
+     261187017518340                  357 onMessageReceived
+     261187020825163                 9948 queueBuffer
+     261187021345235                  642 bufferLoad
+     261187121345235                  153 query
      ...
 ```
 
@@ -44,10 +46,12 @@ Counters are events with a value which changes over time.
 > SELECT ts, value FROM counter
 ts                   value
 -------------------- --------------------
-     261187012149954    4294967295.000000
-     261187012399172    4294967295.000000
-     261187012447402    4294967295.000000
-     261187012535839             0.000000
+     261187012149954          1454.000000
+     261187012399172          4232.000000
+     261187012447402         14304.000000
+     261187012535839         15490.000000
+     261187012590890         17490.000000
+     261187012590890         16590.000000
 ...
 ```
 
@@ -61,13 +65,18 @@ Scheduling slices are slices which indicate which thread was scheduled on which 
 > SELECT ts, dur, cpu, utid FROM sched
 ts                   dur                  cpu                  utid
 -------------------- -------------------- -------------------- --------------------
-     261187012170995               247188                    2                  767
+     261187012170489               267188                    0                  390
+     261187012170995               247153                    1                  767
      261187012418183                12812                    2                 2790
-     261187012421099               220000                    4                  683
-     261187012430995                72396                    2                 2791
+     261187012421099               220000                    6                  683
+     261187012430995                72396                    7                 2791
 ...
 ```
 
 ## Next steps
 
-TODO: link to trace processor documentation and reference
+There are several options for exploring more of the trace analysis features Perfetto provides:
+
+- The [trace processor documentation](/docs/TODO.md) gives more information about how to work with trace processor including details on how to write queries and how tables in trace processor are organized.
+- The [trace-based metrics quickstart](/docs/TODO.md) gives an introduction on how to summarise traces into metrics which can be further processed using auotmated tools.
+- The [trace conversion quickstart](/docs/TODO.md) gives an overview on how to convert Perfetto traces to legacy formats to integrate with existing tooling.
