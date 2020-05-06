@@ -40,7 +40,7 @@ process).
 A consumer is a trusted entity (a cmdline client on Linux/Android, an interface
 of the Browser process in Chrome) that controls (non-exclusively) the tracing service and reads back (destructively) the trace buffers.
 A consumer has the ability to:
-- Send a [trace config](trace-config.md) to the service, determining:
+- Send a [trace config](#) to the service, determining:
  - How many trace buffers to create.
  - How big the trace buffers should be.
  - The policy for each buffer (*ring-buffer* or *stop-when-full*).

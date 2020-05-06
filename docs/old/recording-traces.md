@@ -49,8 +49,7 @@ ds_cfg = cfg.add_data_sources()->mutable_config();
 ds_cfg->set_name("my_data_source");
 ```
 
-Read more about [advanced trace config features](trace-config.md). After
-building the trace config, you can begin tracing:
+After building the trace config, you can begin tracing:
 
 ```C++
 std::unique_ptr<perfetto::TracingSession> tracing_session(

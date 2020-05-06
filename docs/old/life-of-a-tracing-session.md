@@ -11,7 +11,7 @@ during a tracing session, with references to code and IPC requests / responses.
     default.
 3.  A consumer connects to the tracing service and sets up the IPC channel.
 4.  The consumer starts a tracing session sending a
-    [trace config](trace-config.md) to the service through the
+    [trace config](/docs/TODO.md) to the service through the
     [`EnableTracing`](/protos/perfetto/ipc/consumer_port.proto#65) IPC.
 6.  The service creates as many new trace buffers as specified in the config.
 7.  The service iterates through the
