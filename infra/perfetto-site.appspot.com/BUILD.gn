@@ -92,6 +92,7 @@ action("node_modules") {
 copy("assets_dist") {
   sources = [
     "node_modules/highlight.js/styles/tomorrow-night.css",
+    "node_modules/mermaid/dist/mermaid.min.js",
     "src/assets/analysis.png",
     "src/assets/app_profiling.png",
     "src/assets/app_tracing.png",

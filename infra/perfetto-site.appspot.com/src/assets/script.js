@@ -118,10 +118,34 @@ function setupNav() {
   }
 }
 
+// If the page contains a ```mermaid ``` block, lazily loads the plugin and
+// renders.
+function initMermaid() {
+  const graphs = document.querySelectorAll('.mermaid');
+
+  // Skip if there are no mermaid graphs to render.
+  if (!graphs.length) return;
+
+  const script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = '/assets/mermaid.min.js';
+  script.addEventListener('load', () => {
+    console.log('loaded');
+    mermaid.initialize({startOnLoad:false, theme: 'forest' });
+    for (const graph of graphs) {
+      mermaid.init(undefined, graph);
+      graph.classList.add('rendered');
+    }
+  })
+  document.body.appendChild(script);
+}
+
 window.addEventListener('load', () => {
   setupSandwichMenu();
   setupNav();
   updateTOC();
+  initMermaid();
+
   const doc = document.querySelector('.doc');
   const passive = {passive: true};
   if (doc) {

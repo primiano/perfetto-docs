@@ -119,6 +119,10 @@ function renderLink(originalLinkFn, href, title, text) {
 }
 
 function renderCode(text, lang) {
+  if (lang === 'mermaid') {
+    return  `<div class="mermaid">${text}</div>`;
+  }
+
   let hlHtml = '';
   if (lang) {
     hlHtml = hljs.highlight(lang, text).value

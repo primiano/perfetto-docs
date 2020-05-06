@@ -6,7 +6,9 @@
   "main": "main.js",
   "author": "Perfetto Team",
   "license": "Apache-2.0",
-  "dependencies": {},
+  "dependencies": {
+    "mermaid": "^8.5.0"
+  },
   "devDependencies": {
     "concurrently": "^3.5.0",
     "ejs": "^3.0.1",

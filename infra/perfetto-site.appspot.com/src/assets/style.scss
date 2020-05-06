@@ -521,7 +521,14 @@ h3 {
             box-shadow: 1px 1px 6px #999;
             border-top: 5px solid #8BC34A;
         }
-
+        // Hide mermaid graphs until they are rendered, this is to avoid showing the
+        // mermaid source while the renderer generates the SVG.
+        .mermaid {
+            transition: opacity var(--anim-ease) 0.5s;
+            &:not(.rendered) {
+                opacity: 0;
+            }
+        }
         .anchor {
             margin-left: -29px;
             padding-right: 5px;
