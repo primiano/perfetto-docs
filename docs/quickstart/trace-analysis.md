@@ -80,3 +80,4 @@ There are several options for exploring more of the trace analysis features Perf
 - The [trace processor documentation](/docs/TODO.md) gives more information about how to work with trace processor including details on how to write queries and how tables in trace processor are organized.
 - The [trace-based metrics quickstart](/docs/TODO.md) gives an introduction on how to summarise traces into metrics which can be further processed using auotmated tools.
 - The [trace conversion quickstart](/docs/TODO.md) gives an overview on how to convert Perfetto traces to legacy formats to integrate with existing tooling.
+- The [SQL table reference](/docs/TODO.md) gives a comprehensive guide to the all the available tables in trace processor.
