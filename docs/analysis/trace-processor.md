@@ -103,7 +103,7 @@ Inheritance between the tables works in the natural way (i.e. how it works in OO
 
 TODO: add a diagram with the SQL hierarchy
 
-This [appendix](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
+[This appendix](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
 
 ### Tracks
 
@@ -119,7 +119,7 @@ A common question when querying tables in trace processor is: "how do I obtain t
 
 In trace processor, any context associated with all events on a track is found on the associated `track` tables.
 
-For example, to obtain the `utid` of any thread which emitted a `measure` slice, the following query could be used
+For example, to obtain the `utid` of any thread which emitted a `measure` slice
 
 ```sql
 SELECT utid
@@ -128,7 +128,7 @@ JOIN thread_track ON thread_track.id = slice.track_id
 WHERE slice.name = 'measure'
 ```
 
-Similarily, to obtain the `upid`s of any process which has a `mem.swap` counter greater than 1000,
+Similarily, to obtain the `upid`s of any process which has a `mem.swap` counter greater than 1000
 
 ```sql
 SELECT upid
@@ -150,6 +150,8 @@ If the source and type of the event is known beforehand (which is generally the 
 | counter    | cpu                | cpu_counter_track     | N/A                        |
 
 On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column will give the exact track table to join with.
+
+TODO: add a query here.
 
 ### Thread and process tables
 

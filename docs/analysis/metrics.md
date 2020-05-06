@@ -1,8 +1,6 @@
 # Trace-based metrics
 
-## Background
-
-Using traces allows computation of reproducible metrics in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected.
+_The metrics subsystem is a part of the [trace processor](/docs/TODO.md) which uses traces to compute reproducible metrics. It can be used in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected._
 
 TODO: add a picture showing trace to metrics
 
