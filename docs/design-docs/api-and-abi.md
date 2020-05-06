@@ -4,7 +4,7 @@ This document describes the API and ABI surface of the
 [Perfetto Client Library][cli_lib], what can be expected to be stable long-term
 and what not.
 
-#### TL;DR
+#### In summary
 
 * The public C++ API in `include/perfetto/tracing/` is mostly stable but can
   occasionally break at compile-time throughout 2020.
@@ -15,7 +15,7 @@ and what not.
   (old service + newer client and viceversa).
 * The [DataSourceDescriptor][data_source_descriptor.proto],
   [DataSourceConfig][data_source_config.proto] and
-  [TracePacket][trace-packet-ref] protos ae updated maintaining backwards
+  [TracePacket][trace-packet-ref] protos are updated maintaining backwards
   compatibility unless a message is marked as experimental. Trace Processor
   deals with importing older trace formats.
 * There isn't a version number neither in the trace file nor in the tracing
