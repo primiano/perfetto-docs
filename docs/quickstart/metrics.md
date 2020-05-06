@@ -2,6 +2,8 @@
 
 _This quickstart demonstrates to run trace-based metrics using `trace_processor_shell`._
 
+![](/docs/images/metrics-summary.png)
+
 ## Prerequistes
 
 - A device running macOS/Linux

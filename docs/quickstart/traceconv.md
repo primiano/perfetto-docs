@@ -2,6 +2,8 @@
 
 _This quickstart demonstrates how Perfetto traces can be converted into other trace formats using the `traceconv` tool._
 
+![](/docs/images/traceconv-summary.png)
+
 ## Prerequistes
 
 NOTE: Alternatively, skip to [this section](/docs/TODO.md) to use the Perfetto UI to convert traces to the Chrome JSON format and open these traces in the legacy UI (Catapult's chrome://tracing).
@@ -25,15 +27,15 @@ $ chmod +x traceconv      # ensures that traceconv is executable
 $ ./traceconv [text|json|systrace|profile] [input proto file] [output file]
 ```
 
-## Converting a perfetto trace to systrace text format
+## Converting to systrace text format
 
 `./traceconv systrace [input proto file] [output systrace file]`
 
-## Converting a perfetto trace to Chrome JSON format (for chrome://tracing)
+## Converting to Chrome JSON format (for chrome://tracing)
 
 `./traceconv json [input proto file] [output json file]`
 
-## Opening a Perfetto trace in the legacy systrace UI
+## Opening in the legacy systrace UI
 
 Navigate to ui.perfetto.dev and choose the "Open with legacy UI" option. This runs traceconv (the progress of which can be seen in the UI) and passes the converted trace seamlessly to chrome://tracing
 
