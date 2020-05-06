@@ -1,16 +1,16 @@
 # Trace Processor
 
-_**TLDR**: The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and exposes an SQL interface for querying trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with user-friendly descriptions and deriving new events from the contents of the trace._
+_The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and exposes an SQL interface for querying trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with user-friendly descriptions and deriving new events from the contents of the trace._
 
 ## Quickstart
 
-TODO: link to trace analysis quickstart
+The [quickstart](/docs/TODO.md) provides a quick introduction to queries using trace processor and is recommended to try before reading the rest of this page.
 
 ## Introduction
 
-Traces are raw and optimized for fast & low overhead writing. This leads to encoding of events in a format that make it difficult to extract useful information. This is compounded by the amount of legacy formats which are still in use and need to be supported in trace analysis tools.
+Traces files are optimized for fast, low overhead writing. This means, events are written in a format from which it is difficult to query for useful information. This is compounded by the number of legacy formats which are still in use and need to be supported in trace analysis tools.
 
-The trace processor abstracts this complexity by parsing traces, extracting the data inside and exposing it as database tables which can be queried with SQL.
+The trace processor abstracts this complexity by parsing traces, extracting the data inside and exposing it in a set of database tables which can be queried with SQL.
 
 Features of the trace processor include:
 
@@ -30,10 +30,10 @@ The formats supported by trace processor include:
 
 The trace processor is embedded in a wide variety of trace analysis tools including:
 
-- trace_processor, a standalone binary and the reference embedder of the library
-- Perfetto UI, in the form of a WebAssembly module
-- Android Graphics Inspector
-- Android Studio
+- [trace_processor](/docs/TODO.md), a standalone binary and the reference embedder of the library
+- [Perfetto UI](/docs/TODO.md), in the form of a WebAssembly module
+- [Android Graphics Inspector](/docs/TODO.md)
+- [Android Studio](/docs/TODO.md)
 - Internal pipelines for batch processing
 
 ## Concepts
@@ -114,8 +114,6 @@ The following diagram gives the full hierarchy of track tables in the trace proc
 TODO: add a diagram with the track hierarchy
 
 ## Writing Queries
-
-TIP: the [quickstart](/docs/quickstart/trace-analysis.md) provides an introduction to writing queries on the most widely used tables.
 
 ### Context using tracks
 

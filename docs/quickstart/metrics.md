@@ -1,7 +1,6 @@
 # Quickstart: trace-based metrics
 
-_This quickstart demonstrates to run trace-based metrics using
-`trace_processor_shell`._
+_This quickstart demonstrates to run trace-based metrics using `trace_processor_shell`._
 
 ## Prerequistes
 
@@ -80,6 +79,5 @@ $ ./trace_processor --run-metrics android_mem,android_cpu --metrics-output=json 
   }
 }
 ```
-
 
 ---------
