@@ -2,9 +2,15 @@
 
 _The metrics subsystem is a part of the [trace processor](/docs/TODO.md) which uses traces to compute reproducible metrics. It can be used in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected._
 
-TODO: add a picture showing trace to metrics
+![](/docs/images/metrics-summary.png)
 
-## Computing metrics
+## Quickstart
+
+The [quickstart](/docs/TODO.md) provides a quick overview on how to compute trace-based metrics traces using trace processor.
+
+## Introduction
+
+TODO: rewrite this introduction
 
 The metrics subsystem is a part of the [trace processor](trace-processor.md) allows metrics authors to write SQL queries to generate metrics in the form of protobuf messages or proto text.
 

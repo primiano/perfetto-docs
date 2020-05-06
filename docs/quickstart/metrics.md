@@ -2,8 +2,6 @@
 
 _This quickstart demonstrates to run trace-based metrics using `trace_processor_shell`._
 
-![](/docs/images/metrics-summary.png)
-
 ## Prerequistes
 
 - A device running macOS/Linux
@@ -234,4 +232,4 @@ There are a couple options to learn more about trace-based metrics:
 
 - The [metrics documentation](/docs/TODO.md) gives a more in-depth look into metrics including a short walkthrough on how to build an experimental metric from scratch.
 - The [metrics reference](/docs/TODO.md) gives a comprehensive list of all the available metrics including descriptions of their fields.
-- The [common tasks](/docs/TODO.md) page gives a list of steps on how new metrics can be added to the trace processor.
+- The [common tasks](/docs/TODO.md) page gives a list of steps on how new metrics can be added to the trace processor.¢

@@ -2,9 +2,11 @@
 
 _The Trace Processor is a C++ library ([/src/trace_processor](/src/trace_processor)) that ingests traces encoded in a wide variety of formats and exposes an SQL interface for querying trace events contained in a consistent set of tables. It also has other features including computation of summary metrics, annotating the trace with user-friendly descriptions and deriving new events from the contents of the trace._
 
+![](/docs/images/trace-processor.png)
+
 ## Quickstart
 
-The [quickstart](/docs/TODO.md) provides a quick introduction to queries using trace processor and is recommended to try before reading the rest of this page.
+The [quickstart](/docs/TODO.md) provides a quick overview on how to run SQL queries against traces using trace processor.
 
 ## Introduction
 
