@@ -37,11 +37,13 @@ function singleLineComment(comment) {
 //           {name: 'graph_sample_ts', type: 'int64_t',  optional: false },
 function parseTableDef(tableDefName, tableDef) {
   const tableDesc = {
-    name: '',
+    name: '',                // The SQL table name, e.g. stack_profile_mapping.
+    cppClassName: '',        // e.g., StackProfileMappingTable.
+    defMacro: tableDefName,  // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
     comment: '',
-    defMacro: tableDefName,
-    parent: undefined,
-    parentDefName: '',
+    parent: undefined,    // Will be filled afterwards in the resolution phase.
+    parentDefName: '',    // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
+    tablegroup: 'other',  // From @tablegroup in comments.
     cols: [],
   };
   let lastParam = null;
@@ -51,6 +53,11 @@ function parseTableDef(tableDefName, tableDef) {
     let m;
     if (line.startsWith('//')) {
       let comm = line.replace(/^\s*\/\/\s*/, '');
+      if (m = comm.match(/@tablegroup (.*)/)) {
+        tableDesc.tablegroup = m[1];
+        continue;
+      }
+
       if (m = comm.match(/@param ([^ ]+) (.*)/)) {
         lastParam = m[1];
         comm = m[2];
@@ -62,8 +69,9 @@ function parseTableDef(tableDefName, tableDef) {
       }
       continue;
     }
-    if (m = line.match(/^\s*NAME\(\w+\s*,\s*"(\w+)"/)) {
-      tableDesc.name = m[1];
+    if (m = line.match(/^\s*NAME\((\w+)\s*,\s*"(\w+)"/)) {
+      tableDesc.cppClassName = m[1];
+      tableDesc.name = m[2];
       continue;
     }
     if (m = line.match(/(PERFETTO_TP_ROOT_TABLE|PARENT)\((\w+)/)) {
@@ -83,14 +91,34 @@ function parseTableDef(tableDefName, tableDef) {
       if (colType === 'StringPool::Id') {
         colType = 'string';
       }
+      let refTable = undefined;
+      const sep = colType.indexOf('::');
+      if (sep > 0) {
+        refTable = colType.substr(0, sep);
+      }
       tableDesc.cols.push({
         name: colName,
         type: colType,
         optional: optional,
-        comment: colComment[colName] || '' });
+        comment: colComment[colName] || '',
+        refTableCppName: refTable,
+        joinTable: undefined,
+        joinCol: undefined,
+      });
       continue;
     }
     throw new Error(`Cannot parse line "${line}" from ${tableDefName}`);
+  }
+
+  // Process {@joinable xxx} annotations.
+  const regex = /\s?\{@joinable\s*(\w+)\.(\w+)\s*\}/;
+  for (const col of tableDesc.cols) {
+    const m = col.comment.match(regex)
+    if (m) {
+      col.joinTable = m[1];
+      col.joinCol = m[2];
+      col.comment = col.comment.replace(regex, '');
+    }
   }
   return tableDesc;
 }
@@ -139,7 +167,7 @@ function genLink(table) {
 }
 
 function tableToMarkdown(table) {
-  let md = `## ${table.name}\n\n`;
+  let md = `### ${table.name}\n\n`;
   if (table.parent) {
     md += `_Extends ${genLink(table.parent)}_\n\n`;
   }
@@ -154,7 +182,12 @@ function tableToMarkdown(table) {
     }
     for (const col of curTable.cols) {
       const type = col.type + (col.optional ? '<br>`optional`' : '');
-      md += `${col.name} | ${type} | ${singleLineComment(col.comment)}\n`
+      let description = col.comment;
+      if (col.joinTable) {
+        description += `\nJoinable with ` +
+            `[${col.joinTable}.${col.joinCol}](#${col.joinTable})`;
+      }
+      md += `${col.name} | ${type} | ${singleLineComment(description)}\n`
     }
     curTable = curTable.parent;
   }
@@ -176,17 +209,76 @@ function main() {
   const tables = Array.prototype.concat(...inFiles.map(parseTablesInCppFile));
 
   // Resolve parents.
-  const tablesIndex = {};  // 'TP_SCHED_SLICE_TABLE_DEF' -> { name: 'sched', ...}
+  const tablesIndex = {};    // 'TP_SCHED_SLICE_TABLE_DEF' -> table
+  const tablesByGroup = {};  // 'profilers' => [table1, table2]
+  const tablesCppName = {};  // 'StackProfileMappingTable' => table
+  const tablesByName = {};   // 'profile_mapping' => table
   for (const table of tables) {
     tablesIndex[table.defMacro] = table;
+    if (tablesByGroup[table.tablegroup] === undefined) {
+      tablesByGroup[table.tablegroup] = [];
+    }
+    tablesCppName[table.cppClassName] = table;
+    tablesByName[table.name] = table;
+    tablesByGroup[table.tablegroup].push(table);
   }
+  const tableGroups = Object.keys(tablesByGroup).sort((a, b) => {
+    const keys = {'tracks': '1', 'events': '2', 'other': 'z'};
+    a = `${keys[a]}_${a}`;
+    b = `${keys[b]}_${b}`;
+    return a.localeCompare(b);
+  });
+
   for (const table of tables) {
     if (table.parentDefName) {
       table.parent = tablesIndex[table.parentDefName];
     }
   }
 
-  const md = String.prototype.concat(...tables.map(tableToMarkdown));
+  // Builds a graph of the tables' relationship that can be rendererd with
+  // mermaid.js.
+  let graph = '## Tables diagram\n';
+  const mkLabel = (table) => `${table.defMacro}["${table.name}"]`;
+  for (const tableGroup of tableGroups) {
+    let gaphEdges = '';
+    let gaphLinks = '';
+    graph += `#### ${tableGroup} tables\n`;
+    graph += '```mermaid\ngraph TD\n';
+    graph += `  subgraph ${tableGroup}\n`;
+    for (const table of tablesByGroup[tableGroup]) {
+      graph += `  ${mkLabel(table)}\n`;
+      gaphLinks += `  click ${table.defMacro} "#${table.name}"\n`
+      if (table.parent) {
+        gaphEdges += ` ${mkLabel(table)} --> ${mkLabel(table.parent)}\n`
+      }
+
+      for (const col of table.cols) {
+        let refTable = undefined;
+        if (col.refTableCppName) {
+          refTable = tablesCppName[col.refTableCppName];
+        } else if (col.joinTable) {
+          refTable = tablesByName[col.joinTable];
+        }
+        if (!refTable)
+          continue;
+        gaphEdges +=
+            `  ${mkLabel(table)} -. ${col.name} .-> ${mkLabel(refTable)}\n`
+        gaphLinks += `  click ${refTable.defMacro} "#${refTable.name}"\n`
+      }
+    }
+    graph += `  end\n`;
+    graph += gaphEdges;
+    graph += gaphLinks;
+    graph += '\n```\n';
+  }
+
+  let md = graph;
+  for (const tableGroup of tableGroups) {
+    md += `## ${tableGroup}\n`
+    for (const table of tablesByGroup[tableGroup]) {
+      md += tableToMarkdown(table);
+    }
+  }
 
   if (outFile) {
     fs.writeFileSync(outFile, md);

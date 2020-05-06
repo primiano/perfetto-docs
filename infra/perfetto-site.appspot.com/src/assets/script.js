@@ -129,9 +129,25 @@ function initMermaid() {
   const script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = '/assets/mermaid.min.js';
+  const themeCSS = `
+  .cluster rect { fill: #FCFCFC; stroke: #ddd }
+  .node rect { fill: #DCEDC8; stroke: #8BC34A}
+  .edgeLabel:not(:empty) {
+      border-radius: 6px;
+      font-size: 0.9em;
+      padding: 4px;
+      background: #F5F5F5;
+      border: 1px solid #DDDDDD;
+      color: #666;
+  }
+  `;
   script.addEventListener('load', () => {
-    console.log('loaded');
-    mermaid.initialize({startOnLoad:false, theme: 'forest' });
+    mermaid.initialize({
+      startOnLoad: false,
+      // theme: 'forest',
+      themeCSS: themeCSS,
+      securityLevel: 'loose',  // To allow links to #self
+    });
     for (const graph of graphs) {
       mermaid.init(undefined, graph);
       graph.classList.add('rendered');

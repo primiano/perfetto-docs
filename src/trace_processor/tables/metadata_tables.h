@@ -23,6 +23,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace tables {
 
+// @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_RAW_TABLE_DEF(NAME, PARENT, C) \
   NAME(RawTable, "raw")                            \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                \
@@ -57,6 +58,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_ARG_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_METADATA_TABLE_DEF);
 
+// @param upid {@joinable internal_process.upid}
 #define PERFETTO_TP_THREAD_TABLE_DEF(NAME, PARENT, C) \
   NAME(ThreadTable, "internal_thread")                \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                   \
@@ -68,6 +70,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_METADATA_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_TABLE_DEF);
 
+// @param uid The Unix user id of the process {@joinable package_list.uid}.
 #define PERFETTO_TP_PROCESS_TABLE_DEF(NAME, PARENT, C) \
   NAME(ProcessTable, "internal_process")               \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                    \

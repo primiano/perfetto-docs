@@ -29,10 +29,11 @@ namespace tables {
 // sorted flag on the ts column.
 //
 // @param ts timestamp of log entry.
-// @param utid thread writing the log entry.
+// @param utid thread writing the log entry {@joinable internal_thread.utid}.
 // @param prio priority of the log. 3=DEBUG, 4=INFO, 5=WARN, 6=ERROR.
 // @param tag tag of the log entry.
 // @param msg content of the log entry.
+// @tablegroup events
 #define PERFETTO_TP_ANDROID_LOG_TABLE_DEF(NAME, PARENT, C) \
   NAME(AndroidLogTable, "android_logs")                    \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                        \

@@ -25,13 +25,14 @@ namespace tables {
 
 // The profiler smaps contains the memory stats for virtual memory ranges
 // captured by the [heap profiler](/docs/recording/data-sources.md#).
-// @param upid The UniquePID of the process.
+// @param upid The UniquePID of the process {@joinable internal_process.upid}.
 // @param ts   Timestamp of the snapshot. Multiple rows will have the same
 //             timestamp.
 // @param path The mmaped file, as per /proc/pid/smaps.
 // @param size_kb Total size of the mapping.
 // @param private_dirty_kb KB of this mapping that are private dirty  RSS.
 // @param swap_kb KB of this mapping that are in swap.
+// @tablegroup native_profilers
 #define PERFETTO_TP_PROFILER_SMAPS_DEF(NAME, PARENT, C) \
   NAME(ProfilerSmapsTable, "profiler_smaps")            \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                     \
@@ -68,7 +69,8 @@ PERFETTO_TP_TABLE(PERFETTO_TP_PACKAGES_LIST_DEF);
 // @param build_id hex-encoded Build ID of the binary / library.
 // @param start start of the mapping in the process' address space.
 // @param end end of the mapping in the process' address space.
-// @param name filename of the binary / library.
+// @param name filename of the binary / library {@joinable profiler_smaps.path}.
+// @tablegroup native_profilers
 #define PERFETTO_TP_STACK_PROFILE_MAPPING_DEF(NAME, PARENT, C) \
   NAME(StackProfileMappingTable, "stack_profile_mapping")      \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                            \
@@ -89,7 +91,9 @@ PERFETTO_TP_TABLE(PERFETTO_TP_STACK_PROFILE_MAPPING_DEF);
 // @param mapping the mapping (library / binary) this location is in.
 // @param rel_pc the program counter relative to the start of the mapping.
 // @param symbol_set_id if the profile was offline symbolized, the offline
-// symbol information of this frame.
+//        symbol information of this frame.
+//        {@joinable stack_profile_symbol.symbol_set_id}
+// @tablegroup native_profilers
 #define PERFETTO_TP_STACK_PROFILE_FRAME_DEF(NAME, PARENT, C) \
   NAME(StackProfileFrameTable, "stack_profile_frame")        \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                          \
@@ -106,6 +110,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_STACK_PROFILE_FRAME_DEF);
 // @param depth distance from the bottom-most frame of the callstack.
 // @param parent_id parent frame on the callstack. NULL for the bottom-most.
 // @param frame_id frame at this position in the callstack.
+// @tablegroup native_profilers
 #define PERFETTO_TP_STACK_PROFILE_CALLSITE_DEF(NAME, PARENT, C) \
   NAME(StackProfileCallsiteTable, "stack_profile_callsite")     \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                             \
@@ -119,6 +124,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_STACK_PROFILE_CALLSITE_DEF);
 // @param ts timestamp this sample was taken at.
 // @param utid thread that was active when the sample was taken.
 // @param callsite_id callstack in active thread at time of sample.
+// @tablegroup native_profilers
 #define PERFETTO_TP_CPU_PROFILE_STACK_SAMPLE_DEF(NAME, PARENT, C) \
   NAME(CpuProfileStackSampleTable, "cpu_profile_stack_sample")    \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                               \
@@ -148,6 +154,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_CPU_PROFILE_STACK_SAMPLE_DEF);
 // @param line_number line number of the frame in the source file. This is the
 // exact line for the corresponding program counter, not the beginning of the
 // function.
+// @tablegroup native_profilers
 #define PERFETTO_TP_SYMBOL_DEF(NAME, PARENT, C) \
   NAME(SymbolTable, "stack_profile_symbol")     \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)             \
@@ -164,6 +171,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SYMBOL_DEF);
 // allocations and frees, and all data from a dump will have the same
 // timestamp.
 // @param upid the UniquePID of the allocating process.
+//        {@joinable internal_process.upid}
 // @param callsite_id the callsite the allocation happened at.
 // @param count if positive: number of allocations that happened at this
 // callsite. if negative: number of allocations that happened at this callsite
@@ -171,6 +179,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SYMBOL_DEF);
 // @param size if positive: size of allocations that happened at this
 // callsite. if negative: size of allocations that happened at this callsite
 // that were freed.
+// @tablegroup native_profilers
 #define PERFETTO_TP_HEAP_PROFILE_ALLOCATION_DEF(NAME, PARENT, C) \
   NAME(HeapProfileAllocationTable, "heap_profile_allocation")    \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                              \
@@ -186,6 +195,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_PROFILE_ALLOCATION_DEF);
 // the flamegraph.
 //
 // WARNING: This is experimental and the API is subject to change.
+// @tablegroup native_profilers
 #define PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES(NAME, PARENT, C)        \
   NAME(ExperimentalFlamegraphNodesTable, "experimental_flamegraph_nodes") \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                                       \
@@ -212,6 +222,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES);
 // @param deobfuscated_name if class name was obfuscated and deobfuscation map
 // for it provided, the deobfuscated name.
 // @param location the APK / Dex / JAR file the class is contained in.
+// @tablegroup java_profiler
 #define PERFETTO_TP_HEAP_GRAPH_CLASS_DEF(NAME, PARENT, C) \
   NAME(HeapGraphClassTable, "heap_graph_class")           \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                       \
@@ -224,18 +235,20 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 // The objects on the Dalvik heap.
 //
 // All rows with the same (upid, graph_sample_ts) are one dump.
-// @param upid UniquePid of the target.
+// @param upid UniquePid of the target {@joinable internal_process.upid}.
 // @param graph_sample_ts timestamp this dump was taken at.
 // @param object_id ARTs ID of the object. Either a pointer or a hashCode.
 // @param self_size size this object uses on the Java Heap.
 // @param retained_size DO NOT USE.
 // @param unique_retained_size DO NOT USE.
 // @param reference_set_id join key with heap_graph_reference containing all
-// objects referred in this object's fields.
+//        objects referred in this object's fields.
+//        {@joinable heap_graph_reference.reference_set_id}
 // @param reachable bool whether this object is reachable from a GC root. If
 // false, this object is uncollected garbage.
 // @param type_id class this object is an instance of.
 // @param root_type if not NULL, this object is a GC root.
+// @tablegroup java_profiler
 #define PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF(NAME, PARENT, C) \
   NAME(HeapGraphObjectTable, "heap_graph_object")          \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                        \
@@ -263,6 +276,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF);
 // @param field_type_name the static type of the field. E.g. java.lang.String.
 // @param deobfuscated_field_name if field_name was obfuscated and a
 // deobfuscation mapping was provided for it, the deobfuscated name.
+// @tablegroup java_profiler
 #define PERFETTO_TP_HEAP_GRAPH_REFERENCE_DEF(NAME, PARENT, C) \
   NAME(HeapGraphReferenceTable, "heap_graph_reference")       \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \
@@ -275,6 +289,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_REFERENCE_DEF);
 
+// @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_VULKAN_MEMORY_ALLOCATIONS_DEF(NAME, PARENT, C) \
   NAME(VulkanMemoryAllocationsTable, "vulkan_memory_allocations")  \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                                \
