@@ -39,6 +39,9 @@ function parseTableDef(tableDefName, tableDef) {
   const tableDesc = {
     name: '',
     comment: '',
+    defMacro: tableDefName,
+    parent: undefined,
+    parentDefName: '',
     cols: [],
   };
   let lastParam = null;
@@ -63,8 +66,10 @@ function parseTableDef(tableDefName, tableDef) {
       tableDesc.name = m[1];
       continue;
     }
-    if (m = line.match(/PERFETTO_TP_ROOT_TABLE|PARENT/)) {
-      // TODO parent.
+    if (m = line.match(/(PERFETTO_TP_ROOT_TABLE|PARENT)\((\w+)/)) {
+      if (m[1] === 'PARENT') {
+        tableDesc.parentDefName = m[2];
+      }
       continue;
     }
     if (m = line.match(/^\s*C\(([^,]+)\s*,\s*(\w+)/)) {
@@ -129,13 +134,29 @@ function parseTablesInCppFile(filePath) {
 }
 
 
+function genLink(table) {
+  return `[${table.name}](#${table.name})`;
+}
+
 function tableToMarkdown(table) {
   let md = `## ${table.name}\n\n`;
+  if (table.parent) {
+    md += `_Extends ${genLink(table.parent)}_\n\n`;
+  }
   md += table.comment + '\n\n';
-  md += 'Column | Type | Optional | Description\n';
-  md += '------ | ---- | -------- | -----------\n';
-  for (const col of table.cols) {
-    md += `${col.name} | ${col.type} | ${col.optional} | ${singleLineComment(col.comment)}\n`
+  md += 'Column | Type | Description\n';
+  md += '------ | ---- | -----------\n';
+
+  let curTable = table;
+  while (curTable) {
+    if (curTable != table) {
+      md += `||_Columns inherited from_ ${genLink(curTable)}\n`
+    }
+    for (const col of curTable.cols) {
+      const type = col.type + (col.optional ? '<br>`optional`' : '');
+      md += `${col.name} | ${type} | ${singleLineComment(col.comment)}\n`
+    }
+    curTable = curTable.parent;
   }
   md += '\n\n';
   return md;
@@ -153,7 +174,20 @@ function main() {
   const inFiles = (inFile instanceof Array) ? inFile : [inFile];
 
   const tables = Array.prototype.concat(...inFiles.map(parseTablesInCppFile));
+
+  // Resolve parents.
+  const tablesIndex = {};  // 'TP_SCHED_SLICE_TABLE_DEF' -> { name: 'sched', ...}
+  for (const table of tables) {
+    tablesIndex[table.defMacro] = table;
+  }
+  for (const table of tables) {
+    if (table.parentDefName) {
+      table.parent = tablesIndex[table.parentDefName];
+    }
+  }
+
   const md = String.prototype.concat(...tables.map(tableToMarkdown));
+
   if (outFile) {
     fs.writeFileSync(outFile, md);
   } else {
