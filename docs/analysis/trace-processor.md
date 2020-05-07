@@ -189,13 +189,13 @@ GROUP BY thread_name
 
 ## Metrics
 
-TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
+TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md).
 
 The metrics subsystem is a significant part of trace processor and thus is documented on its own [page](/docs/analysis/metrics.md).
 
 ## Annotations
 
-TIP: To see how to add to add a new annotation to trace processor, see the checklist [here](/docs/TODO.md)
+TIP: To see how to add to add a new annotation to trace processor, see the checklist [here](/docs/TODO.md).
 
 Annotations attach a human-readable description to a slice in the trace. This can include information like the source of a slice, why a slice is important and links to documentation where the viewer can learn more about the slice. In essence, descriptions act as if an expert was telling the user what the slice means.
 
@@ -207,7 +207,7 @@ For example, consider the `inflate` slice which occurs during view inflation in 
 
 ## Creating derived events
 
-TIP: To see how to add to add a new annotation to trace processor, see the checklist [here]()
+TIP: To see how to add to add a new annotation to trace processor, see the checklist [here]().
 
 This feature allows creation of new events (slices and counters) from the data in the trace. These events can then be displayed in the UI tracks as if they were part of the trace itself.
 

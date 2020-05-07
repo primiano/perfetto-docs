@@ -1,6 +1,6 @@
 # Trace-based metrics
 
-_The metrics subsystem is a part of the [trace processor](/docs/TODO.md) which uses traces to compute reproducible metrics. It can be used in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces. In these cases, these metrics allow for direct root-causing when a regression is detected._
+_The metrics subsystem is a part of the [trace processor](/docs/TODO.md) which uses traces to compute reproducible metrics. It can be used in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces._
 
 ![](/docs/images/metrics-summary.png)
 
@@ -10,47 +10,75 @@ The [quickstart](/docs/TODO.md) provides a quick overview on how to compute trac
 
 ## Introduction
 
-TODO: rewrite this introduction
+### Motivation
 
-The metrics subsystem is a part of the [trace processor](trace-processor.md) allows metrics authors to write SQL queries to generate metrics in the form of protobuf messages or proto text.
+Performance metrics are useful to monitor for the health of a system and ensure that a system does not regress over time as new features are added.
+
+However, metrics retrieved directly from the system have a downside: if there is a regression, it is difficult to root-cause the issue. Often, the problem may not be reproducible or may rely on a particular setup.
+
+Trace-based metrics are one possible solution to this problem. Instead of collecting metrics directly on the system, a trace is collected and metrics are computed from the trace. If a regression in the metric is spotted, the developer can look directly at the trace to understand why the regression has occurred instead of having to reproduce the issue.
+
+### Metric subsystem
+
+The metric subsystem is a part of the [trace processor](/docs/TODO.md) which executes SQL queries against traces and produces a metric which summarises some performance attribute (e.g. CPU, memory, startup latency etc.).
+
+For example, generating the Android memory metrics on a trace is as simple as:
+
+```console
+> ./trace_processor --run-metrics android_mem <trace>
+android_cpu {
+  process_info {
+    name: "/system/bin/init"
+    threads {
+      name: "init"
+      core {
+        id: 1
+        metrics {
+          mcycles: 1
+          runtime_ns: 570365
+          min_freq_khz: 1900800
+          max_freq_khz: 1900800
+          avg_freq_khz: 1902017
+        }
+      }
+      ...
+    }
+    ...
+  }
+  ...
+}
+```
+
+### Case for upstreaming
 
 Authors are strongly encouraged to add all metrics derived on Perfetto traces to the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why these metrics should not be publicly available.
 
 In return for upstreaming metrics, authors will have first class support for running metrics locally and the confidence that their metrics will remain stable as trace processor is developed.
 
-For example, generating the full (human readable) set of Android memory metrics on a trace is as simple as:
-
-```shell
-trace_processor_shell --run-metrics android_mem <trace>
-```
-
-TODO: add output here this metric here.
-
 As well as scaling upwards while developing from running on a single trace locally to running on a large set of traces, the reverse is also very useful. When an anomaly is observed in the metrics of a lab benchmark, a representative trace can be downloaded and the same metric can be run locally in trace processor.
 
 Since the same code is running locally and remotely, developers can be confident in reproducing the issue and use the trace processor and/or the Perfetto UI to identify the problem.
 
-## Writing an experimental metric
+## Walkthrough: prototyping a metric
 
-This walkthrough will demonstrate writing a metric to compute the CPU time for every process in the trace and list the names of the top 5 processes (by CPU time) and the number of threads created by the process.
+TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
 
-NOTE: See this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080) to see how the code should look at the end of the walkthrough. The prerequistes and Step 4 below give instructions on how to get trace processor and run it to output the metrics.
+This walkthrough will outline how to prototype a metric locally without needing to compile trace processor. This metric will compute the CPU time for every process in the trace and list the names of the top 5 processes (by CPU time) and the number of threads created by the process.
+
+NOTE: See this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080) to see how the code should look at the end of the walkthrough. The prerequistes and Step 4 below give instructions on how to get trace processor and run the metrics code.
 
 ### Prerequisites
 
-As a setup step, you'll want to create a folder to act as a scratch workspace; this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
+As a setup step, create a folder to act as a scratch workspace; this folder will be referred to using the env variable `$WORKSPACE` in Step 4.
 
-The other thing you'll need is trace processor shell. You can download this [here](https://get.perfetto.dev/trace_processor) or you can build from source
+The other requirement is trace processor. This can downloaded from [here](https://get.perfetto.dev/trace_processor) or can be built from source
 using the instructions [here](trace-processor.md). Whichever method is chosen, $TRACE_PROCESSOR env variable will be used to refer to the location of the binary in Step 4.
 
 ### Step 1
 
-As all metrics in the metrics platform are defined using protos, the metric
-needs to be strctured as a proto. For this metric, there needs to be some notion
-of a process name along with its CPU time and number of threads.
+As all metrics in the metrics platform are defined using protos, the metric needs to be strctured as a proto. For this metric, there needs to be some notion of a process name along with its CPU time and number of threads.
 
-Starting off, in a file named `top_five_processes.proto` in our workspace, let's
-create a basic proto message called ProcessInfo with those three fields:
+Starting off, in a file named `top_five_processes.proto` in our workspace, create a basic proto message called ProcessInfo with those three fields:
 
 ```protobuf
 message ProcessInfo {
@@ -60,8 +88,7 @@ message ProcessInfo {
 }
 ```
 
-Next up is a wrapping message which will hold the repeated field containing the
-top 5 processes.
+Next , create a wrapping message which will hold the repeated field containing the top 5 processes.
 
 ```protobuf
 message TopProcesses {
@@ -69,9 +96,7 @@ message TopProcesses {
 }
 ```
 
-Finally, let's define an extension to the root proto for all metrics - the
-[TraceMetrics](https://android.googlesource.com/platform/external/perfetto/+/HEAD/protos/perfetto/metrics/metrics.proto#39)
-proto).
+Finally, define an extension to the root proto for all metrics (the [TraceMetrics](https://android.googlesource.com/platform/external/perfetto/+/HEAD/protos/perfetto/metrics/metrics.proto#39) proto).
 
 ```protobuf
 extend TraceMetrics {
@@ -84,13 +109,10 @@ metric to the `TraceMetrics` proto.
 
 _Notes:_
 
-- The field ids 450-500 are reserved for local development so you can use any of
-  them as the field id for the extension field.
-- The choice of field name here is important as the SQL file and the final table
-  generated in SQL will be based on this name.
+- The field ids 450-500 are reserved for local development so any of them can be used as the field id for the extension field.
+- The choice of field name here is important as the SQL file and the final table generated in SQL will be based on this name.
 
-Putting everything together, along with some boilerplate header information
-gives:
+Putting everything together, along with some boilerplate preamble gives:
 
 ```protobuf
 syntax = "proto2";
@@ -116,10 +138,9 @@ extend TraceMetrics {
 
 ### Step 2
 
-Let's write the SQL to generate the table of the top 5 processes ordered by the
-sum of the CPU time they ran for and the number of threads which were associated
-with the process. The following SQL should be to a file called
-`top_five_processes.sql` in your workspace:
+Next, write the SQL to generate the table of the top 5 processes ordered by the sum of the CPU time they ran for and the number of threads which were associated with the process.
+
+The following SQL should added to a file called `top_five_processes.sql` in tge workspace:
 
 ```sql
 CREATE VIEW top_five_processes_by_cpu
@@ -180,51 +201,27 @@ SELECT TopProcesses(
 );
 ```
 
-Let's break this down again:
+Breaking this down again:
 
-1. Starting from the inner-most SELECT statement, there is what looks like a
-   function call to the ProcessInfo function; in face this is no conincidence.
-   For each proto that the metrics platform knows about, it generates a SQL
-   function with the same name as the proto. This function takes key value pairs
-   with the key as the name of the proto field to fill and the value being the
-   data to store in the field. The output is the proto created by writing the
-   fields described in the function! (\*)
+1. Starting from the inner-most SELECT statement, there is what looks like a function call to the ProcessInfo function; in face this is no conincidence. For each proto that the metrics platform knows about, an SQL function is generated with the same name as the proto. This function takes key value pairs with the key as the name of the proto field to fill and the value being the data to store in the field. The output is the proto created by writing the fields described in the function. (\*)
+   
+   In this case, this function is called once for each row in the `top_five_processes_by_cpu` table. The output of will be the fully filled ProcessInfo proto.
+   
+   The call to the `RepeatedField` function is the most interesting part and also the most important. In technical terms, `RepeatedField` is an aggregate function; practically, this means that it takes a full table of values and generates a single array which contains all the values passed to it.
+   
+   Therefore, the output of this whole SELECT statement is an array of 5 ProcessInfo protos.
 
-   In this case, this function is called once for each row in the
-   `top_five_processes_by_cpu` table. The output of will be the fully filled
-   ProcessInfo proto.
+2. Next is creation of the `TopProcesses` proto. By now, the syntax should already feel somewhat familiar; the proto builder function is called to fill in the `process_info` field with the array of protos from the inner funciton.
+   
+   The output of this SELECT is a single `TopProcesses` proto containing the ProcessInfos as a repeated field.
 
-   The call to the `RepeatedField` function is the most interesting part and
-   also the most important. In technical terms, `RepeatedField` is an aggregate
-   function; practically, this means that it takes a full table of values and
-   generates a single array which contains all the values passed to it.
+3. Finally, the view is created. This view is specially named to allow the metrics platform to query it to obtain the root proto for each metric (in this case `TopProcesses`). See the note below as to the pattern behind this view's name.
 
-   Therefore, the output of this whole SELECT statement is an array of 5
-   ProcessInfo protos.
+NOTE: (\*) this is not strictly true. To type-check the protos, some metadata is returned about the type of the proto but this is unimportant for metric authors.
 
-2. Next is creation of the `TopProcesses` proto. By now, the syntax should
-   already feel somewhat familiar; the proto builder function is called to fill
-   in the `process_info` field with the array of protos from the inner funciton.
+NOTE: It is important that the views be named {name of TraceMetrics extension field}\_output. This is the pattern used and expected by the metrics platform for all metrics.
 
-   The output of this SELECT is a single `TopProcesses` proto containing the
-   ProcessInfos as a repeated field.
-
-3. Finally, the view is created. This view is specially named to allow the
-   metrics platform to query it to obtain the root proto for each metric (in
-   this case `TopProcesses`). See the note below as to the pattern behind this
-   view's name.
-
-(\*) - side note: this is not strictly true. To type-check the protos, we also
-return some metadata about the type of the proto but this is unimportant for
-metric authors
-
-_Note:_
-
-- It is important that the views be named {name of TraceMetrics extension
-  field}\_output. This is the pattern used and expected by the metrics platform
-  for all metrics.
-
-And that's all the SQL we need to write! Our final file should look like so:
+The final file should look like so:
 
 ```sql
 CREATE VIEW top_five_processes_by_cpu AS
@@ -254,44 +251,27 @@ SELECT TopProcesses(
 );
 ```
 
-_Notes:_
-
-- The name of the SQL file should be the same as the name of TraceMetrics
-  extension field. This is to allow the metrics platform to associated the proto
-  extension field with the SQL which needs to be run to generate it.
+NOTE: The name of the SQL file should be the same as the name of TraceMetrics extension field. This is to allow the metrics platform to associated the proto extension field with the SQL which needs to be run to generate it.
 
 ### Step 4
 
-This is the last step and where we get to see the results of our work!
-
-For this step, all we need is a one-liner, invoking trace processor shell (see
-Step 0 for downloading it):
+For this step, invoke trace processor shell to run the metrics (see the [prerequistes](/docs/TODO.md) for downloading it):
 
 ```shell
 $TRACE_PROCESSOR --run-metrics $WORKSPACE/top_five_processes.sql $TRACE 2> /dev/null
 ```
 
-(If you want a example trace to test this on, see the Notes section below.)
+(For an example trace to test this on, see the Notes section below.)
 
-By passing the SQL file for the metric we want to compute, trace processor uses
-the name of this file to both find the proto and also to figure out the name of
-the output table for the proto and the name of the extension field for
-`TraceMetrics`; this is why it was important to choose the names of these other
-objects carefully.
+By passing the SQL file for the metric to be computed, trace processor uses the name of this file to both find the proto and also to figure out the name of the output table for the proto and the name of the extension field for `TraceMetrics`; this is the reason it was important to choose the names of these other objects carefully.
 
 _Notes:_
 
-- If something doesn't work as intended, check that your workspace looks the
-  same as the contents of this
-  [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080).
-- A good example trace for this metric is the Android example trace used by the
-  Perfetto UI found
-  [here](https://storage.googleapis.com/perfetto-misc/example_android_trace_30s_1)
-- We're redirecting stderror to remove any noise from parsing the trace that
-  trace processor generates.
+- If something doesn't work as intended, check that the workspace looks the same as the contents of this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080).
+- A good example trace for this metric is the Android example trace used by the Perfetto UI found [here](https://storage.googleapis.com/perfetto-misc/example_android_trace_30s_1)
+- stderr is redirected to remove any noise from parsing the trace that trace processor generates.
 
-If everything went successfully, you should see something like the following
-(this is specifically the output for the Android example trace linked above):
+If everything went successfully, the following output should be visible (specifically this is the output for the Android example trace linked above):
 
 ```
 [perfetto.protos.top_five_processes] {
@@ -323,11 +303,9 @@ If everything went successfully, you should see something like the following
 }
 ```
 
-### Conclusion
+### Next steps
 
-That finishes the introductory guide to writing an metric using the Perfetto
-metrics platform! For more information about where to go next, the following
-links may be useful:
+There are a couple of options to learn more about trace-based metrics:
 
-- To understand what data is available to you and how the SQL tables are
-  structured see the [trace processor](trace-processor.md) docs.
+- The [metrics reference](/docs/TODO.md) gives a comprehensive list of all the available metrics including descriptions of their fields.
+- The [common tasks](/docs/TODO.md) page gives a list of steps on how new metrics can be added to the trace processor.
