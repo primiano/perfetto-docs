@@ -243,6 +243,8 @@ h3 {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         grid-template-rows: 1fr;
+        background-color: #fff;
+        z-index: 2;
         @media (max-aspect-ratio: 1/1) {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -479,13 +481,13 @@ h3 {
         }
 
         li a {
-            padding-left: 14px;
+            padding-left: 16px;
         }
         li li a {
-            padding-left: 28px;
+            padding-left: 30px;
         }
         li li li a {
-            padding-left: 42px;
+            padding-left: 44px;
         }
         .expanded a::after {
             transform: rotate(180deg);
@@ -495,7 +497,7 @@ h3 {
         grid-area: doc;
         background-color: #fff;
         margin: 20px;
-        padding: 20px 40px;
+        padding: 30px 40px;
         font-family: Roboto, sans-serif;
         font-size: 1rem;
         font-weight: 400;
@@ -510,13 +512,14 @@ h3 {
         h3 {
             margin: 10px 0;
             padding: 0;
-            &:not(:first-child) {
-                padding-top: 30px;
-            }
+            padding-top: 30px;
         }
         h1 {
             font-size: 2.25rem;
             line-height: 2.25rem;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 1.5rem;
             font-family: 'Source Sans Pro', sans-serif;
         }
         h2 {
