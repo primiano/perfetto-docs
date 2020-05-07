@@ -107,15 +107,8 @@ function setupNav() {
         if (par.tagName.toUpperCase() !== 'LI')
           continue;
         par.classList.add('expanded');
+        par.scrollIntoViewIfNeeded();
       }
-    }
-
-    // Add custom click handler to toggle collaps/expand of non-leaf entries.
-    if (x.href.endsWith('#')) {
-      x.addEventListener('click', (evt) => {
-        x.parentElement.classList.toggle('expanded');
-        evt.preventDefault();
-      });
     }
   }
 }
@@ -151,8 +144,10 @@ function initMermaid() {
       securityLevel: 'loose',  // To allow links to #self
     });
     for (const graph of graphs) {
-      mermaid.init(undefined, graph);
-      graph.classList.add('rendered');
+      requestAnimationFrame(() => {
+        mermaid.init(undefined, graph);
+        graph.classList.add('rendered');
+      });
     }
   })
   document.body.appendChild(script);
