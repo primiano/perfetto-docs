@@ -425,7 +425,8 @@ h3 {
         padding: 20px 0;
         padding-right: 16px;
 
-        position: fixed;
+        position: sticky;
+        top: var(--site-header-height);
         height: calc(100vh -  var(--site-header-height));
         overflow-y: auto;
         @include minimal-scrollbar;
@@ -440,43 +441,17 @@ h3 {
                         visibility linear 0.25s;
             border-radius: 0 10px 10px 0;
             -webkit-tap-highlight-color: transparent;
-            &:hover {
-                color: #000;
-                background-color: #f1f3f4;
+            &[href] {
+                &:hover {
+                    color: #000;
+                    background-color: #f1f3f4;
+                }
+                &.selected {
+                    background-color: #ecba2a;
+                }
             }
         }
-        a.selected {
-            background-color: #ecba2a;
-        }
-        >ul {
-            position: static; // Otherwise gets v-centered in the middle.
-            // top: calc(var(--site-header-height) + 25px);
-        }
-        .intermediate-menu:not(.expanded) > :not(:first-child) {
-            visibility: hidden;
-        }
-        >ul>li>a {
-            &::after {
-                content: 'keyboard_arrow_down';
-                font-family: 'Material Icons Round';
-                font-size: 24px;
-                transition: transform var(--anim-ease) 0.25s;
-                margin: 0 0 0 auto;
-            }
-        }
-        >ul>li li {
-            a[href*="#"]::before {
-                content: 'arrow_drop_down';
-                font-family: 'Material Icons Round';
-                font-size: 24px;
-                transition: transform var(--anim-ease) 0.25s;
-                margin-left: -4px;
-                transform: rotate(-90deg);
-            }
-            &.expanded a::before {
-                transform: rotate(0);
-            }
-        }
+
         ul {
             list-style: none;
             margin: 0;
@@ -486,25 +461,32 @@ h3 {
                 font-weight: 400;
                 font-family: 'Source Sans Pro', sans-serif;
                 color: #4a4a4a;
-                max-height: 36px;
-                overflow: hidden;
-                transition: max-height var(--anim-ease) 0.25s;
-                &.expanded {
-                    max-height: 500px;
+                max-width: 100%;
+            }
+        }
+
+        // Applies only to outer-level submenus.
+        >ul {
+            position: static; // Otherwise gets v-centered in the middle.
+            > li {
+                padding-bottom: 10px;
+                margin-bottom: 10px;
+                font-weight: 600;
+                color: #111;
+                &:not(:last-child) {
+                    border-bottom: 1px solid #eee;
                 }
             }
         }
+
         li a {
-            padding-left: 16px;
+            padding-left: 14px;
         }
         li li a {
-            padding-left: 32px;
+            padding-left: 28px;
         }
         li li li a {
-            padding-left: 48px;
-        }
-        li li li li a {
-            padding-left: 64px;
+            padding-left: 42px;
         }
         .expanded a::after {
             transform: rotate(180deg);
@@ -527,14 +509,15 @@ h3 {
         h1,
         h2,
         h3 {
-            padding-top: 10px;
-            line-height: 32px;
+            margin: 10px 0;
+            padding: 0;
             &:not(:first-child) {
                 padding-top: 30px;
             }
         }
         h1 {
             font-size: 2.25rem;
+            line-height: 2.25rem;
             font-family: 'Source Sans Pro', sans-serif;
         }
         h2 {

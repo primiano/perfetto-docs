@@ -39,7 +39,6 @@
     * [API and ABI surface](design-docs/api-and-abi.md)
     * [Perfetto CI](design-docs/continuous-integration.md)
 * [Old Stuff](#)
-  * [Development workflow](#)
   * [Instrumenting and tracing](#)
     * [App instrumentation](old/app-instrumentation.md)
     * [Recording traces](old/recording-traces.md)

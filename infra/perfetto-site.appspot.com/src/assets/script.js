@@ -99,8 +99,9 @@ function setupNav() {
     const url = new URL(x.href);
     if (x.href.endsWith('#')) {
       // This is a non-leaf link to a menu.
+      x.removeAttribute('href');
       x.parentElement.classList.add('intermediate-menu');
-    } else if (!x.href.endsWith('#') && url.pathname === curFileName) {
+    } else if (url.pathname === curFileName) {
       x.classList.add('selected');
       for (let par = x.parentElement; par; par = par.parentElement) {
         if (par.tagName.toUpperCase() !== 'LI')
