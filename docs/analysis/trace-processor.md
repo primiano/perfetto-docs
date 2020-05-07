@@ -101,15 +101,15 @@ Modelling an object with many types  is a common problem in trace processor. For
 
 To solve this problem in object-oriented languages, a `Track` class could be created and inheritance used for all subclasses (e.g. `ThreadTrack` and `CounterTrack` being subclasses of `Track`, `ProcessCounterTrack` being a subclass of `CounterTrack` etc).
 
-TODO: add a diagram with the hierarchy.
+![](/docs/images/oop-table-inheritance.png)
 
 In trace processor,  this "object-oriented" approach is replicated by having different tables for each type of object. For example, we have a `track` table as the "root" of the heirarchy with the `thread_track` and `counter_track` tables "inheriting from" the `track` table.
 
-Inheritance between the tables works in the natural way (i.e. how it works in OO languages) and is best summarised by a diagram
-
-TODO: add a diagram with the SQL hierarchy
-
 NOTE: [The appendix below](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
+
+Inheritance between the tables works in the natural way (i.e. how it works in OO languages) and is best summarised by a diagram.
+
+![](/docs/images/tp-table-inheritance.png)
 
 NOTE: For an up-to-date of how tables currently inherit from each other as well as a comprehensive reference of all the column and how they are inherited see the [SQL tables](/docs/TODO.md) reference page.
 
