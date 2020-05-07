@@ -52,6 +52,7 @@ function updateTOC() {
     const link = document.createElement('a');
     link.innerText = anchor.parentElement.innerText;
     link.href = anchor.href;
+    link.onclick = () => { onScroll(link) };
     li.appendChild(link);
     if (anchor.parentElement.tagName === 'H3')
       li.style.paddingLeft = '10px';
@@ -69,7 +70,7 @@ function onMouseMove(offY, e) {
   onScroll();
 }
 
-function onScroll() {
+function onScroll(forceHighlight) {
   const y = document.documentElement.scrollTop + lastMouseOffY;
   let highEl = undefined;
   for (const x of tocAnchors) {
@@ -78,7 +79,7 @@ function onScroll() {
     highEl = x.obj;
   }
   for (const link of document.querySelectorAll('.docs .toc a')) {
-    if (link === highEl) {
+    if ((!forceHighlight && link === highEl) || (forceHighlight === link)) {
       link.classList.add('highlighted');
     } else {
       link.classList.remove('highlighted');
