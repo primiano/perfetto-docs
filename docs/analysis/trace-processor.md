@@ -48,7 +48,9 @@ In the most general sense, a trace is simply a collection of "events" on a timel
 
 Events form the foundation of trace processor and are one of two types: slices and counters.
 
-TODO: add a picture from the UI
+#### Slices
+
+![](/docs/images/slices.png)
 
 A slice refers to an interval of time with some data describing what was happening in that interval. Some example of slices include:
 
@@ -56,7 +58,9 @@ A slice refers to an interval of time with some data describing what was happeni
 - Atrace slices on Android
 - Userspace slices from Chrome
 
-TODO: add a picture from the UI
+#### Counters
+
+![](/docs/images/counters.png)
 
 A counter is a continuous value which varies over time. Some examples of counters include:
 
