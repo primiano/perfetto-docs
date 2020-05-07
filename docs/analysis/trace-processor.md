@@ -198,11 +198,9 @@ Annotations attach a human-readable description to a slice in the trace. This ca
 
 For example, consider the `inflate` slice which occurs during view inflation in Android. We can add the following description and link:
 
-```
-Description: Constructing a View hierarchy from pre-processed XML via LayoutInflater#layout. This includes constructing all of the View objects in the hierarchy, and applying styled attributes.
+**Description**: Constructing a View hierarchy from pre-processed XML via LayoutInflater#layout. This includes constructing all of the View objects in the hierarchy, and applying styled attributes.
 
-Link: https://developer.android.com/reference/android/view/layoutinflater#inflate(int,%20android.view.viewgroup)
-```
+**Link**: https://developer.android.com/reference/android/view/layoutinflater#inflate(int,%20android.view.viewgroup)
 
 ## Creating derived events
 
