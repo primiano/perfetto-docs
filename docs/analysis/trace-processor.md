@@ -109,13 +109,9 @@ Inheritance between the tables works in the natural way (i.e. how it works in OO
 
 TODO: add a diagram with the SQL hierarchy
 
-[This appendix](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
+NOTE: [The appendix below](/docs/TODO.md) gives the exact rules for inheritance between tables for interested readers.
 
-### Tracks
-
-The following diagram gives the full hierarchy of track tables in the trace processor:
-
-TODO: add a diagram with the track hierarchy
+NOTE: For an up-to-date of how tables currently inherit from each other as well as a comprehensive reference of all the column and how they are inherited see the [SQL tables](/docs/TODO.md) reference page.
 
 ## Writing Queries
 
@@ -243,6 +239,3 @@ Concretely, the rules for inheritance between tables works are as follows:
 * Every row in a table has a `type` column. This specifies the _most specific_ table this row belongs to.
   * This allows _dynamic casting_ of a row to its most specific type
   * For example, for if a row in the `track` is actually a `process_counter_track`, it's type column will be `process_counter_track`
-
-The [track table hierarchy](/docs/TODO.md) above best summarises these rules.
-
