@@ -1,15 +1,15 @@
-# Continuous Integration
+# Perfetto CI design document
 
 This CI is used on-top (not in replacement of) AOSP's TreeHugger.
 It gives early testing signals and coverage on other OSes and older Android
 devices not supported by TreeHugger.
 
-See the [Testing](testing.md) page for more details about the project testing
-strategy.
+See the [Testing](/docs/contributing/testing.md) page for more details about the
+project testing strategy.
 
 ## Architecture diagram
 
-![Architecture diagram](https://storage.googleapis.com/perfetto/markdown_img/continuous-integration.png)
+![Architecture diagram](/docs/images/continuous-integration.png)
 
 There are four major components:
 

@@ -1,4 +1,4 @@
-# Testing Perfetto
+# Running tests
 
 The testing strategy for Perfetto is rather complex due to the wide variety
 of build configurations and embedding targets.
@@ -36,7 +36,7 @@ Running tests on Android
 1B) Start the build-in emulator (supported on Linux and MacOS):
 
 ```bash
-tools/install-build-deps
+tools/install-build-deps --android
 tools/run_android_emulator &
 ```
 
@@ -50,10 +50,10 @@ Continuous testing
 ------------------
 Perfetto is tested in a variety of locations:
 
-**Perfetto CI**: https:/ci.perfetto.dev/  
+**Perfetto CI**: https://ci.perfetto.dev/  
 Builds and runs perfetto_{unittests,integrationtests,benchmarks} from the
 standalone checkout. Benchmarks are ran in a reduced form for smoke testing.
-See [this doc](/docs/old/continuous-integration.md) for more details.
+See [this doc](/docs/design-docs/continuous-integration.md) for more details.
 
 **Android CI** (see go/apct and go/apct-guide):  
 runs only `perfetto_integrationtests`
