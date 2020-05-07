@@ -25,6 +25,17 @@
 $wide: "(max-width: 1100px)";
 $mobile: "(max-width: 768px)";
 
+@mixin minimal-scrollbar {
+    &::-webkit-scrollbar {
+        width: 8px;
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 8px;
+    }
+}
+
 @media (max-aspect-ratio: 1/1) {
      :root {
         --home-highlights-height: 256px;
@@ -63,7 +74,7 @@ h3 {
 .site-header {
     background-color: hsl(210, 30%, 16%);
     color: hsl(210, 17%, 98%);
-    position: fixed;
+    position: sticky; // Sticky so the .docs element below doesn't start @ 0.
     top: 0;
     width: 100%;
     --sh-padding-y: 5px;
@@ -133,6 +144,8 @@ h3 {
 // -----------------------------------------------------------------------------
 // Site header
 // -----------------------------------------------------------------------------
+
+// Footer in the index page.
 .site-footer {
     height: var(--site-footer-height);
     background-color: hsl(210, 30%, 16%);
@@ -157,6 +170,16 @@ h3 {
         text-decoration: none;
         color: inherit;
     }
+}
+
+// Footer overrides for the /docs/ page.
+.docs .site-footer {
+    grid-area: footer;
+    background: transparent;
+    color: #666;
+    text-align: left;
+    margin: 0 20px;
+    padding: 12px 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -380,18 +403,33 @@ h3 {
 // Docs
 // -----------------------------------------------------------------------------
 .docs {
-    min-height: calc(100vh - var(--site-footer-height));
+    min-height: 100vh;
     display: grid;
     --nav-width: 240px;
-    grid-template-columns: var(--nav-width) auto 180px;
-    grid-template-rows: 1fr;
+    --toc-width: 180px;
+
+    // 1665px is the clientWidth on a macbook pro. Adjust the layout so that
+    // the max-width of the central .doc fits precisely when the browser is
+    // full-screen on a macbook.
+    --max-doc-width: calc(1665px - var(--toc-width) - var(--nav-width));
+
+    grid-template-columns: var(--nav-width) minmax(auto, var(--max-doc-width)) var(--toc-width);
+    grid-template-rows: 1fr var(--site-footer-height);
+    grid-template-areas: "nav doc toc" "nav footer toc";
+
     background-color: hsl(210, 10%, 97%);
     .nav {
-        grid-column: 1;
+        grid-area: nav;
         border-right: 1px solid hsl(210, 30%, 90%);
         background-color: #fefefe;
         padding: 20px 0;
         padding-right: 16px;
+
+        position: fixed;
+        height: calc(100vh -  var(--site-header-height));
+        overflow-y: auto;
+        @include minimal-scrollbar;
+
         a {
             color: inherit;
             text-decoration: none;
@@ -411,8 +449,8 @@ h3 {
             background-color: #ecba2a;
         }
         >ul {
-            position: sticky;
-            top: calc(var(--site-header-height) + 25px);
+            position: static; // Otherwise gets v-centered in the middle.
+            // top: calc(var(--site-header-height) + 25px);
         }
         .intermediate-menu:not(.expanded) > :not(:first-child) {
             visibility: hidden;
@@ -473,10 +511,10 @@ h3 {
         }
     }
     .doc {
-        grid-column: 2;
+        grid-area: doc;
         background-color: #fff;
         margin: 20px;
-        padding: 40px;
+        padding: 20px 40px;
         font-family: Roboto, sans-serif;
         font-size: 1rem;
         font-weight: 400;
@@ -668,8 +706,15 @@ h3 {
 
     }
     .toc {
-        grid-column: 3;
+        grid-area: toc;
         padding: 20px 16px 20px 0;
+
+        position: sticky;
+        top: var(--site-header-height);
+        height: calc(100vh - var(--site-header-height));
+        overflow-y: auto;
+        @include minimal-scrollbar;
+
         font-family: 'Source Sans Pro', sans-serif;
         word-break: break-word;
         a {
@@ -701,7 +746,7 @@ h3 {
         >ul {
             border-left: 4px solid #ecba2a;
             padding-left: 10px;
-            position: sticky;
+            position: static;  // Otherwise gets v-centered in the middle.
             top: calc(var(--site-header-height) + 25px);
         }
     }
