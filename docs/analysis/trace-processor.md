@@ -78,9 +78,9 @@ A track is a named partition of events of the same type and the same associated 
 - Async userspace slices have one track for each “cookie” linking a set of async
   events
 
-The most intuitive way to think of a track is to imagine how they would be drawn in a UI; if all the events are in a single row, they belong to the same track. For example, all the scheduling events for CPU 0 are on the same track:
+The most intuitive way to think of a track is to imagine how they would be drawn in a UI; if all the events are in a single row, they belong to the same track. For example, all the scheduling events for CPU 5 are on the same track:
 
-TODO: add a picture from the UI
+![](/docs/images/cpu-slice-track.png)
 
 Tracks can be split into various types based on the type of event they contain and the context they are assocated with. Examples include:
 
