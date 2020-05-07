@@ -153,7 +153,14 @@ If the source and type of the event is known beforehand (which is generally the 
 
 On the other hand, sometimes the source is not known. In this case, joining with the `track `table and looking up the `type` column will give the exact track table to join with.
 
-TODO: add a query here.
+For example, to find the type of track for `measure` events, the following query could be used.
+
+```sql
+SELECT type
+FROM slice
+JOIN track ON track.id = slice.track_id
+WHERE slice.name = 'measure'
+```
 
 ### Thread and process tables
 
