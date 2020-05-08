@@ -43,3 +43,23 @@ data_sources: {
 This is displayed in the UI as a bar graph showing the frequency with idle states marked by the grey color.
 
 ![](/docs/images/cpu-frequency.png)
+
+## Board Voltages & frequencies
+
+The following ftrace events can be added to the trace config to capture board voltage and frequency changes from board sensors.
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "regulator/regulator_set_voltage"
+            ftrace_events: "regulator/regulator_set_voltage_complete"
+            ftrace_events: "power/clock_enable"
+            ftrace_events: "power/clock_disable"
+            ftrace_events: "power/clock_set_rate"
+            ftrace_events: "power/suspend_resume"
+        }
+    }
+```
+
