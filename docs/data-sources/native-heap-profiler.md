@@ -1,167 +1,4 @@
-# Available data sources
-
-Perfetto provides a number of built in data sources on Android and Linux.
-This page shows some examples of how to enable these in your trace.
-For a full explanation of recording a trace see [trace configuration](/docs/recording/config).
-To see detailed information on all known data sources see the [TraceConfig reference](/docs/reference/trace-config-proto).
-
-<!--
-These include 
-* [integration with Linux kernel tracing](#ftrace)
-* [various process data](#process-stats) exposed via the `proc` filesystem
-* [logcat](#logcat) (Android only)
-* [system data](#sys-stats) exposed by the `proc` filesystem
-* [native allocation profiling](#heapprofd)
-* [Java heap graph dumps](#java-hprof) (Android only)
-* information about [power use](#power) (Android only).
--->
-## CPU scheduling
-Perfetto can show information about what threads were scheduled, on which cores they ran, for how long they ran, and what caused them to
-scheduled and de-scheduled. Here is an example config:
-
-```protobuf
-data_sources {
-  config {
-    name: "linux.ftrace"
-    ftrace_config {
-      ftrace_events: "sched/sched_switch"
-      ftrace_events: "sched/sched_waking"
-    }
-  }
-}
-```
-
-CPU scheduling is the displayed in the most prominent tracks in the UI. When zoomed out the activity will be displayed in a bar graph as below:
-
-![](/docs/images/cpu-bar-graphs.png)
-
-But once zoomed in you can see the individual scheduling slices:
-
-![](/docs/images/cpu-zoomed.png)
-
-To investigate CPU scheduling from the `trace_processor` there is a specialised table called `sched`. You can query it as follows:
-
-```sql
-select * from sched where cpu = 0
-```
-
-A common use case might be to find the CPU time broken down by process. You can do this with the following query:
-
-```sql
-select process.name, tot_proc/1e9 as cpu_sec
-from (
-  select upid, sum(tot_thd) as tot_proc
-  from (
-    select utid, sum(dur) as tot_thd
-    from sched
-    group by utid
-  )
-  join thread using(utid)
-  group by upid
-)
-join process using(upid)
-order by cpu_sec desc
-limit 100
-```
-
-## CPU frequency & power states
-Including the following events in your trace config will allow investigation of CPU frequency and idle time:
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "power/cpu_frequency"
-            ftrace_events: "power/cpu_idle"
-            ftrace_events: "power/suspend_resume"
-        }
-    }
-}
-```
-
-This is displayed in the UI as a bar graph showing the frequency with idle states marked by the grey color.
-
-![](/docs/images/cpu-frequency.png)
-
-## GPU frequency
-TODO: Fill in
-
-## Syscalls
-The enter and exit of all syscalls can be tracked in Perfetto traces.
-
-![](/docs/images/sys-calls.png)
-
-The following ftrace events need to added to the trace config to collect syscalls.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "raw_syscalls/sys_enter"
-            ftrace_events: "raw_syscalls/sys_exit"
-        }
-    }
-}
-```
-
-## Android application tracing
-You can also enable atrace through Perfetto. 
-
-![](/docs/images/userspace.png)
-
-Add required categories to `atrace_categories` and set `atrace_apps` to a specific app to collect userspace annotations from that app.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            atrace_categories: "view"
-            atrace_categories: "webview"
-            atrace_categories: "wm"
-            atrace_categories: "am"
-            atrace_categories: "sm"
-            atrace_apps: "com.android.phone"
-        }
-    }
-}
-```
-
-## Android logcat
-Include Android Logcat messages in the trace and view them in conjunction with other trace data.
-
-![](/docs/images/android_logs.png)
-
-You can configure which log buffers are included in the trace. If no buffers are specified, all will be included.
-
-```protobuf
-data_sources: {
-    config {
-        name: "android.log"
-        android_log_config {
-            log_ids: LID_DEFAULT
-            log_ids: LID_SYSTEM
-            log_ids: LID_CRASH
-        }
-    }
-}
-```
-
-You may also want to add filtering on a tags using the `filter_tags` parameter or set a min priority to be included in the trace using `min_prio`.
-For details about configuration options, see [android\_log\_config.proto](/protos/perfetto/config/android/android_log_config.proto). 
-
-The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
-
-If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
-
-```sql
-select * from android_logs where tag = "perfetto" order by ts
-```
-
-
-## {#heapprofd} Memory: Native heap profiler
+# Native heap profiler
 NOTE: **heapprofd requires Android 10.**
 
 heapprofd is a tool that tracks native heap allocations & deallocations of an
@@ -174,11 +11,11 @@ On debug Android builds, you can profile all apps and most system services.
 On "user" builds, you can only use it on apps with the debuggable or
 profileable manifest flag.
 
-### Quickstart
+## Quickstart
 See the [Memory Guide](/docs/guides/memory.md#heapprofd) for getting started with
 heapprofd.
 
-### UI
+## UI
 
 Dumps from heapprofd are shown as flamegraphs in the UI after clicking on the
 diamond.
@@ -187,7 +24,7 @@ diamond.
 
 ![](/docs/images/native-flamegraph.png)
 
-### Trace Processor
+## Trace Processor
 Information about callstacks is written to the following tables:
 * [`stack_profile_mapping`](/docs/reference/sql-tables.md#stack_profile_mapping)
 * [`stack_profile_frame`](/docs/reference/sql-tables.md#stack_profile_frame)
@@ -201,7 +38,7 @@ Offline symbolization data is stored in
 
 See [Example Queries](#heapprofd-example-queries) for example SQL queries.
 
-### Recording
+## Recording
 On Linux / MacOS, use the `tools/heap_profile` script to heap profile a
 process. If you are having trouble make sure you are using the
 [latest version](
@@ -218,7 +55,7 @@ Windows.
 See [the reference](/docs/reference/trace-config-proto.md#HeapprofdConfig) for
 all available data source configuration when running `perfetto` manually.
 
-### Viewing the data
+## Viewing the data
 
 The resulting profile proto contains four views on the data
 
@@ -245,7 +82,7 @@ the gzipped protos, but will only show the space view.
 
 TIP: Click Left Heavy on the top left for a good visualisation.
 
-### Sampling interval
+## Sampling interval
 heapprofd samples heap allocations. Given a sampling interval of n bytes,
 one allocation is sampled, on average, every n bytes allocated. This allows to
 reduce the performance impact on the target process. The default sampling rate
@@ -257,7 +94,7 @@ probability of being selected as a sample, and the corresponding callstack
 gets attributed the complete n bytes. As an optimization, we sample allocations
 larger than the sampling interval with their true size.
 
-### Startup profiling
+## Startup profiling
 When a profile session names processes by name and a matching process is
 started, it gets profiled from the beginning. The resulting profile will
 contain all allocations done between the start of the process and the end
@@ -275,7 +112,7 @@ The Resulting `ProfilePacket` will have `from_startup` set  to true in the
 corresponding `ProcessHeapSamples` message. This does not get surfaced in the
 converted pprof compatible proto.
 
-### Runtime profiling
+## Runtime profiling
 When a profile session is started, all matching processes (by name or PID)
 are enumerated and profiling is enabled. The resulting profile will contain
 all allocations done between the beginning and the end of the profiling
@@ -285,7 +122,7 @@ The resulting `ProfilePacket` will have `from_startup` set to false in the
 corresponding `ProcessHeapSamples` message. This does not get surfaced in the
 converted pprof compatible proto.
 
-### Concurrent profiling sessions
+## Concurrent profiling sessions
 If multiple sessions name the same target process (either by name or PID),
 only the first relevant session will profile the process. The other sessions
 will report that the process had already been profiled when converting to
@@ -301,7 +138,7 @@ The resulting `ProfilePacket` will have `rejected_concurrent` set  to true in
 otherwise empty corresponding `ProcessHeapSamples` message. This does not get
 surfaced in the converted pprof compatible proto.
 
-### {#heapprofd-targets} Target processes
+## {#heapprofd-targets} Target processes
 Depending on the build of Android that heapprofd is run on, some processes
 are not be eligible to be profiled.
 
@@ -341,13 +178,13 @@ the `<application>`.
 </manifest>
 ```
 
-### DEDUPED frames
+## DEDUPED frames
 If the name of a Java method includes `[DEDUPED]`, this means that multiple
 methods share the same code. ART only stores the name of a single one in its
 metadata, which is displayed here. This is not necessarily the one that was
 called.
 
-### Manual dumping
+## Manual dumping
 You can trigger a manual dump of all currently profiled processes by running
 `adb shell killall -USR1 heapprofd`. This can be useful for seeing the current
 memory usage of the target in a specific state.
@@ -356,10 +193,10 @@ This dump will show up in addition to the dump at the end of the profile that is
 always produced. You can create multiple of these dumps, and they will be
 enumerated in the output directory.
 
-### Symbolization
+## Symbolization
 NOTE: **Symbolization is currently only available on Linux.**
 
-#### Set up llvm-symbolizer
+### Set up llvm-symbolizer
 You only need to do this once.
 
 To use symbolization, your system must have llvm-symbolizer installed and
@@ -372,7 +209,7 @@ For instance, `ln -s /usr/bin/llvm-symbolizer-9 ~/bin/llvm-symbolizer`, and
 add `~/bin` to your path (or run the commands below with `PATH=~/bin:$PATH`
 prefixed).
 
-#### Symbolize your profile
+### Symbolize your profile
 
 If the profiled binary or libraries do not have symbol names, you can
 symbolize profiles offline. Even if they do, you might want to symbolize in
@@ -412,9 +249,9 @@ is looked for at
 4. $PERFETTO_BINARY_PATH/foo.so
 5. $PERFETTO_BINARY_PATH/.build-id/ab/cd1234.debug
 
-### Troubleshooting
+## Troubleshooting
 
-#### Buffer overrun
+### Buffer overrun
 If the rate of allocations is too high for heapprofd to keep up, the profiling
 session will end early due to a buffer overrun. If the buffer overrun is
 caused by a transient spike in allocations, increasing the shared memory buffer
@@ -422,19 +259,19 @@ size (passing `--shmem-size` to heap\_profile) can resolve the issue.
 Otherwise the sampling interval can be increased (at the expense of lower
 accuracy in the resulting profile) by passing `--interval` to heap\_profile.
 
-#### Profile is empty
+### Profile is empty
 Check whether your target process is eligible to be profiled by consulting
 [Target processes](#target-processes) above.
 
 Also check the [Known Issues](#known-issues).
 
 
-#### Impossible callstacks
+### Impossible callstacks
 If you see a callstack that seems to impossible from looking at the code, make
 sure no [DEDUPED frames](#deduped-frames) are involved.
 
 
-#### Symbolization: Could not find library
+### Symbolization: Could not find library
 
 When symbolizing a profile, you might come accross messages like this:
 
@@ -452,7 +289,7 @@ be used for symbolization.
 If it does, try moving somelib.so to the root of `PERFETTO_BINARY_PATH` and
 try again.
 
-#### Only one frame shown
+### Only one frame shown
 If you only see a single frame for functions in a specific library, make sure
 that the library has unwind information. We need one of
 
@@ -475,9 +312,9 @@ $ readelf -S file.so | grep "gnu_debugdata\|eh_frame\|debug_frame"
 If this does not show one or more of the sections, change your build system
 to not strip them.
 
-### Known Issues
+## Known Issues
 
-#### Android 10
+### Android 10
 * On ARM32, the bottom-most frame is always `ERROR 2`. This is harmless and
   the callstacks are still complete.
 * Does not work on x86 platforms (including the Android cuttlefish emulator).
@@ -487,7 +324,7 @@ to not strip them.
   SELinux enforcement.
   Run `restorecon /dev/socket/heapprofd` in a root shell to resolve.
 
-### Ways to count memory
+## Ways to count memory
 
 When using heapprofd and interpreting results, it is important to know the
 precise meaning of the different memory metrics that can be obtained from the
@@ -527,7 +364,7 @@ looking at the "Private Dirty" column.
 If you observe high RSS or malloc\_info metrics but heapprofd does not match,
 there might be a problem with fragmentation or the allocator.
 
-### Convert to pprof
+## Convert to pprof
 You can use
 [traceconv](https://raw.githubusercontent.com/google/perfetto/master/tools/traceconv) to
 convert the heap dumps in a trace into the [pprof](
@@ -546,7 +383,7 @@ gzip /tmp/heap_profile-XXXXXX/*.pb
 
 to get gzipped protos, which tools handling pprof profile protos expect.
 
-### {#heapprofd-example-queries} Example SQL Queries
+## {#heapprofd-example-queries} Example SQL Queries
 <!--
 echo 'select a.ts, a.upid, a.count, a.size, c.depth, c.parent_id, f.name, f.rel_pc, m.build_id, m.name from heap_profile_allocation a join stack_profile_callsite c ON (a.callsite_id = c.id) join stack_profile_frame f ON (c.frame_id = f.id) join stack_profile_mapping m ON (f.mapping = m.id) order by abs(size) desc;' | out/linux_clang_release/trace_processor_shell -q /dev/stdin /tmp/profile-0dd6cc73-05ad-4064-af05-82691adedb4c/raw-trace | head -n10 | sed 's/,/|/g'
 
@@ -606,241 +443,3 @@ subject to change**, so only use this in one-off situations.
 |_ZN3art35InvokeVirtualOrInterface...|/apex/com.android.art/lib64/libart.so|193112|
 |_ZN3art9ArtMethod6InvokeEPNS_6ThreadEPjjPNS_6JValueEPKc|/apex/com.android.art/lib64/libart.so|193112|
 |art_quick_invoke_stub|/apex/com.android.art/lib64/libart.so|193112|
-
-## {#java-hprof} Memory: Java heap graphs
-
-NOTE: **Java Heap Graphs require Android 11.**
-
-### Quickstart
-See the [Memory Guide](/docs/guides/memory.md#java-hprof) for getting started
-with Java Heap Graphs.
-
-### UI
-
-Java Dumps are shown as flamegraphs in the UI after clicking on the
-diamond.
-
-![](/docs/images/profile-diamond.png)
-
-![](/docs/images/java-flamegraph.png)
-
-### Trace Processor
-Information about the Java Heap is written to the following tables:
-* [`heap_graph_class`](/docs/reference/sql-tables.md#heap_graph_class)
-* [`heap_graph_object`](/docs/reference/sql-tables.md#heap_graph_object)
-* [`heap_graph_reference`](/docs/reference/sql-tables.md#heap_graph_reference)
-
-For instance, to get the bytes used by class name, run the following query.
-This will usually be very generic, as most of the bytes in Java objects will
-be in primitive arrays or Strings.
-
-```sql
-> select c.name, sum(o.self_size)
-         from heap_graph_object o join
-         heap_graph_class c on (o.type_id = c.id)
-         where reachable = 1 group by 1 order by 2 desc;
-```
-
-|name                |sum(o.self_size)    |
-|--------------------|--------------------|
-|java.lang.String    |             2770504|
-|long[]              |             1500048|
-|int[]               |             1181164|
-|java.lang.Object[]  |              624812|
-|char[]              |              357720|
-|byte[]              |              350423|
-
-We can use `experimental_flamegraph` to normalize the graph into a tree, always
-taking the shortest path to the root and get cumulative sizes.
-Note that this is **experimental** and the **API is subject to change**, so
-only use that for one-offs. From this we can see how much memory is being
-hold on by objects of a type.
-
-```sql
-> select name, cumulative_size
-  from experimental_flamegraph(56785646801, 1, 'graph')
-  order by 2 desc;
-```
-
-| name | cumulative_size |
-|------|-----------------|
-|java.lang.String|1431688|
-|java.lang.Class<android.icu.text.Transliterator>|1120227|
-|android.icu.text.TransliteratorRegistry|1119600|
-|com.android.systemui.statusbar.phone.StatusBarNotificationPresenter$2|1086209|
-|com.android.systemui.statusbar.phone.StatusBarNotificationPresenter|1085593|
-|java.util.Collections$SynchronizedMap|1063376|
-|java.util.HashMap|1063292|
-
-## Memory: System wide
-### LMK
-### meminfo
-### per-process-stats
-### virtual memory stats
-
-## Sys Stats
-This data source allows periodic polling of system data from 
-
-- `proc/stat`
-- `proc/vmstat`
-- `proc/meminfo`
-
-![](/docs/images/sys_stat_counters.png)
-
-The polling period and specific counters to include in the trace can be set in the trace config.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.sys_stats"
-        sys_stats_config {
-            meminfo_period_ms: 1000
-            meminfo_counters: MEMINFO_MEM_TOTAL
-            meminfo_counters: MEMINFO_MEM_FREE
-            meminfo_counters: MEMINFO_MEM_AVAILABLE
-            vmstat_period_ms: 1000
-            vmstat_counters: VMSTAT_NR_FREE_PAGES
-            vmstat_counters: VMSTAT_NR_ALLOC_BATCH
-            vmstat_counters: VMSTAT_NR_INACTIVE_ANON
-            vmstat_counters: VMSTAT_NR_ACTIVE_ANON
-            stat_period_ms: 2500
-            stat_counters: STAT_CPU_TIMES
-            stat_counters: STAT_FORK_COUNT
-        }
-    }
-}
-```
-
-All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
-
-When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables.md#counter_track) table.
-
-TODO: Add example query
-
-
-
-## Process name tracking
-
-## Power
-This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails on selected devices.
-
-TODO: Add UI screenshot
-
-The config required to enable this is:
-
-```protobuf
-data_sources: {
-    config {
-        name: "android.power"
-        android_power_config {
-            battery_poll_ms: 100
-            collect_power_rails: true
-            battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
-            battery_counters: BATTERY_COUNTER_CHARGE
-            battery_counters: BATTERY_COUNTER_CURRENT
-        }
-    }
-}
-```
-
-For more details on the configuration options see [android\_power\_config.proto](/protos/perfetto/config/power/android_power_config.proto). The data output format can be seen in [battery\_counters.proto](/protos/perfetto/trace/power/battery_counters.proto) and [power_rails.proto](/protos/perfetto/trace/power/power_rails.proto).
-
-When using `trace_processor` these counter will be in the `counter_track` table. To look at a specific counter use a query like:
-
-TODO: insert example query
-
-## Linux kernel tracing
-Perfetto integrates with [Linux kernel event tracing](https://www.kernel.org/doc/Documentation/trace/ftrace.txt).
-While Perfetto has special support for some events (for example see [CPU Scheduling](#cpu-scheduling)) Perfetto can collect arbitrary events.
-This config collects four Linux kernel events: 
-
-```protobuf
-data_sources {
-  config {
-    name: "linux.ftrace"
-    ftrace_config {
-      ftrace_events: "ftrace/print"
-      ftrace_events: "sched/sched_switch"
-      ftrace_events: "task/task_newtask"
-      ftrace_events: "task/task_rename"
-    }
-  }
-}
-```
-
-A wildcard can be used to collect all events in a category:
-
-```protobuf
-data_sources {
-  config {
-    name: "linux.ftrace"
-    ftrace_config {
-      ftrace_events: "ftrace/print"
-      ftrace_events: "sched/*"
-    }
-  }
-}
-```
-
-The full configuration options for ftrace can be seen in [ftrace_config.proto](/protos/perfetto/config/ftrace/ftrace_config.proto).
-
-
-## Process Stats
-
-The process stats data source allows you to associate process names with the threads in the trace and collect per process data from `proc/<pid>/status` and `/proc/<pid>/oom_score_adj`.
-
-![](/docs/images/proc_stat.png)
-
-Process names are collected in the trace whenever a new thread is seen in a CPU scheduling event. To ensure thread/process association occurs even in traces with no scheduling data it is advisable to include `scan_all_processes_on_start = true` in your process stats config.
-
-To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in your process stats config. X must be greater than 100ms to avoid excessive CPU usage. Details about the specific counters being collected can be found in [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto).
-
-Example config: 
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.process_stats"
-        process_stats_config {
-            scan_all_processes_on_start: true
-            proc_stats_poll_ms: 1000
-        }
-    }
-}
-```
-
-For more configuration options see [process_stats_config.proto](/protos/perfetto/config/process_stats/process_stats_config.proto). See [process_stats.proto](/protos/perfetto/trace/ps/process_stats.proto) and [process_tree.proto](/protos/perfetto/trace/ps/process_tree.proto) for more detailed information about all the information that can be collected.
-
-The process/thread associations end up in the process and thread tables in the trace processor.
-Run the following query to see them:
-
-``` sql
-select * from thread join process using(upid)
-```
-
-To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
-
-TODO: Add example query for proc stat counters
-
-
-## Inode Map
-TODO: Cut inode map? Maybe we don't want to support it.
-
-The inode map data source provides inode to filename resolution.
-
-WARNING: Enabling this data source will negatively affect tracing performance.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.inode_file_map"
-        inode_file_config {
-            scan_interval_ms: 1000
-        }
-    }
-}
-```
-
-The configuration options can be found in [inode\_file\_config.proto](/protos/perfetto/config/inode_file/inode_file_config.proto). The output data format is specified in [inode\_file\_map.proto](/protos/perfetto/trace/filesystem/inode_file_map.proto).
-
-
