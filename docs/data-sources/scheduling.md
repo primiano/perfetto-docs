@@ -46,3 +46,32 @@ join process using(upid)
 order by cpu_sec desc
 limit 100
 ```
+
+
+## Scheduling chains and latency
+
+You can track causality of scheduling transitions and analyse the latency using the following ftrace events: 
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "sched/sched_switch"
+            ftrace_events: "power/suspend_resume"
+            ftrace_events: "sched/sched_wakeup"
+            ftrace_events: "sched/sched_wakeup_new"
+            ftrace_events: "sched/sched_waking"
+            ftrace_events: "sched/sched_process_exit"
+            ftrace_events: "sched/sched_process_free"
+            ftrace_events: "task/task_newtask"
+            ftrace_events: "task/task_rename"
+        }
+    }
+}
+```
+
+This will appear in the UI when a CPU slice is selected:
+
+![](/docs/images/latency.png)
+

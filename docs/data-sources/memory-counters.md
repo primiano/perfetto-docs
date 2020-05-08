@@ -1,9 +1,25 @@
 # Memory Counters
 
-### LMK
-### meminfo
-### per-process-stats
-### virtual memory stats
+## Low-memory Kills (LMK)
+
+To investigate low memory kills on a device include the following  options in the trace config:
+
+```protobuf
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "lowmemorykiller/lowmemory_kill"
+            ftrace_events: "oom/oom_score_adj_update"
+            ftrace_events: "ftrace/print"
+            atrace_apps: "lmkd"
+        }
+    }
+}
+```
+
+TODO: Add UI screenshot
+
 
 ## Sys stats
 This data source allows periodic polling of system data from 
