@@ -19,7 +19,14 @@
     --site-footer-height: 50px;
     --home-highlights-height: 128px;
     --content-max-width: 1100px;
-    --anim-ease: cubic-bezier(0.4, 0.0, 0.2, 1)
+    --anim-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
+
+    // This is set to 1 by JS after onload. This is to prevent flickering on
+    // page load on the nav bar and other entries while transitioning in their
+    // initial state.
+    --anim-enabled: 0;
+
+    --anim-time: calc(0.15s * var(--anim-enabled));
 }
 
 $wide: "(max-width: 1100px)";
@@ -84,7 +91,7 @@ h3 {
     overflow: hidden;
     display: flex;
     z-index: 10;
-    transition: max-height var(--anim-ease) 0.15s;
+    transition: max-height var(--anim-ease) var(--anim-time);
     &.expanded {
         max-height: 100vh;
     }
@@ -264,7 +271,7 @@ h3 {
                 margin: auto;
                 background-size: 256px 128px;
                 filter: grayscale(1);
-                transition: filter ease 0.15s;
+                transition: filter ease var(--anim-time);
             }
             &:nth-child(1) .icon {
                 background-position: 0 -64px;
@@ -352,7 +359,7 @@ h3 {
                 border-radius: 6px;
                 font-size: 18px;
                 padding: 10px 16px;
-                transition: background-color ease 0.15s;
+                transition: background-color ease var(--anim-time);
                 text-decoration: none;
                 &:hover {
                     background: #286090;
@@ -370,7 +377,7 @@ h3 {
             // border: 1px solid #eee;
             font-family: 'Source Sans Pro', sans-serif;
             color: #111111;
-            transition: filter var(--anim-ease) 0.15s, background-color var(--anim-ease) 0.2s, transform var(--anim-ease) 0.2s, box-shadow linear 0.2s, ;
+            transition: filter var(--anim-ease) var(--anim-time), background-color var(--anim-ease) var(--anim-time), transform var(--anim-ease) var(--anim-time), box-shadow linear var(--anim-time);
             border-radius: 6px;
             filter: opacity(0.6);
             &:hover {
@@ -438,8 +445,8 @@ h3 {
             line-height: 24px;
             margin: 3px 0;
             display: flex;
-            transition: background-color var(--anim-ease) 0.25s,
-                        visibility linear 0.25s;
+            transition: background-color var(--anim-ease) var(--anim-time),
+                        visibility linear var(--anim-time);
             border-radius: 0 10px 10px 0;
             -webkit-tap-highlight-color: transparent;
             &[href] {
@@ -464,6 +471,7 @@ h3 {
                 color: #4a4a4a;
                 max-width: 100%;
             }
+            p { margin: 0; }
         }
 
         // Applies only to outer-level submenus.
@@ -474,9 +482,43 @@ h3 {
                 margin-bottom: 10px;
                 font-weight: 600;
                 color: #111;
+
                 &:not(:last-child) {
                     border-bottom: 1px solid #eee;
                 }
+
+                &.compressible {
+                    > p > a::after {
+                        content: 'keyboard_arrow_up';
+                        font-family: 'Material Icons Round';
+                        font-size: 24px;
+                        width: 24px;
+                        transition: transform var(--anim-ease) var(--anim-time);
+                        margin: 0 0 0 auto;
+                        font-weight: 200;
+                        color: #666;
+                    }
+                    > ul {
+                        transition: max-height var(--anim-ease) var(--anim-time),
+                                    opacity var(--anim-ease) var(--anim-time);
+                        opacity: 1;
+                    }
+                    &.compressed {
+                        // The JS will compute and set the maxHeight on each
+                        // element depending on the size of their children.
+                        // !important is needed to override the element-inline
+                        // max-height property set by JS, which is prioritary.
+                        > ul {
+                            max-height: 0 !important;
+                            visibility: hidden;
+                            opacity: 0;
+                        }
+                        > p > a::after {
+                            transform: scaleY(-1);
+                        }
+                    }
+                }  // .compressible
+
             }
         }
 
@@ -547,7 +589,7 @@ h3 {
         // Hide mermaid graphs until they are rendered, this is to avoid showing the
         // mermaid source while the renderer generates the SVG.
         .mermaid {
-            transition: opacity var(--anim-ease) 0.5s;
+            transition: opacity var(--anim-ease) var(--anim-time);
             &:not(.rendered) {
                 opacity: 0;
             }
@@ -561,7 +603,7 @@ h3 {
             margin-top: calc(-1 * var(--site-header-height));
             outline: none;
             opacity: 0;
-            transition: opacity var(--anim-ease) 0.15s;
+            transition: opacity var(--anim-ease) var(--anim-time);
             &::before {
                 content: 'insert_link';
                 font-family: 'Material Icons Round';
@@ -758,9 +800,9 @@ h3 {
             height: 100vh;
             overflow-y: auto;
             top: var(--site-header-height);
-            transition: transform var(--anim-ease) 0.15s,
-                        box-shadow var(--anim-ease) 0.15s,
-                        visibility ease 0.15s;
+            transition: transform var(--anim-ease) var(--anim-time),
+                        box-shadow var(--anim-ease) var(--anim-time),
+                        visibility ease var(--anim-time);
             transform: translateX(calc(-1 * var(--nav-width-mobile)));
             visibility: hidden;
             >ul {

@@ -16,7 +16,8 @@ You can collect a trace in the following ways:
 
 Navigate to ui.perfetto.dev and select **Record new trace**.
 
-From this page, select and turn on the data sources you want to include in the trace. More detail about the different data sources can be found [here](/docs/recording/data-sources.md).
+From this page, select and turn on the data sources you want to include in the trace. More detail about the different data sources can be found in the
+_Data sources_ section of the docs.
 
 ![Record page of the Perfetto UI](/docs/images/record-trace.png)
 

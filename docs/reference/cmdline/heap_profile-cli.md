@@ -1,7 +1,7 @@
 # heap_profile
 
 `tools/heap_profile` allows to collect native memory profiles on Android.
-See [Recording traces](/docs/recording/data-sources.md#heapprofd) for more
+See [Recording traces](/docs/data-sources/native-heap-profiler.md) for more
 details about the data-source.
 
 ```

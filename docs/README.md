@@ -11,8 +11,9 @@ zero-syscall (on fast-paths) writing of protobufs over shared memory.
 **OS-wide Linux/Android data sources for platform debugging**
 * Kernel tracing: a daemon that converts Kernel [Ftrace][ftrace] events into
   API-stable protobufs, on device, with low overhead.
-* [Heap profiling](recording/data-sources.md#heapprofd): low-overhead, out of process unwinding,
-  variable sample rate, attachable to already running processes.
+* [Heap profiling](data-sources/native-heap-profiler.md): low-overhead, out of
+  process unwinding, variable sample rate, attachable to already running
+  processes.
 * Power rails sampling
 * System stat counters
 * Chrome userspace tracing

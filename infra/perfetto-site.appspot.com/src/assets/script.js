@@ -16,6 +16,17 @@
 
 let tocAnchors = [];
 let lastMouseOffY = 0;
+let onloadFired = false;
+const postLoadActions = [];
+let tocEventHandlersInstalled = false;
+let resizeObserver = undefined;
+
+function doAfterLoadEvent(action) {
+  if (onloadFired) {
+    return action();
+  }
+  postLoadActions.push(action);
+}
 
 function setupSandwichMenu() {
   const header = document.querySelector('.site-header');
@@ -35,12 +46,6 @@ function setupSandwichMenu() {
 
 // (Re-)Generates the Table Of Contents for docs (the right-hand-side one).
 function updateTOC() {
-  if (document.body.scrollHeight < 10000) {
-    document.documentElement.style.scrollBehavior = 'smooth';
-  } else {
-    document.documentElement.style.scrollBehavior = 'initial';
-  }
-
   const tocContainer = document.querySelector('.docs .toc');
   if (!tocContainer)
     return;
@@ -57,11 +62,31 @@ function updateTOC() {
     if (anchor.parentElement.tagName === 'H3')
       li.style.paddingLeft = '10px';
     toc.appendChild(li);
-    tocAnchors.push(
-        {top: anchor.offsetTop + anchor.offsetHeight / 2, obj: link});
+    doAfterLoadEvent(() => {
+      tocAnchors.push(
+          {top: anchor.offsetTop + anchor.offsetHeight / 2, obj: link});
+    });
   }
   tocContainer.innerHTML = '';
   tocContainer.appendChild(toc);
+
+  // Add event handlers on the first call (can be called more than once to
+  // recompute anchors on resize).
+  if (tocEventHandlersInstalled)
+    return;
+  tocEventHandlersInstalled = true;
+  const doc = document.querySelector('.doc');
+  const passive = {passive: true};
+  if (doc) {
+    const offY = doc.offsetTop;
+    doc.addEventListener('mousemove', (e) => onMouseMove(offY, e), passive);
+    doc.addEventListener('mouseleave', () => {
+      lastMouseOffY = 0;
+    }, passive);
+  }
+  window.addEventListener('scroll', () => onScroll(), passive);
+  resizeObserver = new ResizeObserver(() => requestAnimationFrame(updateTOC));
+  resizeObserver.observe(doc);
 }
 
 // Highlights the current TOC anchor depending on the scroll offset.
@@ -87,28 +112,73 @@ function onScroll(forceHighlight) {
   }
 }
 
+
 function setupNav() {
   const curDoc = document.querySelector('.doc');
   let curFileName = '';
   if (curDoc)
     curFileName = curDoc.dataset['mdFile'];
+
+  // First identify all the top-level nav entries (Quickstart, Data Sources,
+  // ...) and make them compressible.
+  const toplevelSections = document.querySelectorAll('.docs .nav > ul > li');
+  const toplevelLinks = [];
+  for (const sec of toplevelSections) {
+    const childMenu = sec.querySelector('ul');
+    if (!childMenu) {
+      // Don't make it compressible if it has no children (e.g. the very
+      // first 'Introduction' link).
+      continue;
+    }
+
+
+    // Don't make it compressible if the entry has an actual link (e.g. the very
+    // first 'Introduction' link), because otherwise it become ambiguous whether
+    // the link should toggle or open the link.
+    const link = sec.querySelector('a');
+    if (!link || !link.href.endsWith('#'))
+      continue;
+
+    sec.classList.add('compressible');
+
+    // Remember the compressed status as long as the page is opened, so clicking
+    // through links keeps the sidebar in a consistent visual state.
+    const memoKey = `docs.nav.compressed[${link.innerText}]`;
+
+    if (sessionStorage.getItem(memoKey) === '1') {
+      sec.classList.add('compressed');
+    }
+    doAfterLoadEvent(() => {
+      childMenu.style.maxHeight = `${childMenu.scrollHeight + 40}px`;
+    });
+
+    toplevelLinks.push(link);
+    link.addEventListener('click', (evt) => {
+      evt.preventDefault();
+      sec.classList.toggle('compressed');
+      if (sec.classList.contains('compressed')) {
+        sessionStorage.setItem(memoKey, '1');
+      } else {
+        sessionStorage.removeItem(memoKey);
+      }
+    });
+  }
+
   const exps = document.querySelectorAll('.docs .nav ul a');
+  let found = false;
   for (const x of exps) {
     // If the url of the entry matches the url of the page, mark the item as
     // highlighted and expand all its parents.
     const url = new URL(x.href);
     if (x.href.endsWith('#')) {
       // This is a non-leaf link to a menu.
-      x.removeAttribute('href');
-      x.parentElement.classList.add('intermediate-menu');
-    } else if (url.pathname === curFileName) {
-      x.classList.add('selected');
-      for (let par = x.parentElement; par; par = par.parentElement) {
-        if (par.tagName.toUpperCase() !== 'LI')
-          continue;
-        par.classList.add('expanded');
-        par.scrollIntoViewIfNeeded();
+      if (toplevelLinks.indexOf(x) < 0) {
+        x.removeAttribute('href');
       }
+    } else if (url.pathname === curFileName && !found) {
+      x.classList.add('selected');
+      doAfterLoadEvent(() => x.scrollIntoViewIfNeeded());
+      found = true;  // Highlight only the first occurrence.
     }
   }
 }
@@ -153,21 +223,27 @@ function initMermaid() {
   document.body.appendChild(script);
 }
 
-window.addEventListener('load', () => {
-  setupSandwichMenu();
+window.addEventListener('DOMContentLoaded', () => {
   setupNav();
   updateTOC();
+});
+
+window.addEventListener('load', () => {
+  setupSandwichMenu();
   initMermaid();
 
-  const doc = document.querySelector('.doc');
-  const passive = {passive: true};
-  if (doc) {
-    const offY = doc.offsetTop;
-    doc.addEventListener('mousemove', (e) => onMouseMove(offY, e), passive);
-    doc.addEventListener('mouseleave', () => {
-      lastMouseOffY = 0;
-    }, passive);
+  if (document.body.scrollHeight < 10000) {
+    document.documentElement.style.scrollBehavior = 'smooth';
+  } else {
+    document.documentElement.style.scrollBehavior = 'initial';
   }
-  window.addEventListener('scroll', () => onScroll(), passive);
-  window.addEventListener('resize', updateTOC, passive);
+
+  onloadFired = true;
+  while (postLoadActions.length > 0) {
+    postLoadActions.shift()();
+  }
+
+  updateTOC();
+
+  document.documentElement.style.setProperty('--anim-enabled', '1')
 });

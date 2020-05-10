@@ -7,7 +7,7 @@
 If you are profiling your own app and are not running a userdebug build of
 Android, your app needs to be marked as profileable or
 debuggable in its manifest. See the [heapprofd documentation](
-/docs/recording/data-sources.md#heapprofd-targets) for more
+/docs/data-sources/native-heap-profiler.md#heapprofd-targets) for more
 details on which applications can be targeted.
 
 ## dumpsys meminfo

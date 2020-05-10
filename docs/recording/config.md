@@ -57,8 +57,8 @@ The TraceConfig is a protobuf message
     * For the [heap profiler](/docs/TODO.md), the target process name and
       sampling rate.
 
-      NOTE: See the [data sources page](/docs/recording/data-sources.md) for
-      details on how to configure the data sources bundled with Perfetto.
+      NOTE: See the _data sources_ section of the docs for details on how to
+      configure the data sources bundled with Perfetto.
 
 3. The `{data source} x {buffer}` mappings: which buffer each data
     source should write into (see [buffers section](#buffers) below).
@@ -109,7 +109,7 @@ Each buffer has a fill policy which is either:
   dropped on the floor.
 
 WARNING: DISCARD can have unexpected side-effect with data sources that commit
-data at the end of the trace, see [Advanced topics](#advanced)
+data at the end of the trace.
 
 A trace config must define at least one buffer to be valid. In the simplest case
 all data sources will write their trace data into the same buffer.
@@ -361,9 +361,7 @@ data_sources {
 }
 ```
 
-## {#advanced} Advanced topics
-
-### Triggers
+## Triggers
 
 In nominal conditions, a tracing session has a lifecycle that simply matches the
 invocation of the `perfetto` cmdline client: trace data recording starts when
@@ -469,5 +467,4 @@ data_sources { ... }
 ## Other resources
 
 * [TraceConfig Reference](/docs/reference/trace-config-proto)
-* [Config for Perfetto system data sources](/docs/recording/data-sources.md)
 * [Buffers and dataflow](/docs/recording/buffers.md)

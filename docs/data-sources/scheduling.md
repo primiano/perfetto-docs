@@ -1,4 +1,5 @@
-# CPU scheduling
+# CPU Scheduling events
+
 Perfetto can show information about what threads were scheduled, on which cores they ran, for how long they ran, and what caused them to
 scheduled and de-scheduled. Here is an example config:
 

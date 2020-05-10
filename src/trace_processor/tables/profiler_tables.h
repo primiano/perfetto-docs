@@ -24,7 +24,7 @@ namespace trace_processor {
 namespace tables {
 
 // The profiler smaps contains the memory stats for virtual memory ranges
-// captured by the [heap profiler](/docs/recording/data-sources.md#).
+// captured by the [heap profiler](/docs/data-sources/native-heap-profiler.md).
 // @param upid The UniquePID of the process {@joinable internal_process.upid}.
 // @param ts   Timestamp of the snapshot. Multiple rows will have the same
 //             timestamp.
