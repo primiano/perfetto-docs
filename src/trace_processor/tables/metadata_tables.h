@@ -58,7 +58,12 @@ PERFETTO_TP_TABLE(PERFETTO_TP_ARG_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_METADATA_TABLE_DEF);
 
-// @param upid {@joinable internal_process.upid}
+// @name thread
+// @param utid {uint32_t} Unique thread id. This is != the OS tid. This is a
+//        monotonic number associated to each thread. The OS thread id (tid)
+//        cannot be used as primary key because tids and pids are recycled
+//        by most kernels.
+// @param upid {@joinable process.upid}
 #define PERFETTO_TP_THREAD_TABLE_DEF(NAME, PARENT, C) \
   NAME(ThreadTable, "internal_thread")                \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                   \
@@ -70,6 +75,11 @@ PERFETTO_TP_TABLE(PERFETTO_TP_METADATA_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_THREAD_TABLE_DEF);
 
+// @name process
+// @param upid {uint32_t} Unique process id. This is != the OS pid. This is a
+//        monotonic number associated to each process. The OS process id (pid)
+//        cannot be used as primary key because tids and pids are recycled by
+//        most kernels.
 // @param uid The Unix user id of the process {@joinable package_list.uid}.
 #define PERFETTO_TP_PROCESS_TABLE_DEF(NAME, PARENT, C) \
   NAME(ProcessTable, "internal_process")               \

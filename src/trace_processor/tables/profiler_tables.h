@@ -25,7 +25,7 @@ namespace tables {
 
 // The profiler smaps contains the memory stats for virtual memory ranges
 // captured by the [heap profiler](/docs/data-sources/native-heap-profiler.md).
-// @param upid The UniquePID of the process {@joinable internal_process.upid}.
+// @param upid The UniquePID of the process {@joinable process.upid}.
 // @param ts   Timestamp of the snapshot. Multiple rows will have the same
 //             timestamp.
 // @param path The mmaped file, as per /proc/pid/smaps.
@@ -171,7 +171,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SYMBOL_DEF);
 // allocations and frees, and all data from a dump will have the same
 // timestamp.
 // @param upid the UniquePID of the allocating process.
-//        {@joinable internal_process.upid}
+//        {@joinable process.upid}
 // @param callsite_id the callsite the allocation happened at.
 // @param count if positive: number of allocations that happened at this
 // callsite. if negative: number of allocations that happened at this callsite
@@ -235,7 +235,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 // The objects on the Dalvik heap.
 //
 // All rows with the same (upid, graph_sample_ts) are one dump.
-// @param upid UniquePid of the target {@joinable internal_process.upid}.
+// @param upid UniquePid of the target {@joinable process.upid}.
 // @param graph_sample_ts timestamp this dump was taken at.
 // @param object_id ARTs ID of the object. Either a pointer or a hashCode.
 // @param self_size size this object uses on the Java Heap.

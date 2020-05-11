@@ -24,6 +24,7 @@ namespace perfetto {
 namespace trace_processor {
 namespace tables {
 
+// @name slice
 // @tablegroup events
 // @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_SLICE_TABLE_DEF(NAME, PARENT, C) \
@@ -56,7 +57,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SLICE_TABLE_DEF);
 PERFETTO_TP_TABLE(PERFETTO_TP_INSTANT_TABLE_DEF);
 
 // @tablegroup events
-// @param utid {@joinable internal_thread.utid}
+// @param utid {@joinable thread.utid}
 #define PERFETTO_TP_SCHED_SLICE_TABLE_DEF(NAME, PARENT, C) \
   NAME(SchedSliceTable, "sched_slice")                     \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                        \

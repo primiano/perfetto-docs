@@ -44,10 +44,23 @@ function parseTableDef(tableDefName, tableDef) {
     parent: undefined,    // Will be filled afterwards in the resolution phase.
     parentDefName: '',    // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
     tablegroup: 'other',  // From @tablegroup in comments.
-    cols: [],
+    cols: {},
   };
-  let lastParam = null;
-  const colComment = {};
+  const getOrCreateColumn = (name) => {
+    if (name in tableDesc.cols) return tableDesc.cols[name];
+    tableDesc.cols[name] = {
+      name: name,
+      type: '',
+      comment: '',
+      optional: false,
+      refTableCppName: undefined,
+      joinTable: undefined,
+      joinCol: undefined,
+    };
+    return tableDesc.cols[name];
+  };
+
+  let lastColumn = undefined;
   for (const line of tableDef.split('\n')) {
     if (line.startsWith('#define')) continue;  // Skip the first line.
     let m;
@@ -57,21 +70,28 @@ function parseTableDef(tableDefName, tableDef) {
         tableDesc.tablegroup = m[1];
         continue;
       }
-
-      if (m = comm.match(/@param ([^ ]+) (.*)/)) {
-        lastParam = m[1];
-        comm = m[2];
+      if (m = comm.match(/@name (\w+)/)) {
+        tableDesc.name = m[1];
+        continue;
       }
-      if (lastParam === null) {
+      if (m = comm.match(/@param\s+([^ ]+)\s*({\w+})?\s*(.*)/)) {
+        lastColumn = getOrCreateColumn(/*name=*/m[1]);
+        lastColumn.type = (m[2] || '').replace(/(^{)|(}$)/g,'');
+        lastColumn.comment = m[3];
+        continue;
+      }
+      if (lastColumn === undefined) {
         tableDesc.comment += `${comm}\n`;
       } else {
-        colComment[lastParam] = `${colComment[lastParam] || ''}${comm}\n`;
+        lastColumn.comment = `${lastColumn.comment}${comm}\n`;
       }
       continue;
     }
     if (m = line.match(/^\s*NAME\((\w+)\s*,\s*"(\w+)"/)) {
       tableDesc.cppClassName = m[1];
-      tableDesc.name = m[2];
+      if (tableDesc.name === '') {
+        tableDesc.name = m[2];  // Set only if not overridden by @name.
+      }
       continue;
     }
     if (m = line.match(/(PERFETTO_TP_ROOT_TABLE|PARENT)\((\w+)/)) {
@@ -81,30 +101,19 @@ function parseTableDef(tableDefName, tableDef) {
       continue;
     }
     if (m = line.match(/^\s*C\(([^,]+)\s*,\s*(\w+)/)) {
-      let colType = m[1];
-      let colName = m[2];
-      let optional = false;
-      if (m = colType.match(/Optional<(.*)>/)) {
-        colType = m[1];
-        optional = true;
+      const col = getOrCreateColumn(/*name=*/m[2]);
+      col.type = m[1];
+      if (m = col.type.match(/Optional<(.*)>/)) {
+        col.type = m[1];
+        col.optional = true;
       }
-      if (colType === 'StringPool::Id') {
-        colType = 'string';
+      if (col.type === 'StringPool::Id') {
+        col.type = 'string';
       }
-      let refTable = undefined;
-      const sep = colType.indexOf('::');
+      const sep = col.type.indexOf('::');
       if (sep > 0) {
-        refTable = colType.substr(0, sep);
+        col.refTableCppName = col.type.substr(0, sep);
       }
-      tableDesc.cols.push({
-        name: colName,
-        type: colType,
-        optional: optional,
-        comment: colComment[colName] || '',
-        refTableCppName: refTable,
-        joinTable: undefined,
-        joinCol: undefined,
-      });
       continue;
     }
     throw new Error(`Cannot parse line "${line}" from ${tableDefName}`);
@@ -112,7 +121,7 @@ function parseTableDef(tableDefName, tableDef) {
 
   // Process {@joinable xxx} annotations.
   const regex = /\s?\{@joinable\s*(\w+)\.(\w+)\s*\}/;
-  for (const col of tableDesc.cols) {
+  for (const col of Object.values(tableDesc.cols)) {
     const m = col.comment.match(regex)
     if (m) {
       col.joinTable = m[1];
@@ -180,7 +189,7 @@ function tableToMarkdown(table) {
     if (curTable != table) {
       md += `||_Columns inherited from_ ${genLink(curTable)}\n`
     }
-    for (const col of curTable.cols) {
+    for (const col of Object.values(curTable.cols)) {
       const type = col.type + (col.optional ? '<br>`optional`' : '');
       let description = col.comment;
       if (col.joinTable) {
@@ -252,12 +261,15 @@ function main() {
         gaphEdges += ` ${mkLabel(table)} --> ${mkLabel(table.parent)}\n`
       }
 
-      for (const col of table.cols) {
+      for (const col of Object.values(table.cols)) {
         let refTable = undefined;
         if (col.refTableCppName) {
           refTable = tablesCppName[col.refTableCppName];
         } else if (col.joinTable) {
           refTable = tablesByName[col.joinTable];
+          if (!refTable) {
+            throw new Error(`Cannot find @joinable table ${col.joinTable}`);
+          }
         }
         if (!refTable)
           continue;

@@ -1,6 +1,6 @@
-# Android Event Log
+# Android Log
 
-Include Android Logcat messages in the trace and view them in conjunction with
+Include Android log messages in the trace and view them in conjunction with
 other trace data.
 
 ![](/docs/images/android_logs.png)
