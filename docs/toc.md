@@ -33,8 +33,8 @@
 * [Trace analysis](#)
   * [Trace Processor (SQL)](analysis/trace-processor.md)
   * [Trace-based metrics](analysis/metrics.md)
-  * [SQL tables reference](reference/sql-tables.md)
-  * [Stats reference](reference/stats.md)
+  * [SQL tables](analysis/sql-tables.autogen)
+  * [Stats table](analysis/sql-stats.autogen)
 
 * [Core concepts](#)
   * [Trace configuration](recording/config.md)
@@ -44,10 +44,10 @@
   * [Detached mode](recording/detached-mode.md)
 
 * [Reference](#)
-  * [Trace Config proto](reference/trace-config-proto.md)
-  * [Trace Packet proto](reference/trace-packet-proto.md)
-  * [perfetto cmdline](reference/cmdline/perfetto-cli.md)
-  * [heap_profile cmdline](reference/cmdline/heap_profile-cli.md)
+  * [Trace Config proto](reference/trace-config-proto.autogen)
+  * [Trace Packet proto](reference/trace-packet-proto.autogen)
+  * [perfetto cmdline](reference/perfetto-cli.md)
+  * [heap_profile cmdline](reference/heap_profile-cli.md)
 
 * [Contributing](#)
     * [Community](contributing/community.md)

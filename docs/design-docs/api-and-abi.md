@@ -222,7 +222,7 @@ On Android, only the `adb shell` domain (used by various UI tools like
 and few other trusted system services are allowed to access the consumer socket
 (see [traced_consumer in SELinux][selinux_consumer]).
 
-In the Perfetto codebase, the [`perfetto`](/docs/reference/cmdline/perfetto-cli)
+In the Perfetto codebase, the [`perfetto`](/docs/reference/perfetto-cli)
 binary (`/system/bin/perfetto` on Android) provides a consumer implementation
 and exposes it through a command line interface.
 
@@ -520,7 +520,7 @@ the time being.
 [trace_packet.proto]: /protos/perfetto/trace/trace_packet.proto
 [data_source_descriptor.proto]: /protos/perfetto/common/data_source_descriptor.proto
 [data_source_config.proto]: /protos/perfetto/config/data_source_config.proto
-[trace-packet-ref]: /docs/reference/trace-packet-proto
+[trace-packet-ref]: /docs/reference/trace-packet-proto.autogen
 [shared_memory_abi.h]: /include/perfetto/ext/tracing/core/shared_memory_abi.h
 [commit_data_request.proto]: /protos/perfetto/common/commit_data_request.proto
 [proto-updating]: https://developers.google.com/protocol-buffers/docs/proto#updating

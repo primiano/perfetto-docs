@@ -79,7 +79,7 @@ For details about configuration options, see [android\_log\_config.proto](/proto
 
 The logs can be investigated along with other information in the trace using the [Perfetto UI](https://ui.perfetto.dev) as shown in the screenshot above.
 
-If using the `trace_processor`, these logs will be in the [android\_logs](/docs/reference/sql-tables.md#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
+If using the `trace_processor`, these logs will be in the [android\_logs](/docs/analysis/sql-tables.autogen#android_logs) table. To look at the logs with the tag ‘perfetto’ you would use the following query:
 
 ```sql
 select * from android_logs where tag = "perfetto" order by ts

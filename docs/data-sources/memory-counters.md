@@ -56,7 +56,7 @@ data_sources: {
 
 All system counters can be seen in [sys\_stats\_counters.proto](/protos/perfetto/common/sys_stats_counters.proto).
 
-When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/reference/sql-tables.md#counter_track) table.
+When investigating a trace using the `trace_processor`, the counters can be found in the [`counter_track`](/docs/analysis/sql-tables.autogen#counter_track) table.
 
 TODO: Add example query
 
@@ -93,6 +93,6 @@ Run the following query to see them:
 select * from thread join process using(upid)
 ```
 
-To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/reference/sql-tables.md#process_counter_track). table.
+To investigate the per process counters using the `trace_processor` (rather than the UI as in the screenshot above) use the [process_counter_track](/docs/analysis/sql-tables.autogen#process_counter_track). table.
 
 TODO: Add example query for proc stat counters

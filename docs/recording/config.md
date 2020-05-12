@@ -44,7 +44,7 @@ TIP: Some more complete examples of trace configs can be found in the repo in
 ## TraceConfig
 
 The TraceConfig is a protobuf message
-([reference docs](/docs/reference/trace-config-proto)) that defines:
+([reference docs](/docs/reference/trace-config-proto.autogen)) that defines:
 
 1. The general behavior of the whole tracing system, e.g.:
     * The max duration of the trace.
@@ -76,7 +76,7 @@ When a tracing session is started by a consumer, the tracing service will:
   source listed in the config, if a corresponding name (`"linux.ftrace"` in the
   example below) was registered, the service will ask the producer process to
   start that data source, passing it the raw bytes of the
-[`DataSourceConfig` subsection](/docs/reference/trace-config-proto#DataSourceConfig)
+[`DataSourceConfig` subsection](/docs/reference/trace-config-proto.autogen#DataSourceConfig)
 verbatim to the data source (See backward/forward compat section below).
 
 ![TraceConfig diagram](/docs/images/trace_config.png)
@@ -186,7 +186,7 @@ It is the preferred format for human-driven workflows and exploration. It
 allows to pass directly the text file in the PBTX (ProtoBuf TeXtual
 representation) syntax, for the schema defined in the
 [trace_config.proto](/protos/perfetto/config/trace_config.proto)
-(see [reference docs](/docs/reference/trace-config-proto))
+(see [reference docs](/docs/reference/trace-config-proto.autogen))
 
 When using this mode pass the `--txt` flag to `perfetto` to indicate the config
 should be intepreted as a PBTX file:
@@ -466,5 +466,5 @@ data_sources { ... }
 
 ## Other resources
 
-* [TraceConfig Reference](/docs/reference/trace-config-proto)
+* [TraceConfig Reference](/docs/reference/trace-config-proto.autogen)
 * [Buffers and dataflow](/docs/recording/buffers.md)

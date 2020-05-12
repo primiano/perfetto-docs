@@ -89,7 +89,7 @@ function genType(pType, depth) {
         // Instead of recursing and generating the TraceConfig types all over
         // again, just link to the dedicated TraceConfig reference page.
         if (getFullName(field.resolvedType) === 'TraceConfig') {
-          type = `[${type}](/docs/reference/trace-config-proto)`;
+          type = `[${type}](/docs/reference/trace-config-proto.autogen)`;
         } else {
           subTypes.push(field.resolvedType);
           type = `[${type}](#${getFullName(field.resolvedType)})`;

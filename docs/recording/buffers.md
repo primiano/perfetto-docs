@@ -412,10 +412,10 @@ trace. Doing so will disable the windowed sorting at the cost of a higher
 memory usage (the trace file will be fully buffered in memory before parsing).
 
 [streaming mode]: /docs/recording/config#long-traces
-[TraceConfig]: /docs/reference/trace-config-proto#TraceConfig
-[FtraceConfig]: /docs/reference/trace-config-proto#FtraceConfig
-[IncrStateConfig]: /docs/reference/trace-config-proto#FtraceConfig.IncrementalStateConfig
-[FtraceCpuStats]: /docs/reference/trace-packet-proto#FtraceCpuStats
-[FtraceEventBundle]: /docs/reference/trace-packet-proto#FtraceEventBundle
-[TracePacket]: /docs/reference/trace-packet-proto#TracePacket
-[BufferStats]: /docs/reference/trace-packet-proto#TraceStats.BufferStats
+[TraceConfig]: /docs/reference/trace-config-proto.autogen#TraceConfig
+[FtraceConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig
+[IncrStateConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig.IncrementalStateConfig
+[FtraceCpuStats]: /docs/reference/trace-packet-proto.autogen#FtraceCpuStats
+[FtraceEventBundle]: /docs/reference/trace-packet-proto.autogen#FtraceEventBundle
+[TracePacket]: /docs/reference/trace-packet-proto.autogen#TracePacket
+[BufferStats]: /docs/reference/trace-packet-proto.autogen#TraceStats.BufferStats

@@ -26,15 +26,15 @@ diamond.
 
 ## Trace Processor
 Information about callstacks is written to the following tables:
-* [`stack_profile_mapping`](/docs/reference/sql-tables.md#stack_profile_mapping)
-* [`stack_profile_frame`](/docs/reference/sql-tables.md#stack_profile_frame)
-* [`stack_profile_callsite`](/docs/reference/sql-tables.md#stack_profile_callsite)
+* [`stack_profile_mapping`](/docs/analysis/sql-tables.autogen#stack_profile_mapping)
+* [`stack_profile_frame`](/docs/analysis/sql-tables.autogen#stack_profile_frame)
+* [`stack_profile_callsite`](/docs/analysis/sql-tables.autogen#stack_profile_callsite)
 
 The allocations themselves are written to
-[`heap_profile_allocation`](/docs/reference/sql-tables.md#heap_profile_allocation).
+[`heap_profile_allocation`](/docs/analysis/sql-tables.autogen#heap_profile_allocation).
 
 Offline symbolization data is stored in
-[`stack_profile_symbol`](/docs/reference/sql-tables.md#stack_profile_symbol).
+[`stack_profile_symbol`](/docs/analysis/sql-tables.autogen#stack_profile_symbol).
 
 See [Example Queries](#heapprofd-example-queries) for example SQL queries.
 
@@ -52,8 +52,8 @@ enter the processes you want to target, click "Add Device" to pair your phone,
 and record profiles straight from your browser. This is also possible on
 Windows.
 
-See [the reference](/docs/reference/trace-config-proto.md#HeapprofdConfig) for
-all available data source configuration when running `perfetto` manually.
+See [the reference](/docs/reference/trace-config-proto.autogen#HeapprofdConfig)
+for all available data source configuration when running `perfetto` manually.
 
 ## Viewing the data
 

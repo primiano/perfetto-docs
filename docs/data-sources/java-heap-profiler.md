@@ -17,9 +17,9 @@ diamond.
 
 ## Trace Processor
 Information about the Java Heap is written to the following tables:
-* [`heap_graph_class`](/docs/reference/sql-tables.md#heap_graph_class)
-* [`heap_graph_object`](/docs/reference/sql-tables.md#heap_graph_object)
-* [`heap_graph_reference`](/docs/reference/sql-tables.md#heap_graph_reference)
+* [`heap_graph_class`](/docs/analysis/sql-tables.autogen#heap_graph_class)
+* [`heap_graph_object`](/docs/analysis/sql-tables.autogen#heap_graph_object)
+* [`heap_graph_reference`](/docs/analysis/sql-tables.autogen#heap_graph_reference)
 
 For instance, to get the bytes used by class name, run the following query.
 This will usually be very generic, as most of the bytes in Java objects will

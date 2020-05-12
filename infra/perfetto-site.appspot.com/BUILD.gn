@@ -248,7 +248,7 @@ action("sql_tables_reference_md") {
   script = "../../gn/standalone/build_tool_wrapper.py"
   tp_table_hdrs = read_file(tp_tables_list, "list lines")
   inputs = tp_table_hdrs + [js_src]
-  outputs = [ "$target_out_dir/tables.md" ]
+  outputs = [ "$target_out_dir/sql-tables.autogen" ]
   args = [
     "--path=$nodejs_bin",
     "node",
@@ -263,8 +263,8 @@ action("sql_tables_reference_md") {
 
 md_to_html("sql_tables_reference") {
   deps = [ ":sql_tables_reference_md", ":navmap" ]
-  markdown = "$target_out_dir/tables.md"
-  out_html = "$dist_dir/docs/reference/sql-tables"
+  markdown = "$target_out_dir/sql-tables.autogen"
+  out_html = "$dist_dir/docs/analysis/sql-tables"
   html_template = rebase_path("src/template_markdown.html", root_build_dir)
 }
 
@@ -273,7 +273,7 @@ action("stats_reference_md") {
   script = "../../gn/standalone/build_tool_wrapper.py"
   input = "../../src/trace_processor/storage/stats.h"
   inputs = [input, js_src]
-  outputs = [ "$target_out_dir/stats.md" ]
+  outputs = [ "$target_out_dir/sql-stats.autogen" ]
   args = [
     "--path=$nodejs_bin",
     "node",
@@ -287,8 +287,8 @@ action("stats_reference_md") {
 
 md_to_html("stats_reference") {
   deps = [ ":stats_reference_md", ":navmap" ]
-  markdown = "$target_out_dir/stats.md"
-  out_html = "$dist_dir/docs/reference/stats"
+  markdown = "$target_out_dir/sql-stats.autogen"
+  out_html = "$dist_dir/docs/analysis/sql-stats"
   html_template = rebase_path("src/template_markdown.html", root_build_dir)
 }
 

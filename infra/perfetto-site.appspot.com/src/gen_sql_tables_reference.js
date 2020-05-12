@@ -47,7 +47,8 @@ function parseTableDef(tableDefName, tableDef) {
     cols: {},
   };
   const getOrCreateColumn = (name) => {
-    if (name in tableDesc.cols) return tableDesc.cols[name];
+    if (name in tableDesc.cols)
+      return tableDesc.cols[name];
     tableDesc.cols[name] = {
       name: name,
       type: '',
@@ -75,8 +76,8 @@ function parseTableDef(tableDefName, tableDef) {
         continue;
       }
       if (m = comm.match(/@param\s+([^ ]+)\s*({\w+})?\s*(.*)/)) {
-        lastColumn = getOrCreateColumn(/*name=*/m[1]);
-        lastColumn.type = (m[2] || '').replace(/(^{)|(}$)/g,'');
+        lastColumn = getOrCreateColumn(/*name=*/ m[1]);
+        lastColumn.type = (m[2] || '').replace(/(^{)|(}$)/g, '');
         lastColumn.comment = m[3];
         continue;
       }
@@ -101,7 +102,7 @@ function parseTableDef(tableDefName, tableDef) {
       continue;
     }
     if (m = line.match(/^\s*C\(([^,]+)\s*,\s*(\w+)/)) {
-      const col = getOrCreateColumn(/*name=*/m[2]);
+      const col = getOrCreateColumn(/*name=*/ m[2]);
       col.type = m[1];
       if (m = col.type.match(/Optional<(.*)>/)) {
         col.type = m[1];

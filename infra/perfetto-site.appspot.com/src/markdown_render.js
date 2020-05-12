@@ -58,10 +58,11 @@ function hrefInDocs(href) {
 }
 
 function assertNoDeadLink(relPathFromRoot) {
-  if (relPathFromRoot.match(/\breference\//))
-    return;  // Skip check for build-time generated links in reference/
-
   relPathFromRoot = relPathFromRoot.replace(/\#.*$/g, '');  // Remove #line.
+
+  // Skip check for build-time generated reference pages.
+  if (relPathFromRoot.endsWith('.autogen')) return;
+
   const fullPath = path.join(ROOT_DIR, relPathFromRoot);
   if (!fs.existsSync(fullPath) && !fs.existsSync(fullPath + ".md")) {
     const msg = `Dead link: ${relPathFromRoot} in ${curMdFile}`;
@@ -104,7 +105,7 @@ function renderLink(originalLinkFn, href, title, text) {
     // Check that the target doc exists. Skip the check on /reference/ files
     // that are typically generated at build time.
     assertNoDeadLink(docsHref);
-    href = docsHref.replace(/[.]md\b/, '');
+    href = docsHref.replace(/[.](md|autogen)\b/, '');
   } else if (href.startsWith('/') && !href.startsWith('//')) {
     // /tools/xxx -> github/tools/xxx.
     sourceCodeLink = href;
