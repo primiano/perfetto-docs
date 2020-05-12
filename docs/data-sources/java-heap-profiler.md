@@ -3,8 +3,8 @@
 NOTE: **Java Heap Graphs require Android 11.**
 
 ## Quickstart
-See the [Memory Guide](/docs/guides/memory.md#java-hprof) for getting started
-with Java Heap Graphs.
+See the [Memory Guide](/docs/case-studies/memory.md#java-hprof) for getting
+started with Java Heap Graphs.
 
 ## UI
 

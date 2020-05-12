@@ -10,7 +10,7 @@
   * [Heap profiling](quickstart/profiling.md)
 
 * [Case studies](#)
-  * [Debugging memory usage](guides/memory.md)
+  * [Debugging memory usage](case-studies/memory.md)
 
 * [Data sources](#)
   * [Memory](#)
