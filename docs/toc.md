@@ -3,7 +3,6 @@
 * [Quickstart](#)
   * [System tracing on Android](quickstart/android-tracing.md)
   * [System tracing on Linux](quickstart/linux-tracing.md)
-  * [App instrumentation](quickstart/app-tracing.md)
   * [Trace analysis](quickstart/trace-analysis.md)
   * [Trace-based metrics](quickstart/metrics.md)
   * [Trace conversion](quickstart/traceconv.md)
@@ -26,9 +25,8 @@
     * [Android log (logcat)](data-sources/android-log.md)
 
 * [App Instrumentation](#)
-  * [Getting started](#)
-  * [Tracing SDK](#)
-  * [Track Events](#)
+  * [Tracing SDK](instrumentation/tracing-sdk.md)
+  * [Track events](instrumentation/track-events.md)
 
 * [Trace analysis](#)
   * [Trace Processor (SQL)](analysis/trace-processor.md)
@@ -67,7 +65,6 @@
 
 * [Old Stuff](#)
   * [Instrumenting and tracing](#)
-    * [App instrumentation](old/app-instrumentation.md)
     * [Recording traces](old/recording-traces.md)
   * [On-device tracer](#)
     * [Running Perfetto](old/running.md)

@@ -1,78 +1,6 @@
-# App instrumentation
+# Track events (Tracing SDK)
 
-The Perfetto Client API is a C++ library that allows applications to emit
-trace events to add more context to a Perfetto trace to help with
-development, debugging and performance analysis.
-
-> The code from this example is also available as a [GitHub repository](
-> https://github.com/skyostil/perfetto-sdk-example).
-
-To start using the Client API, first check out the latest SDK release:
-
-```sh
-$ git clone https://android.googlesource.com/platform/external/perfetto -b latest
-```
-
-The SDK consists of two files, `sdk/perfetto.h` and
-`sdk/perfetto.cc`. These are an amalgamation of the Client API designed to
-easy to integrate to existing build systems. For example, to add the SDK to a
-CMake project, edit your `CMakeLists.txt` accordingly:
-
-```cmake
-cmake_minimum_required(VERSION 3.13)
-project(PerfettoExample)
-find_package(Threads)
-
-# Define a static library for Perfetto.
-include_directories(perfetto/sdk)
-add_library(perfetto STATIC perfetto/sdk/perfetto.cc)
-
-# Link the library to your main executable.
-add_executable(example example.cc)
-target_link_libraries(example perfetto ${CMAKE_THREAD_LIBS_INIT})
-```
-
-Next, initialize Perfetto in your program:
-
-```C++
-
-#include <perfetto.h>
-
-int main(int argv, char** argc) {
-  perfetto::TracingInitArgs args;
-
-  // The backends determine where trace events are recorded. You may select one
-  // or more of:
-
-  // 1) The in-process backend only records within the app itself.
-  args.backends |= perfetto::kInProcessBackend;
-
-  // 2) The system backend writes events into a system Perfetto daemon,
-  //    allowing merging app and system events (e.g., ftrace) on the same
-  //    timeline. Requires the Perfetto `traced` daemon to be running (e.g.,
-  //    on Android Pie and newer).
-  args.backends |= perfetto::kSystemBackend;
-
-  perfetto::Tracing::Initialize(args);
-}
-```
-
-You are now ready to instrument your app with trace events. The Client API
-has two options for this:
-
-- [Track events](#track-events), which represent time-bounded operations
-   (e.g., function calls) on a timeline. Track events are a good choice for
-   most apps.
-
-- [Custom data sources](#custom-data-sources), which can be used to
-   efficiently record arbitrary app-defined data using a protobuf encoding.
-   Custom data sources are a typically better match for advanced Perfetto
-   users.
-
-# Track events
-
-![Track events shown in the Perfetto UI](
-  /docs/track-events.png "Track events in the Perfetto UI")
+Track events are part of the [Perfetto Tracing SDK](tracing-sdk.md).
 
 *Track events* are application specific, time bounded events recorded into a
 *trace* while the application is running. Track events are always associated
@@ -80,12 +8,22 @@ with a *track*, which is a timeline of monotonically increasing time. A track
 corresponds to an independent sequence of execution, such as a single thread
 in a process.
 
+![Track events shown in the Perfetto UI](
+  /docs/images/track-events.png "Track events in the Perfetto UI")
+
+See the [Getting started](/docs/instrumentation/tracing-sdk#getting-started)
+section of the Tracing SDK page for instructions on how to check out and
+build the SDK.
+
+TIP: The code from this example is also available as a
+     [GitHub repository](https://github.com/skyostil/perfetto-sdk-example).
+
 There are a few main types of track events:
 
 1. **Slices**, which represent nested, time bounded operations. For example,
     a slice could cover the time period from when a function begins executing
     to when it returns, the time spent loading a file from the network or the
-    time spent blocked on a disk read.
+    time to complete a user journey.
 
 2. **Counters**, which are snapshots of time-varying numeric values. For
     example, a track event can record instantaneous the memory usage of a
@@ -103,14 +41,12 @@ browser](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool)
 is deeply instrumented with track events to assist in debugging, development
 and performance analysis.
 
-A typical use case for track events is annotating a function with a scoped
-track event, so that function's execution shows up in a trace. To start using
-track events, first define the set of categories that your events will fall
-into. Each category can be separately enabled or disabled for tracing (see
-[Category configuration](#category-configuration).
+To start using track events, first define the set of categories that your events
+will fall into. Each category can be separately enabled or disabled for tracing
+(see [Category configuration](#category-configuration)).
 
-Add the list of categories into a header file (e.g., `example_tracing.h`)
-like this:
+Add the list of categories into a header file (e.g.,
+`my_app_tracing_categories.h`) like this:
 
 ```C++
 #include <perfetto.h>
@@ -123,10 +59,10 @@ PERFETTO_DEFINE_CATEGORIES(
 ```
 
 Then, declare static storage for the categories in a cc file (e.g.,
-`example_tracing.cc`):
+`my_app_tracing_categories.cc`):
 
 ```C++
-#include "example_tracing.h"
+#include "my_app_tracing_categories.h"
 
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 ```
@@ -144,7 +80,7 @@ int main(int argv, char** argc) {
 Now you can add track events to existing functions like this:
 
 ```C++
-#include "example_tracing.h"
+#include "my_app_tracing_categories.h"
 
 void DrawPlayer() {
   TRACE_EVENT("rendering", "DrawPlayer");
@@ -152,9 +88,11 @@ void DrawPlayer() {
 }
 ```
 
-This type of trace event is scoped, which means it will cover the time from
-when the function began executing until the point of return. You can also
-supply (up to two) debug annotations together with the event.
+This type of trace event is scoped, under the hoods it uses C++ [RAII]. The
+event will cover the time from when the `TRACE_EVENT` annotation is encoundered
+to the end of the block (in the example above, until the function returns).
+
+You can also supply (up to two) debug annotations together with the event.
 
 ```C++
 int player_number = 1;
@@ -165,10 +103,10 @@ For more complex arguments, you can define [your own protobuf
 messages](/protos/perfetto/trace/track_event/track_event.proto) and emit
 them as a parameter for the event.
 
-> Currently custom protobuf messages need to be added directly to the
-> Perfetto repository under `protos/perfetto/trace`, and Perfetto itself must
-> also be rebuilt. We are working [to lift this
-> limitation](https://github.com/google/perfetto/issues/11).
+NOTE: Currently custom protobuf messages need to be added directly to the
+      Perfetto repository under `protos/perfetto/trace`, and Perfetto itself
+      must also be rebuilt. We are working
+      [to lift this limitation](https://github.com/google/perfetto/issues/11).
 
 As an example of a custom track event argument type, save the following as
 `protos/perfetto/trace/track_event/player_info.proto`:
@@ -201,7 +139,7 @@ import "protos/perfetto/trace/track_event/player_info.proto";
 
 message TrackEvent {
   ...
-  // New argument types go here :)
+  // New argument types go here.
   optional PlayerInfo player_info = 1000;
 }
 ```
@@ -222,7 +160,7 @@ the given category. It is always called synchronously and possibly multiple
 times if multiple concurrent tracing sessions are active.
 
 Now that you have instrumented your app with track events, you are ready to
-start [recording traces](recording-traces.md).
+start [recording traces](/docs/TODO.md).
 
 ## Category configuration
 
@@ -313,15 +251,17 @@ For example:
 Ideally all trace categories should be defined at compile time as shown
 above, as this ensures trace points will have minimal runtime and binary size
 overhead. However, in some cases trace categories can only be determined at
-runtime (e.g., by JavaScript). These can be used by trace points as follows:
+runtime (e.g., they come from instrumentation in a dynamically loaded JavaScript
+running in a WebView or in a NodeJS engine). These can be used by trace points
+as follows:
 
 ```C++
 perfetto::DynamicCategory dynamic_category{"nodejs.something"};
 TRACE_EVENT(dynamic_category, "SomeEvent", ...);
 ```
 
-> Tip: It's also possible to use dynamic event names by passing `nullptr` as
-> the name and filling in the `TrackEvent::name` field manually.
+TIP: It's also possible to use dynamic event names by passing `nullptr` as
+    the name and filling in the `TrackEvent::name` field manually.
 
 Some trace categories are only useful for testing, and they should not make
 it into a production binary. These types of categories can be defined with a
@@ -329,107 +269,12 @@ list of prefix strings:
 
 ```C++
 PERFETTO_DEFINE_TEST_CATEGORY_PREFIXES(
-   "test",
-   "cat"
+   "test",      // Applies to test.*
+   "dontship"   // Applies to dontship.*.
 );
 ```
 
-# Custom data sources
-
-For most uses, track events are the most straightforward way of instrumenting
-your app for tracing. However, in some rare circumstances they are not
-flexible enough, e.g., when the data doesn't fit the notion of a track or is
-high volume enough that it need strongly typed schema to minimize the size of
-each event. In this case, you can implement a *custom data source* for
-Perfetto.
-
-Note that when working with custom data sources, you will also need
-corresponding changes in [trace processor](/docs/analysis/trace-processor.md) to enable
-importing your data format.
-
-A custom data source is a subclass of `perfetto::DataSource`. Perfetto with
-automatically create one instance of the class for each tracing session it is
-active in (usually just one).
-
-```C++
-class CustomDataSource : public perfetto::DataSource<CustomDataSource> {
- public:
-  void OnSetup(const SetupArgs&) override {
-    // Use this callback to apply any custom configuration to your data source
-    // based on the TraceConfig in SetupArgs.
-  }
-
-  void OnStart(const StartArgs&) override {
-    // This notification can be used to initialize the GPU driver, enable
-    // counters, etc. StartArgs will contains the DataSourceDescriptor,
-    // which can be extended.
-  }
-
-  void OnStop(const StopArgs&) override {
-    // Undo any initialization done in OnStart.
-  }
-
-  // Data sources can also have per-instance state.
-  int my_custom_state = 0;
-};
-
-PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(CustomDataSource);
-```
-
-The data source's static data should be defined in one source file like this:
-
-```C++
-PERFETTO_DEFINE_DATA_SOURCE_STATIC_MEMBERS(CustomDataSource);
-```
-
-Custom data sources need to be registered with Perfetto:
-
-```C++
-int main(int argv, char** argc) {
-  ...
-  perfetto::Tracing::Initialize(args);
-  // Add the following:
-  perfetto::DataSourceDescriptor dsd;
-  dsd.set_name("com.example.custom_data_source");
-  CustomDataSource::Register(dsd);
-}
-```
-
-As with all data sources, the custom data source needs to be specified in the
-trace config to enable tracing:
-
-```C++
-perfetto::TraceConfig cfg;
-auto* ds_cfg = cfg.add_data_sources()->mutable_config();
-ds_cfg->set_name("com.example.custom_data_source");
-```
-
-Finally, call the `Trace()` method to record an event with your custom data
-source. The lambda function passed to that method will only be called if tracing
-is enabled. It is always called synchronously and possibly multiple times if
-multiple concurrent tracing sessions are active.
-
-```C++
-CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
-  auto packet = ctx.NewTracePacket();
-  packet->set_timestamp(perfetto::TrackEvent::GetTraceTimeNs());
-  packet->set_for_testing()->set_str("Hello world!");
-});
-```
-
-If necessary the `Trace()` method can access the custom data source state
-(`my_custom_state` in the example above). Doing so, will take a mutex to
-ensure data source isn't destroyed (e.g., because of stopping tracing) while
-the `Trace()` method is called on another thread. For example:
-
-```C++
-CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
-  auto safe_handle = trace_args.GetDataSourceLocked();  // Holds a RAII lock.
-  DoSomethingWith(safe_handle->my_custom_state);
-});
-```
-
-# Performance
+## Performance
 
 Perfetto's trace points are designed to have minimal overhead when tracing is
 disabled while providing high throughput for data intensive tracing use
@@ -446,16 +291,16 @@ figures:
 | `DataSource::Trace(<lambda>)` (disabled)   | 2 ns   | 1 ns   |
 | `DataSource::Trace(<lambda>)`              | 133 ns | 58 ns  |
 
-# Advanced topics
+## Advanced topics
 
-## Tracks
+### Tracks
 
 Every track event is associated with a track, which specifies the timeline
 the event belongs to. In most cases, a track corresponds to a visual
 horizontal track in the Perfetto UI like this:
 
 ![Track timelines shown in the Perfetto UI](
-  /docs/track-timeline.png "Track timelines in the Perfetto UI")
+  /docs/images/track-timeline.png "Track timelines in the Perfetto UI")
 
 Events that describe parallel sequences (e.g., separate
 threads) should use separate tracks, while sequential events (e.g., nested
@@ -512,7 +357,7 @@ track, call EraseTrackDescriptor:
 perfetto::TrackEvent::EraseTrackDescriptor(track);
 ```
 
-## Interning
+### Interning
 
 Interning can be used to avoid repeating the same constant data (e.g., event
 names) throughout the trace. Perfetto automatically performs interning for
@@ -557,10 +402,4 @@ TRACE_EVENT(
 Note that interned data is strongly typed, i.e., each class of interned data
 uses a separate namespace for identifiers.
 
-## Counters
-
-TODO(skyostil).
-
-## Flow events
-
-TODO(skyostil).
+[RAII]: https://en.cppreference.com/w/cpp/language/raii
