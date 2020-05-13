@@ -55,7 +55,8 @@ function genType(pType, depth) {
   visited[fullName] = true;
 
   const heading = '#' + '#'.repeat(Math.min(depth, 2));
-  let md = `${heading} {#${fullName}} ${fullName}`;
+  const anchor = depth > 0 ? `{#${fullName}} ` : '';
+  let md = `${heading} ${anchor}${fullName}`;
   md += '\n';
   const fileName = path.basename(pType.filename);
   const relPath = path.relative(PROJECT_ROOT, pType.filename);
