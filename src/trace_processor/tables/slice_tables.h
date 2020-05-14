@@ -25,7 +25,7 @@ namespace trace_processor {
 namespace tables {
 
 // @name slice
-// @tablegroup events
+// @tablegroup Events
 // @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_SLICE_TABLE_DEF(NAME, PARENT, C) \
   NAME(SliceTable, "internal_slice")                 \
@@ -43,7 +43,7 @@ namespace tables {
 
 PERFETTO_TP_TABLE(PERFETTO_TP_SLICE_TABLE_DEF);
 
-// @tablegroup events
+// @tablegroup Events
 // @param arg_set_id {@joinable args.arg_set_id}
 #define PERFETTO_TP_INSTANT_TABLE_DEF(NAME, PARENT, C) \
   NAME(InstantTable, "instant")                        \
@@ -56,7 +56,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SLICE_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_INSTANT_TABLE_DEF);
 
-// @tablegroup events
+// @tablegroup Events
 // @param utid {@joinable thread.utid}
 #define PERFETTO_TP_SCHED_SLICE_TABLE_DEF(NAME, PARENT, C) \
   NAME(SchedSliceTable, "sched_slice")                     \
@@ -70,7 +70,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_INSTANT_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_SCHED_SLICE_TABLE_DEF);
 
-// @tablegroup events
+// @tablegroup Events
 #define PERFETTO_TP_GPU_SLICES_DEF(NAME, PARENT, C) \
   NAME(GpuSliceTable, "gpu_slice")                  \
   PARENT(PERFETTO_TP_SLICE_TABLE_DEF, C)            \
@@ -87,7 +87,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_SCHED_SLICE_TABLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_GPU_SLICES_DEF);
 
-// @tablegroup events
+// @tablegroup Events
 #define PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF(NAME, PARENT, C) \
   NAME(GraphicsFrameSliceTable, "frame_slice")                 \
   PARENT(PERFETTO_TP_SLICE_TABLE_DEF, C)                       \
@@ -98,7 +98,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF);
 
 // frame_slice -> frame_stats : 1 -> Many,
 // with frame_slice.id = frame_stats.slice_id
-// @tablegroup events
+// @tablegroup Events
 #define PERFETTO_TP_GRAPHICS_FRAME_STATS_DEF(NAME, PARENT, C) \
   NAME(GraphicsFrameStatsTable, "frame_stats")                \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \
@@ -109,7 +109,6 @@ PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_SLICES_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_GRAPHICS_FRAME_STATS_DEF);
 
-// @tablegroup other
 #define PERFETTO_TP_DESCRIBE_SLICE_TABLE(NAME, PARENT, C) \
   NAME(DescribeSliceTable, "describe_slice")              \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                       \

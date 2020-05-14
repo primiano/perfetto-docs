@@ -43,7 +43,7 @@ function parseTableDef(tableDefName, tableDef) {
     comment: '',
     parent: undefined,    // Will be filled afterwards in the resolution phase.
     parentDefName: '',    // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
-    tablegroup: 'other',  // From @tablegroup in comments.
+    tablegroup: 'Misc',   // From @tablegroup in comments.
     cols: {},
   };
   const getOrCreateColumn = (name) => {
@@ -233,7 +233,7 @@ function main() {
     tablesByGroup[table.tablegroup].push(table);
   }
   const tableGroups = Object.keys(tablesByGroup).sort((a, b) => {
-    const keys = {'tracks': '1', 'events': '2', 'other': 'z'};
+    const keys = {'Tracks': '1', 'Events': '2', 'Misc': 'z'};
     a = `${keys[a]}_${a}`;
     b = `${keys[b]}_${b}`;
     return a.localeCompare(b);
