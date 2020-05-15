@@ -1,18 +1,97 @@
+# Power data sources
 
-# Power
-This data source polls charge counters and instantaneous power draw from the battery power management IC. It also includes polling of on-device power rails on selected devices.
+On Android Perfetto bundles data sources that are able to retrieve power
+counters from the device power management units where supported.
 
-TODO: Add UI screenshot
+## Battery counters
 
-The config required to enable this is:
+_This data source has been introduced in Android 10 (Q) and requires the
+presence of power-management hardware on the device. It is available most Google
+Pixel smartphones._
+
+Modern smartphones are equipped with a power monitoring IC which is able to
+measure the charge flowing in and out of the battery. This allows to observe the
+total and instantaneous charge drained from the battery by the overall device
+(the union of SoC, display, radios and all other hardware units).
+
+A simplified block diagram:
+
+![](/docs/images/battery-counters.png "Schematic diagram of battery counters")
+
+These counters report:
+
+* The remaining battery capacity in %.
+* The remaining battery charge in microampere-hours (µAh).
+* The instantanous (typically the average over a small window of time) current
+  in microampere (µA)
+
+The presence and the resolution of these counters depends on the device
+manufacturer. At the platform level this data is obtained polling the
+Android [IHealth HAL][health-hal].
+For more details on HW specs and resolution see
+https://source.android.com/devices/tech/power/device .
+
+[health-hal]: https://cs.android.com/android/platform/superproject/+/master:hardware/interfaces/health/2.0/IHealth.hal?q=IHealth
+
+#### Measuring charge while plugged on USB
+
+Battery counters measure the charge flowing *in* and *out* of
+the battery. If the device is plugged to a USB cable, you will likely observe
+a negative instantaneous current and an increase of the total charge, denoting
+the fact that charge is flowing in the battery (i.e. charging it) rather
+than out.
+
+This can make measurements in lab settings problematic. The known workarounds
+for this are:
+
+* Using specialized USB hubs that allow to electrically disconnect the USB ports
+  from the host side. This allows to effectively disconnect the phone while the
+  tests are running.
+
+* On rooted phones the power management IC driver allows to disconnect the USB
+  charging while keeping the USB data link active. This featurre is
+  SoC-specific, is undocumented and not exposed through any HAL.
+  For instance on a Pixel 2 this can be achieved running, as root:
+  `echo 1 > /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-02/800f000.qcom,spmi:qcom,pmi8998@2:qcom,qpnp-smb2/power_supply/battery/input_suspend`.
+  Note that In most devices the kernel USB driver holds a wakelock to keep the
+  USB data link active, so the device will never fully suspend even when turning
+  the screen off.
+
+### UI
+
+![](/docs/images/battery-counters-ui.png)
+
+### SQL
+
+```sql
+select ts, t.name, value from counter as c left join counter_track t on c.track_id = t.id
+```
+
+ts | name | value
+---|------|------
+338297039804951 | batt.charge_uah | 2085000
+338297039804951 | batt.capacity_pct | 75
+338297039804951 | batt.current_ua | -1469687
+338297145212097 | batt.charge_uah | 2085000
+338297145212097 | batt.capacity_pct | 75
+338297145212097 | batt.current_ua | -1434062
+
+### TraceConfig
+
+Trace proto:
+[BatteryCounters](/docs/reference/trace-packet-proto.autogen#BatteryCounters)
+
+Config proto:
+[AndroidPowerConfig](/docs/reference/trace-config-proto.autogen#AndroidPowerConfig)
+
+Sample config:
 
 ```protobuf
 data_sources: {
     config {
         name: "android.power"
         android_power_config {
-            battery_poll_ms: 100
-            collect_power_rails: true
+            battery_poll_ms: 250
             battery_counters: BATTERY_COUNTER_CAPACITY_PERCENT
             battery_counters: BATTERY_COUNTER_CHARGE
             battery_counters: BATTERY_COUNTER_CURRENT
@@ -21,45 +100,53 @@ data_sources: {
 }
 ```
 
-For more details on the configuration options see [android\_power\_config.proto](/protos/perfetto/config/power/android_power_config.proto). The data output format can be seen in [battery\_counters.proto](/protos/perfetto/trace/power/battery_counters.proto) and [power_rails.proto](/protos/perfetto/trace/power/power_rails.proto).
+## Power rails
 
+_This data source has been introduced in Android 10 (Q) and requires the
+presence of dedicated hardware on the device. This hw is not yet available on
+most production phones._
 
-## CPU frequency & power states
-Including the following events in your trace config will allow investigation of CPU frequency and idle time:
+Recent version of Android introduced the support for more advanced power
+monitoring at the harware subsystem level, known as "Power rail counters".
+These counters measure the energy drained by (groups of) hardware units.
+
+Unlike the battery counters, they are not affected by the charging/discharging
+state of the battery, because they measure power downstream of the battery.
+
+The presence and the resolution of power rail counters depends on the device
+manufacturer. At the platform level this data is obtained polling the
+Android [IPowerStats HAL][power-hal].
+
+[power-hal]: https://cs.android.com/android/platform/superproject/+/master:hardware/interfaces/power/stats/1.0/IPowerStats.hal
+
+Simplified block diagram:
+
+![](/docs/images/power-rails.png "Block diagram of power rail counters")
+
+### TraceConfig
+
+Trace proto:
+[PowerRails](/docs/reference/trace-packet-proto.autogen#PowerRails)
+
+Config proto:
+[AndroidPowerConfig](/docs/reference/trace-config-proto.autogen#AndroidPowerConfig)
+
+Sample config:
 
 ```protobuf
 data_sources: {
     config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "power/cpu_frequency"
-            ftrace_events: "power/cpu_idle"
-            ftrace_events: "power/suspend_resume"
+        name: "android.power"
+        android_power_config {
+            battery_poll_ms: 250
+            collect_power_rails: true
+            # Note: it is possible to specify both rails and battery counters
+            # in this section.
         }
     }
 }
 ```
 
-This is displayed in the UI as a bar graph showing the frequency with idle states marked by the grey color.
+## Related data sources
 
-![](/docs/images/cpu-frequency.png)
-
-## Board Voltages & frequencies
-
-The following ftrace events can be added to the trace config to capture board voltage and frequency changes from board sensors.
-
-```protobuf
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "regulator/regulator_set_voltage"
-            ftrace_events: "regulator/regulator_set_voltage_complete"
-            ftrace_events: "power/clock_enable"
-            ftrace_events: "power/clock_disable"
-            ftrace_events: "power/clock_set_rate"
-            ftrace_events: "power/suspend_resume"
-        }
-    }
-```
-
+See also the [CPU -> Frequency scaling](cpu-freq.md) data source.
