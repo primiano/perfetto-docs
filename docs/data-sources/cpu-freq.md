@@ -67,9 +67,9 @@ At the SQL level, both frequency and idle states are modelled as counters,
 Note that the cpuidle value 0xffffffff (4294967295) means _back to not-idle_.
 
 ```sql
-select ts, c.name, cpu, value from counters as c
+select ts, t.name, cpu, value from counter as c
 left join cpu_counter_track as t on c.track_id = t.id
-where c.name = 'cpuidle' or c.name = 'cpufreq'
+where t.name = 'cpuidle' or t.name = 'cpufreq'
 ```
 
 ts | name | cpu | value
