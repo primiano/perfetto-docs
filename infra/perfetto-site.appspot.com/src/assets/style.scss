@@ -16,7 +16,6 @@
 // -----------------------------------------------------------------------------
 :root {
     --site-header-height: 50px;
-    --site-footer-height: 50px;
     --home-highlights-height: 128px;
     --content-max-width: 1100px;
     --anim-ease: cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -154,9 +153,8 @@ h3 {
 
 // Footer in the index page.
 .site-footer {
-    height: var(--site-footer-height);
     background-color: hsl(210, 30%, 16%);
-    padding: 18px 0;
+    padding: 1em 0;
     font-size: 14px;
     color: #fff;
     text-align: center;
@@ -177,6 +175,7 @@ h3 {
         text-decoration: none;
         color: inherit;
     }
+    .docs-footer-notice { display: none; }
 }
 
 // Footer overrides for the /docs/ page.
@@ -187,6 +186,14 @@ h3 {
     text-align: left;
     margin: 0 20px;
     padding: 12px 0;
+
+    .docs-footer-notice {
+        padding: 0;
+        margin: 0;
+        display: block;
+    }
+
+    ul { display: none; }
 }
 
 // -----------------------------------------------------------------------------
@@ -422,7 +429,7 @@ h3 {
     --max-doc-width: calc(1665px - var(--toc-width) - var(--nav-width));
 
     grid-template-columns: var(--nav-width) minmax(auto, var(--max-doc-width)) var(--toc-width);
-    grid-template-rows: 1fr var(--site-footer-height);
+    grid-template-rows: 1fr max-content;
     grid-template-areas: "nav doc toc" "nav footer toc";
 
     background-color: hsl(210, 10%, 97%);

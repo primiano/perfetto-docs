@@ -22,7 +22,7 @@
     * [Frequency scaling](data-sources/cpu-freq.md)
   * [Power](data-sources/power.md)
   * [Android system](#)
-    * [Atrace instrumentation](data-sources/android-trace.md)
+    * [Atrace instrumentation](data-sources/atrace.md)
     * [Android log (logcat)](data-sources/android-log.md)
 
 * [App Instrumentation](#)

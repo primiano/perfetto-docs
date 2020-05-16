@@ -307,6 +307,6 @@ _System mode is not yet supported on Windows, due to the lack of an IPC
 implementation_.
 
 [ipc]: /docs/design-docs/api-and-abi.md#socket-protocol
-[atrace-ds]: /docs/data-sources/android-trace.md
+[atrace-ds]: /docs/data-sources/atrace.md
 [atrace-ndk]: https://developer.android.com/ndk/reference/group/tracing
 [atrace-sdk]: https://developer.android.com/reference/android/os/Trace
