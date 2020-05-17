@@ -1,4 +1,4 @@
-# Quickstart: SQL-based trace analysis and trace-based metrics
+# Quickstart: SQL-based analysis and trace-based metrics
 
 _This quickstart explains how to use `trace_processor` to programmatically query
 the trace contents through a SQL interface and compute trace-based metrics._

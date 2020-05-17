@@ -66,7 +66,5 @@
 * [Old Stuff](#)
   * [Instrumenting and tracing](#)
     * [Recording traces](old/recording-traces.md)
-  * [On-device tracer](#)
-    * [Running Perfetto](old/running.md)
   * [Architectural docs](#)
     * [Security model](old/security-model.md)
