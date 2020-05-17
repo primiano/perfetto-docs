@@ -62,9 +62,8 @@
     * [Perfetto CI](design-docs/continuous-integration.md)
     * [Perfetto IPC](design-docs/ipc.md)
     * [ProtoZero](TODO.md)
+    * [Security model](design-docs/security-model.md)
 
 * [Old Stuff](#)
   * [Instrumenting and tracing](#)
     * [Recording traces](old/recording-traces.md)
-  * [Architectural docs](#)
-    * [Security model](old/security-model.md)

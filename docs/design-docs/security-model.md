@@ -1,23 +1,22 @@
-# Perfetto security model
+# Security model for system-wide tracing on Android/Linux
 
-TODO: **This doc is WIP**, stay tuned.
-
-![Security overview](https://storage.googleapis.com/perfetto/markdown_img/security-overview.png)
-
-**TL;DR**  
-The tracing service has two endpoints (in Chromium: Mojo services, on Android:
-UNIX sockets): one for producer(s) and one for consumer(s).
+The tracing service has two endpoints (in Chromium: Mojo services, on
+Android/Linux: UNIX sockets): one for producer(s) and one for consumer(s).
 The former is typically public, the latter is restricted only to trusted
 consumers.
 
-**Producers**  
+![Security overview](https://storage.googleapis.com/perfetto/markdown_img/security-overview.png)
+
+## Producers
+
 Producers are never trusted. We assume they will try their best to DoS / crash /
 exploit the tracing service. We do so at the
 [core/tracing_service_impl.cc](/src/tracing/core/tracing_service_impl.cc) so
 that the same level of security and testing is applied regardless of the
 embedder and the IPC transport.
 
-**Tracing service**  
+## Tracing service
+
 - The tracing service has to validate all inputs.
 - In the worst case a bug in the tracing service allowing remote code execution,
   the tracing service should have no meaningful capabilities to exploit.
@@ -33,21 +32,21 @@ embedder and the IPC transport.
   - TODO: we could use BPF syscall sandboxing both in Chromium and Android.
     [Proof of concept](https://android-review.googlesource.com/c/platform/external/perfetto/+/576563)
 
-**Consumers**  
+## Consumers
 Consumers are always trusted. They still shouldn't be able to crash or exploit
 the service. They can easily DoS it though, but that is WAI.
   - In Chromium the trust path is established through service manifest.
   - In Android the trust path is established locking down the consumer socket
     to shell through SELinux.
 
-**Shared memory isolation**  
+## Shared memory isolation
 Memory is shared only point-to-point between each producer and the tracing
 service. We should never ever share memory across producers (in order to not
 leak trace data belonging to different producers) nor between producers and
 consumers (that would open a hard to audit path between
 untrusted-and-unprivileged and trusted-and-more-privileged entities).
 
-**Attestation of trace contents**  
+## Attestation of trace contents
 The tracing service guarantees that the `TracePacket` fields written by the
 Service cannot be spoofed by the Producer(s).  
 Packets that try to define those fields are rejected, modulo clock snapshots.  
