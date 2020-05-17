@@ -1,30 +1,38 @@
-# Quickstart: Trace Analysis
+# Quickstart: SQL-based trace analysis and trace-based metrics
 
-_This quickstart will give some example SQL queries showing how to retrieve data from the trace processor._
+_This quickstart explains how to use `trace_processor` to programmatically query
+the trace contents through a SQL interface and compute trace-based metrics._
 
-## Prerequistes
+## Get trace_processor
 
-- A device running macOS/Linux
-- A trace file in a [supported format](/docs/TODO.md). This [trace](/docs/TODO.md) can be used as an example for running the queries in this quickstart.
+TraceProcessor is a multi-format trace importing and query engine based on
+SQLite. It comes both as a C++ library and as a standalone executable, often
+referred to as `trace_processor_shell`.
 
-## Setup
+```bash
+# Download prebuilts (Linux and Mac only)
+curl -LO https://get.perfetto.dev/trace_processor
+chmod +x ./trace_processor
 
-To begin, download the trace processor [here](/docs/TODO.md). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
-
-Then, start an interactive prompt for SQL queries
-
-```console
-$ chmod +x ./trace_processor       # ensures that trace processor is executable 
-$ ./trace_processor trace.pftrace
+# Starts the interactive shell
+./trace_processor trace.pftrace
 ```
 
-## Slices
+See [TraceProcessor docs](/docs/analysis/trace-processor.md) for the full
+TraceProcessor guide.
 
-Slices are events which have name and span some duration of time.
+## Basic queries
 
-![](/docs/images/slices.png)
+For more exhaustive examples see the _SQL_ section of the various _Data sources_
+docs.
 
-```console
+### Slices
+
+Slices are stackable events which have name and span some duration of time.
+
+![](/docs/images/slices.png "Example of slices in the UI")
+
+```
 > SELECT ts, dur, name FROM slice
 ts                   dur                  name
 -------------------- -------------------- ---------------------------
@@ -36,13 +44,13 @@ ts                   dur                  name
      ...
 ```
 
-## Counters
+### Counters
 
 Counters are events with a value which changes over time.
 
-![](/docs/images/counters.png)
+![](/docs/images/counters.png "Example of counters in the UI")
 
-```console
+```
 > SELECT ts, value FROM counter
 ts                   value
 -------------------- --------------------
@@ -55,13 +63,14 @@ ts                   value
 ...
 ```
 
-## Scheduling slices
+### Scheduler slices
 
-Scheduling slices are slices which indicate which thread was scheduled on which CPU at which time.
+Scheduling slices are slices which indicate which thread was scheduled on which
+CPU at which time.
 
-![](/docs/images/sched-slices.png)
+![](/docs/images/sched-slices.png "Example of scheduler slices in the UI")
 
-```console
+```
 > SELECT ts, dur, cpu, utid FROM sched
 ts                   dur                  cpu                  utid
 -------------------- -------------------- -------------------- --------------------
@@ -73,11 +82,233 @@ ts                   dur                  cpu                  utid
 ...
 ```
 
+## Trace-based metrics
+
+TraceProcessor offers also a higher-level query interface that allows to run
+pre-baked queries that output structured JSON/Protobuf/text in output, wihtout
+having to type manual SQL queries.
+
+These metrics schema live in the
+[/protos/perfetto/metrics](/protos/perfetto/metrics/) directory.
+The corresponding SQL queries live in
+[/src/trace_processor/metrics](/src/trace_processor/metrics/).
+
+### Run a single metric
+
+Let's run the [`android_cpu`](/protos/perfetto/metrics/android/cpu_metric.proto)
+metric. This metrics computes the total CPU time and the total cycles
+(CPU frequency * time spent running at that frequency) for each process in the
+trace, breaking it down by CPU (core) number.
+
+```protobuf
+./trace_processor --run-metrics android_cpu trace.pftrace
+
+android_cpu {
+  process_info {
+    name: "/system/bin/init"
+    threads {
+      name: "init"
+      core {
+        id: 1
+        metrics {
+          mcycles: 1
+          runtime_ns: 570365
+          min_freq_khz: 1900800
+          max_freq_khz: 1900800
+          avg_freq_khz: 1902017
+        }
+      }
+      core {
+        id: 3
+        metrics {
+          mcycles: 0
+          runtime_ns: 366406
+          min_freq_khz: 1900800
+          max_freq_khz: 1900800
+          avg_freq_khz: 1902908
+        }
+      }
+      ...
+    }
+    ...
+  }
+  process_info {
+    name: "/system/bin/logd"
+    threads {
+      name: "logd.writer"
+      core {
+        id: 0
+        metrics {
+          mcycles: 8
+          runtime_ns: 33842357
+          min_freq_khz: 595200
+          max_freq_khz: 1900800
+          avg_freq_khz: 1891825
+        }
+      }
+      core {
+        id: 1
+        metrics {
+          mcycles: 9
+          runtime_ns: 36019300
+          min_freq_khz: 1171200
+          max_freq_khz: 1900800
+          avg_freq_khz: 1887969
+        }
+      }
+      ...
+    }
+    ...
+  }
+  ...
+}
+```
+
+### Running multiple metrics
+
+Multiple metrics can be flagged using comma separators to the `--run-metrics`
+flag. This will output a text proto with the combined result of running both
+metrics.
+
+```protobuf
+$ ./trace_processor --run-metrics android_mem,android_cpu trace.pftrace
+
+android_mem {
+  process_metrics {
+    process_name: ".dataservices"
+    total_counters {
+      anon_rss {
+        min: 19451904
+        max: 19890176
+        avg: 19837548.157829277
+      }
+      file_rss {
+        min: 25804800
+        max: 25829376
+        avg: 25827909.957489081
+      }
+      swap {
+        min: 9289728
+        max: 9728000
+        avg: 9342355.8421707246
+      }
+      anon_and_swap {
+        min: 29179904
+        max: 29179904
+        avg: 29179904
+      }
+    }
+    ...
+  }
+  ...
+}
+android_cpu {
+  process_info {
+    name: "/system/bin/init"
+    threads {
+      name: "init"
+      core {
+        id: 1
+        metrics {
+          mcycles: 1
+          runtime_ns: 570365
+          min_freq_khz: 1900800
+          max_freq_khz: 1900800
+          avg_freq_khz: 1902017
+        }
+      }
+      ...
+    }
+    ...
+  }
+  ...
+}
+```
+
+### JSON and binary output
+
+The trace processor also supports binary protobuf and JSON as alternative output
+formats. This is useful when the intended reader is an offline tool.
+
+Both single and multiple metrics are supported as with proto text output.
+
+```
+./trace_processor --run-metrics android_mem --metrics-output=binary trace.pftrace
+<binary protobuf output>
+
+./trace_processor --run-metrics android_mem,android_cpu --metrics-output=json trace.pftrace
+{
+  "android_mem": {
+    "process_metrics": [
+      {
+        "process_name": ".dataservices",
+        "total_counters": {
+          "anon_rss": {
+            "min": 19451904.000000,
+            "max": 19890176.000000,
+            "avg": 19837548.157829
+          },
+          "file_rss": {
+            "min": 25804800.000000,
+            "max": 25829376.000000,
+            "avg": 25827909.957489
+          },
+          "swap": {
+            "min": 9289728.000000,
+            "max": 9728000.000000,
+            "avg": 9342355.842171
+          },
+          "anon_and_swap": {
+            "min": 29179904.000000,
+            "max": 29179904.000000,
+            "avg": 29179904.000000
+          }
+        },
+        ...
+      },
+      ...
+    ]
+  }
+  "android_cpu": {
+    "process_info": [
+      {
+        "name": "\/system\/bin\/init",
+        "threads": [
+          {
+            "name": "init",
+            "core": [
+              {
+                "id": 1,
+                "metrics": {
+                  "mcycles": 1,
+                  "runtime_ns": 570365,
+                  "min_freq_khz": 1900800,
+                  "max_freq_khz": 1900800,
+                  "avg_freq_khz": 1902017
+                }
+              },
+              ...
+            ]
+            ...
+          }
+          ...
+        ]
+        ...
+      },
+      ...
+    ]
+    ...
+  }
+}
+```
+
+
 ## Next steps
 
 There are several options for exploring more of the trace analysis features Perfetto provides:
 
-- The [trace processor documentation](/docs/TODO.md) gives more information about how to work with trace processor including details on how to write queries and how tables in trace processor are organized.
-- The [trace-based metrics quickstart](/docs/TODO.md) gives an introduction on how to summarise traces into metrics which can be further processed using auotmated tools.
-- The [trace conversion quickstart](/docs/TODO.md) gives an overview on how to convert Perfetto traces to legacy formats to integrate with existing tooling.
-- The [SQL table reference](/docs/TODO.md) gives a comprehensive guide to the all the available tables in trace processor.
+* The [trace conversion quickstart](/docs/quickstart/traceconv.md) gives an overview on how to convert Perfetto traces to legacy formats to integrate with existing tooling.
+* The [trace processor documentation](/docs/analysis/trace-processor.md) gives more information about how to work with trace processor including details on how to write queries and how tables in trace processor are organized.
+* The [metrics documentation](/docs/analysis/metrics.md) gives a more in-depth look into metrics including a short walkthrough on how to build an experimental metric from scratch.
+* The [SQL table reference](/docs/analysis/sql-tables.autogen) gives a comprehensive guide to the all the available tables in trace processor.
+* The [common tasks](/docs/contributing/common-tasks.md) page gives a list of steps on how new metrics can be added to the trace processor.
