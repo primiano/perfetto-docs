@@ -21,6 +21,26 @@ const postLoadActions = [];
 let tocEventHandlersInstalled = false;
 let resizeObserver = undefined;
 
+// Handles redirects from the old docs.perfetto.dev.
+const legacyRedirectMap = {
+  '#/contributing': '/docs/contributing/community',
+  '#/build-instructions': '/docs/contributing/build-instructions',
+  '#/testing': '/docs/contributing/testing',
+  '#/app-instrumentation': '/docs/instrumentation/tracing-sdk',
+  '#/recording-traces': '/docs/instrumentation/tracing-sdk#recording',
+  '#/running': '/docs/quickstart/android-tracing',
+  '#/long-traces': '/docs/concepts/config#long-traces',
+  '#/detached-mode': '/docs/concepts/detached-mode',
+  '#/heapprofd': '/docs/data-sources/native-heap-profiler',
+  '#/java-hprof': '/docs/data-sources/java-heap-profiler',
+  '#/trace-processor': '/docs/analysis/trace-processor',
+  '#/analysis': '/docs/analysis/trace-processor#annotations',
+  '#/metrics': '/docs/analysis/metrics',
+  '#/traceconv': '/docs/quickstart/traceconv',
+  '#/clock-sync': '/docs/concepts/clock-sync',
+  '#/architecture': '/docs/concepts/service-model',
+};
+
 function doAfterLoadEvent(action) {
   if (onloadFired) {
     return action();
@@ -32,11 +52,14 @@ function setupSandwichMenu() {
   const header = document.querySelector('.site-header');
   const docsNav = document.querySelector('.nav');
   const menu = header.querySelector('.menu');
-  menu.addEventListener('click', () => {
+  menu.addEventListener('click', (e) => {
+    e.preventDefault();
+
     // If we are displaying any /docs, toggle the navbar instead (the TOC).
     if (docsNav) {
       // |after_first_click| is to avoid spurious transitions on page load.
       docsNav.classList.add('after_first_click');
+      updateNav();
       setTimeout(() => docsNav.classList.toggle('expanded'), 0);
     } else {
       header.classList.toggle('expanded');
@@ -85,7 +108,10 @@ function updateTOC() {
     }, passive);
   }
   window.addEventListener('scroll', () => onScroll(), passive);
-  resizeObserver = new ResizeObserver(() => requestAnimationFrame(updateTOC));
+  resizeObserver = new ResizeObserver(() => requestAnimationFrame(() => {
+    updateNav();
+    updateTOC();
+  }));
   resizeObserver.observe(doc);
 }
 
@@ -112,8 +138,9 @@ function onScroll(forceHighlight) {
   }
 }
 
-
-function setupNav() {
+// This function needs to be idempotent as it is called more than once (on every
+// resize).
+function updateNav() {
   const curDoc = document.querySelector('.doc');
   let curFileName = '';
   if (curDoc)
@@ -131,7 +158,6 @@ function setupNav() {
       continue;
     }
 
-
     // Don't make it compressible if the entry has an actual link (e.g. the very
     // first 'Introduction' link), because otherwise it become ambiguous whether
     // the link should toggle or open the link.
@@ -143,7 +169,7 @@ function setupNav() {
 
     // Remember the compressed status as long as the page is opened, so clicking
     // through links keeps the sidebar in a consistent visual state.
-    const memoKey = `docs.nav.compressed[${link.innerText}]`;
+    const memoKey = `docs.nav.compressed[${link.innerHTML}]`;
 
     if (sessionStorage.getItem(memoKey) === '1') {
       sec.classList.add('compressed');
@@ -153,7 +179,7 @@ function setupNav() {
     });
 
     toplevelLinks.push(link);
-    link.addEventListener('click', (evt) => {
+    link.onclick = (evt) => {
       evt.preventDefault();
       sec.classList.toggle('compressed');
       if (sec.classList.contains('compressed')) {
@@ -161,7 +187,7 @@ function setupNav() {
       } else {
         sessionStorage.removeItem(memoKey);
       }
-    });
+    };
   }
 
   const exps = document.querySelectorAll('.docs .nav ul a');
@@ -169,6 +195,7 @@ function setupNav() {
   for (const x of exps) {
     // If the url of the entry matches the url of the page, mark the item as
     // highlighted and expand all its parents.
+    if (!x.href) continue;
     const url = new URL(x.href);
     if (x.href.endsWith('#')) {
       // This is a non-leaf link to a menu.
@@ -209,9 +236,8 @@ function initMermaid() {
   script.addEventListener('load', () => {
     mermaid.initialize({
       startOnLoad: false,
-      // theme: 'forest',
       themeCSS: themeCSS,
-      securityLevel: 'loose',  // To allow links to #self
+      securityLevel: 'loose',  // To allow #in-page-links
     });
     for (const graph of graphs) {
       requestAnimationFrame(() => {
@@ -224,7 +250,7 @@ function initMermaid() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  setupNav();
+  updateNav();
   updateTOC();
 });
 
@@ -232,6 +258,7 @@ window.addEventListener('load', () => {
   setupSandwichMenu();
   initMermaid();
 
+  // Don't smooth-scroll on pages that are too long (e.g. reference pages).
   if (document.body.scrollHeight < 10000) {
     document.documentElement.style.scrollBehavior = 'smooth';
   } else {
@@ -245,5 +272,12 @@ window.addEventListener('load', () => {
 
   updateTOC();
 
+  // Enable animations only after the load event. This is to prevent glitches
+  // when switching pages.
   document.documentElement.style.setProperty('--anim-enabled', '1')
 });
+
+const fragment = location.hash.split('?')[0].replace('.md', '');
+if (fragment in legacyRedirectMap) {
+  location.replace(legacyRedirectMap[fragment]);
+}

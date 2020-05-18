@@ -232,13 +232,13 @@ h3 {
         }
         h1 {
             font-size: 2.5rem;
-            font-size: calc(max(3.5vw, 2rem));
+            font-size: calc(min(max(3.5vw, 2rem), 4rem));
             font-weight: 400;
             padding-top: 40px;
         }
         h2 {
             font-size: 1.25rem;
-            font-size: calc(max(2vw, 1.25rem));
+            font-size: calc(min(max(2vw, 1.25rem), 3rem));
             font-weight: 200;
             padding-top: 10px;
         }
@@ -450,7 +450,6 @@ h3 {
             color: inherit;
             text-decoration: none;
             line-height: 24px;
-            margin: 3px 0;
             display: flex;
             transition: background-color var(--anim-ease) var(--anim-time),
                         visibility linear var(--anim-time);
@@ -471,12 +470,14 @@ h3 {
             list-style: none;
             margin: 0;
             padding: 0;
+            overflow: hidden;
             li {
                 font-size: 1rem;
                 font-weight: 400;
                 font-family: 'Source Sans Pro', sans-serif;
                 color: #4a4a4a;
                 max-width: 100%;
+                margin: 3px 0;
             }
             p { margin: 0; }
         }
@@ -593,8 +594,8 @@ h3 {
             box-shadow: 1px 1px 6px #999;
             border-top: 5px solid #8BC34A;
         }
-        // Hide mermaid graphs until they are rendered, this is to avoid showing the
-        // mermaid source while the renderer generates the SVG.
+        // Hide mermaid graphs until they are rendered, this is to avoid showing
+        // the mermaid source while the renderer generates the SVG.
         .mermaid {
             transition: opacity var(--anim-ease) var(--anim-time);
             &:not(.rendered) {

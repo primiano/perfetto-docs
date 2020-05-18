@@ -1,4 +1,4 @@
-# {#java-hprof} Memory: Java heap graphs
+# Memory: Java heap graphs
 
 NOTE: **Java Heap Graphs require Android 11.**
 
