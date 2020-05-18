@@ -557,6 +557,26 @@ h3 {
         position: relative;
         box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .1), 0 1px 3px 1px rgba(60, 64, 67, .15);
         overflow: hidden;
+
+        a {
+            text-decoration: none;
+            &:link { color: #007b83; }
+            &:visited { color: #8e3317; }
+            &:hover { color: #009da8; }
+            &[href^="http"] {
+                // External link.
+                &:after {
+                    content: 'open_in_new';
+                    font-family: 'Material Icons Round';
+                    color: #666;
+                    text-decoration: none;
+                    margin-left: 2px;
+                    margin-right: 4px;
+                    vertical-align: bottom;
+                }
+            }
+        }
+
         h1,
         h2,
         h3 {
@@ -574,6 +594,8 @@ h3 {
         }
         h2 {
             font-size: 1.5rem;
+            border-bottom: 1px solid #e8eaed;
+            padding-bottom: 6px;
         }
         h3 {
             font-size: 1.25rem;

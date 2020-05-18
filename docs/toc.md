@@ -48,8 +48,8 @@
   * [heap_profile cmdline](reference/heap_profile-cli.md)
 
 * [Contributing](#)
-    * [Community](contributing/community.md)
-    * [Build Instructions](contributing/build-instructions.md)
+    * [Getting started](contributing/community.md)
+    * [Build instructions](contributing/build-instructions.md)
     * [Running tests](contributing/testing.md)
     * [Common tasks](contributing/common-tasks.md)
     * [Embedding Perfetto](contributing/embedding.md)
