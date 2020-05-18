@@ -510,7 +510,7 @@ library is prohibitively expensive and too prone to break in extremely subtle
 ways. For this reason the team has ruled out shared library distributions for
 the time being.
 
-[cli_lib]: /docs/TODO.md
+[cli_lib]: /docs/instrumentation/tracing-sdk.md
 [selinux_producer]: https://cs.android.com/search?q=perfetto_producer%20f:sepolicy.*%5C.te&sq=
 [selinux_consumer]:https://cs.android.com/search?q=f:sepolicy%2F.*%5C.te%20traced_consumer&sq=
 [mojom]: https://source.chromium.org/chromium/chromium/src/+/master:services/tracing/public/mojom/perfetto_service.mojom?q=producer%20f:%5C.mojom$%20perfetto&ss=chromium&originalUrl=https:%2F%2Fcs.chromium.org%2F

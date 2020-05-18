@@ -36,7 +36,7 @@ producers.
 This is the place where the tracing data is ultimately kept, while in memory,
 whether it comes from the kernel ftrace infrastructure, from some other data
 source in `traced_probes` or from another userspace process using the
-[Perfetto Client Library](/docs/TODO.md).
+[Perfetto SDK](/docs/instrumentation/tracing-sdk.md).
 At the end of the trace (or during, if in [streaming mode]) these buffers are
 written into the output trace file.
 

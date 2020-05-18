@@ -306,7 +306,7 @@ side-channel attacks.
 _System mode is not yet supported on Windows, due to the lack of an IPC
 implementation_.
 
-## Recording traces through the API
+## {#recording} Recording traces through the API
 
 _Tracing through the API is currently only supported with the in-process mode.
 When using system mode, use the `perfetto` cmdline client (see quickstart

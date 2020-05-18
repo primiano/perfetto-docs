@@ -94,7 +94,7 @@ That IPC implementation is not mandated. Perfetto allows the embedder:
 ## Shared memory buffer
 Producer(s) write tracing data, in the form of protobuf-encoded binary blobs,
 directly into its shared memory buffer, using a special library called
-[ProtoZero](/docs/TODO.md). The shared memory buffer:
+[ProtoZero](/docs/design-docs/protozero.md). The shared memory buffer:
 
 * Has a fixed and typically small size (configurable, default: 128 KB).
 * Is an ABI and must maintain backwards compatibility.

@@ -1,23 +1,26 @@
 # Heap Profiling Quickstart
 
 ## Prerequisites
+
 * A host running macOS or Linux.
 * A device running Android 10+.
+* A _Profileable_ or _Debuggable_ app. If you are running on a _"user"_ build of
+  Android (as opposed to _"userdebug"_ or _"eng"_), your app needs to be marked
+  as profileable or debuggable in its manifest.
+  See the [heapprofd documentation][hdocs] for more details.
 
-If you are profiling your own app and are not running a userdebug build of
-Android, your app needs to be marked as profileable or
-debuggable in its manifest. See the [heapprofd documentation](
-/docs/data-sources/native-heap-profiler.md#heapprofd-targets) for more
-details on which applications can be targeted.
+[hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
 ## Get a profile
 
-Download and run the [`tools/heap_profile`](
-https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile)
-script.
+Download the `tools/heap_profile` (if you  don't have a perfetto checkout) and
+and run it as follows:
 
-```
-$ tools/heap_profile -n system_server
+```bash
+curl -LO https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile
+chmod +x heap_profile
+
+./heap_profile -n system_server
 
 Profiling active. Press Ctrl+C to terminate.
 You may disconnect your device.
@@ -28,7 +31,8 @@ These can be viewed using pprof. Googlers: head to pprof/ and upload them.
 
 ## View profile
 Upload the `raw-trace` file from the output directory to the [Perfetto UI](
-https://ui.perfetto.dev) and click on diamond marker that shows.
+https://ui.perfetto.dev) and click on diamond marker in the UI track labelled
+_"Heap profile"_.
 
 ![Profile Diamond](/docs/images/profile-diamond.png)
 ![Native Flamegraph](/docs/images/syssrv-apk-assets-two.png)
@@ -36,4 +40,4 @@ https://ui.perfetto.dev) and click on diamond marker that shows.
 ## Next steps
 Learn more about memory debugging in the [Memory Usage on Android Guide](
 /docs/case-studies/memory.md) and more about the [heapprofd data-source](
-/docs/TODO.md).
+/docs/data-sources/native-heap-profiler.md).

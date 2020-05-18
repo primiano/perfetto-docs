@@ -4,17 +4,17 @@ The checklists below show how to achieve some common tasks in the codebase.
 
 ## Add a new ftrace event
 
-- Find the `format` file for your event. The location of the file depends where `tracefs` is mounted but can often be found at `sys/kernel/debug/tracing/events/EVENT_GROUP/EVENT_NAME/format`.
-- Copy the format file into the codebase at `src/traced/probes/ftrace/test/data/synthetic/events/EVENT_GROUP/EVENT_NAME/format`.
-- Add the event to [tools/ftrace_proto_gen/event_whitelist](/tools/ftrace_proto_gen/event_whitelist).
-- Run `tools/run_ftrace_proto_gen`. This will update `protos/perfetto/trace/ftrace/ftrace_event.proto` and `protos/perfetto/trace/ftrace/GROUP_NAME.proto`.
-- Run `tools/gen_all out/YOUR_BUILD_DIRECTORY`. This will update `src/traced/probes/ftrace/event_info.cc` and `protos/perfetto/trace/perfetto_trace.proto`.
-- If special handling in `trace_processor` is desired update [src/trace_processor/importers/ftrace/ftrace_parser.cc](/src/trace_processor/importers/ftrace/ftrace_parser.cc) to parse the event.
-- Upload and land your change as normal.
+* Find the `format` file for your event. The location of the file depends where `tracefs` is mounted but can often be found at `sys/kernel/debug/tracing/events/EVENT_GROUP/EVENT_NAME/format`.
+* Copy the format file into the codebase at `src/traced/probes/ftrace/test/data/synthetic/events/EVENT_GROUP/EVENT_NAME/format`.
+* Add the event to [tools/ftrace_proto_gen/event_whitelist](/tools/ftrace_proto_gen/event_whitelist).
+* Run `tools/run_ftrace_proto_gen`. This will update `protos/perfetto/trace/ftrace/ftrace_event.proto` and `protos/perfetto/trace/ftrace/GROUP_NAME.proto`.
+* Run `tools/gen_all out/YOUR_BUILD_DIRECTORY`. This will update `src/traced/probes/ftrace/event_info.cc` and `protos/perfetto/trace/perfetto_trace.proto`.
+* If special handling in `trace_processor` is desired update [src/trace_processor/importers/ftrace/ftrace_parser.cc](/src/trace_processor/importers/ftrace/ftrace_parser.cc) to parse the event.
+* Upload and land your change as normal.
 
 Here is an [example change](https://android-review.googlesource.com/c/platform/external/perfetto/+/1290645) which added the `ion/ion_stat` event.
 
-## Add a new trace-based metric
+## {#new-metric} Add a new trace-based metric
 
 * Create the proto file containing the metric in the [protos/perfetto/metrics](/protos/perfetto/metrics) folder. The appropriate` BUILD.gn` file should be updated as well.
 * Import the proto in [protos/perfetto/metrics/metrics.proto](/protos/perfetto/metrics/metrics.proto) and add a field for the new message.
@@ -41,7 +41,7 @@ Here is an [example change](https://android-review.googlesource.com/c/platform/e
   * Run the newly added test with `tools/diff_test_trace_processor.py <path to trace processor binary>`.
 * Upload and land your change as normal.
 
-## Add a new annotation
+## {#new-annotation} Add a new annotation
 
 NOTE: all currently implemented annotations are based only on the name of the slice. It is straightforward to extend this to also consider ancestors and other similar properties; we plan on doing this in the future.
 
@@ -76,18 +76,16 @@ The schema of the `<metric name>_annotations` table/view is as follows:
 | `slice_name` | `string` | Mandatory for slice, NULL for counter | The name of the slice                                        |
 | `value`      | `double` | Mandatory for counter, NULL for slice | The value of the counter                                     |
 
-TODO: Fix the bad formatting below
+#### Known issues:
 
-WARNING: Currently, there are a few limitations to what can be displayed with annotations
-
-- Nested slices within the same track are not supported. We plan to support this
+* Nested slices within the same track are not supported. We plan to support this
   once we have a concrete usecase.
-- Tracks are always created in the global scope. We plan to extend this to
+* Tracks are always created in the global scope. We plan to extend this to
   threads and processes in the near future with additional contexts added as
   necessary.
-- Instant events are currently not supported in the UI but this will be
+* Instant events are currently not supported in the UI but this will be
   implemented in the near future. In trace processor, instants are always `0`
   duration slices with special rendering on the UI side.
-- There is no way to tie newly added events back to the source events in the
+* There is no way to tie newly added events back to the source events in the
   trace which were used to generate them. This is not currently a priority but
   something we may add in the future.

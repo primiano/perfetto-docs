@@ -6,8 +6,9 @@ when instructed to do so.
 
 Data sources record data only when one (or more) tracing sessions are active.
 A tracing session is started by invoking the `perfetto` cmdline client and
-passing a config (see QuickStart guide for [Android](/docs/TODO.md) or
-[Linux](/docs/TODO.md)).
+passing a config (see QuickStart guide for
+[Android](/docs/quickstart/android-tracing.md) or
+[Linux](/docs/quickstart/linux-tracing.md)).
 
 A simple trace config looks like this:
 
@@ -52,21 +53,22 @@ The TraceConfig is a protobuf message
     * The max size of the output trace file.
 
 2. Which data sources to enable and their configuration, e.g.:
-    * For the [kernel tracing data source](/docs/TODO.md), which ftrace events
-      to enable.
-    * For the [heap profiler](/docs/TODO.md), the target process name and
-      sampling rate.
-
-      NOTE: See the _data sources_ section of the docs for details on how to
-      configure the data sources bundled with Perfetto.
+    * For the [kernel tracing data source](/docs/data-sources/cpu-scheduling.md)
+    , which ftrace events to enable.
+    * For the [heap profiler](/docs/data-sources/native-heap-profiler.md), the
+    target process name and sampling rate.
+    
+    See the _data sources_ section of the docs for details on how to
+    configure the data sources bundled with Perfetto.
 
 3. The `{data source} x {buffer}` mappings: which buffer each data
     source should write into (see [buffers section](#buffers) below).
 
 The tracing service (`traced`) acts as a configuration dispatcher: it receives
 a config from the `perfetto` cmdline client (or any other
-[Consumer](/docs/TODO.md)) and forwards parts of the config to the various
-[Producers](/docs/TODO.md) connected.
+[Consumer](/docs/concepts/service-model.md#consumer)) and forwards parts of the
+config to the various [Producers](/docs/concepts/service-model.md#producer)
+connected.
 
 When a tracing session is started by a consumer, the tracing service will:
 
@@ -76,10 +78,12 @@ When a tracing session is started by a consumer, the tracing service will:
   source listed in the config, if a corresponding name (`"linux.ftrace"` in the
   example below) was registered, the service will ask the producer process to
   start that data source, passing it the raw bytes of the
-[`DataSourceConfig` subsection](/docs/reference/trace-config-proto.autogen#DataSourceConfig)
-verbatim to the data source (See backward/forward compat section below).
+  [`DataSourceConfig` subsection][dss] verbatim to the data source (See
+  backward/forward compat section below).
 
 ![TraceConfig diagram](/docs/images/trace_config.png)
+
+[dss]: /docs/reference/trace-config-proto.autogen#DataSourceConfig
 
 ## Buffers
 
@@ -296,8 +300,8 @@ those fields and route the whole DataSourceConfig object to any data source
 registered with the same name.
 
 The `[lazy=true]` marker has a special implication in the
-[protozero](/docs/TODO.md) code generator. Unlike standard nested messages, it
-generates raw accessors (e.g.,
+[protozero](/docs/design-docs/protozero.md) code generator. Unlike standard
+nested messages, it generates raw accessors (e.g.,
 `const std::string& ftrace_config_raw()` instead of
 `const protos::FtraceConfig& ftrace_config()`). This is to avoid injecting too
 many `#include` dependencies and avoiding binary size bloat in the code that
@@ -327,7 +331,8 @@ owned by the `traced_probes` service.
 
 However, in the general case multiple processes can advertise the same data
 source. This is the case, for instance, when using the
-[Perfetto Client Library](/docs/TODO.md) for userspace instrumentation.
+[Perfetto SDK](/docs/instrumentation/tracing-sdk.md) for userspace
+instrumentation.
 
 If this happpens, when starting a tracing session that specifies that data
 source in the trace config, Perfetto by default will ask all processes that
@@ -385,7 +390,8 @@ cannot control tracing.
 Triggers offer a way to unprivileged apps to control, in a limited fashion, the
 lifecycle of a tracing session. The conceptual model is:
 
-* The privileged Consumer (see [perfetto model](/docs/TODO.md)), i.e. the entity
+* The privileged Consumer (see
+  [_Service model_](/docs/concepts/service-model.md)), i.e. the entity
   that is normally authorized to start tracing (e.g., adb shell in Android),
   declares upfront what are the possible trigger names for the trace and what
   they will do.

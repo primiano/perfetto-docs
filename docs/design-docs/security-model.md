@@ -29,8 +29,6 @@ embedder and the IPC transport.
   - On Android it runs as nobody:nobody and is allowed to do very little
     see [traced.te](https://android.googlesource.com/platform/system/sepolicy/+/master/private/traced.te).
   - In Chromium it should run as a utility process.
-  - TODO: we could use BPF syscall sandboxing both in Chromium and Android.
-    [Proof of concept](https://android-review.googlesource.com/c/platform/external/perfetto/+/576563)
 
 ## Consumers
 Consumers are always trusted. They still shouldn't be able to crash or exploit

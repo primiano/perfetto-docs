@@ -1,30 +1,44 @@
 # Trace-based metrics
 
-_The metrics subsystem is a part of the [trace processor](/docs/TODO.md) which uses traces to compute reproducible metrics. It can be used in a wide range of situations; examples include benchmarks, lab tests and on large corpuses of traces._
+_The metrics subsystem is a part of the
+[trace processor](/docs/analysis/trace-processor.md) which uses traces to
+compute reproducible metrics. It can be used in a wide range of situations;
+examples include benchmarks, lab tests and on large corpuses of traces._
 
-![](/docs/images/metrics-summary.png)
+![Block diagram of metrics](/docs/images/metrics-summary.png)
 
 ## Quickstart
 
-The [quickstart](/docs/TODO.md) provides a quick overview on how to compute trace-based metrics traces using trace processor.
+The [quickstart](/docs/quickstart/trace-analysis.md) provides a quick overview
+on how to compute trace-based metrics traces using trace processor.
 
 ## Introduction
 
 ### Motivation
 
-Performance metrics are useful to monitor for the health of a system and ensure that a system does not regress over time as new features are added.
+Performance metrics are useful to monitor for the health of a system and ensure
+that a system does not regress over time as new features are added.
 
-However, metrics retrieved directly from the system have a downside: if there is a regression, it is difficult to root-cause the issue. Often, the problem may not be reproducible or may rely on a particular setup.
+However, metrics retrieved directly from the system have a downside: if there is
+a regression, it is difficult to root-cause the issue. Often, the problem may
+not be reproducible or may rely on a particular setup.
 
-Trace-based metrics are one possible solution to this problem. Instead of collecting metrics directly on the system, a trace is collected and metrics are computed from the trace. If a regression in the metric is spotted, the developer can look directly at the trace to understand why the regression has occurred instead of having to reproduce the issue.
+Trace-based metrics are one possible solution to this problem. Instead of
+collecting metrics directly on the system, a trace is collected and metrics are
+computed from the trace. If a regression in the metric is spotted, the developer
+can look directly at the trace to understand why the regression has occurred
+instead of having to reproduce the issue.
 
 ### Metric subsystem
 
-The metric subsystem is a part of the [trace processor](/docs/TODO.md) which executes SQL queries against traces and produces a metric which summarises some performance attribute (e.g. CPU, memory, startup latency etc.).
+The metric subsystem is a part of the
+[trace processor](/docs/analysis/trace-processor.md) which executes SQL queries
+against traces and produces a metric which summarises some performance attribute
+(e.g. CPU, memory, startup latency etc.).
 
 For example, generating the Android memory metrics on a trace is as simple as:
 
-```console
+```python
 > ./trace_processor --run-metrics android_mem <trace>
 android_cpu {
   process_info {
@@ -51,21 +65,39 @@ android_cpu {
 
 ### Case for upstreaming
 
-Authors are strongly encouraged to add all metrics derived on Perfetto traces to the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why these metrics should not be publicly available.
+Authors are strongly encouraged to add all metrics derived on Perfetto traces to
+the Perfetto repo unless there is a clear usecase (e.g. confidentiality) why
+these metrics should not be publicly available.
 
-In return for upstreaming metrics, authors will have first class support for running metrics locally and the confidence that their metrics will remain stable as trace processor is developed.
+In return for upstreaming metrics, authors will have first class support for
+running metrics locally and the confidence that their metrics will remain stable
+as trace processor is developed.
 
-As well as scaling upwards while developing from running on a single trace locally to running on a large set of traces, the reverse is also very useful. When an anomaly is observed in the metrics of a lab benchmark, a representative trace can be downloaded and the same metric can be run locally in trace processor.
+As well as scaling upwards while developing from running on a single trace
+locally to running on a large set of traces, the reverse is also very useful.
+When an anomaly is observed in the metrics of a lab benchmark, a representative
+trace can be downloaded and the same metric can be run locally in trace
+processor.
 
-Since the same code is running locally and remotely, developers can be confident in reproducing the issue and use the trace processor and/or the Perfetto UI to identify the problem.
+Since the same code is running locally and remotely, developers can be confident
+in reproducing the issue and use the trace processor and/or the Perfetto UI to
+identify the problem.
 
 ## Walkthrough: prototyping a metric
 
-TIP: To see how to add to add a new metric to trace processor, see the checklist [here](/docs/TODO.md)
+TIP: To see how to add to add a new metric to trace processor, see the checklist
+[here](/docs/contributing/common-tasks.md#new-metric)
 
-This walkthrough will outline how to prototype a metric locally without needing to compile trace processor. This metric will compute the CPU time for every process in the trace and list the names of the top 5 processes (by CPU time) and the number of threads created by the process.
+This walkthrough will outline how to prototype a metric locally without needing
+to compile trace processor. This metric will compute the CPU time for every
+process in the trace and list the names of the top 5 processes (by CPU time) and
+the number of threads created by the process.
 
-NOTE: See this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080) to see how the code should look at the end of the walkthrough. The prerequistes and Step 4 below give instructions on how to get trace processor and run the metrics code.
+NOTE: See this [GitHub gist][gist] to see how the code should look at the end of
+      the walkthrough. The prerequistes and Step 4 below give instructions on
+      how to get trace processor and run the metrics code.
+
+[gist]: https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080
 
 ### Prerequisites
 
@@ -138,9 +170,12 @@ extend TraceMetrics {
 
 ### Step 2
 
-Next, write the SQL to generate the table of the top 5 processes ordered by the sum of the CPU time they ran for and the number of threads which were associated with the process.
+Next, write the SQL to generate the table of the top 5 processes ordered by the
+sum of the CPU time they ran for and the number of threads which were associated
+with the process.
 
-The following SQL should added to a file called `top_five_processes.sql` in tge workspace:
+The following SQL should added to a file called `top_five_processes.sql` in the
+workspace:
 
 ```sql
 CREATE VIEW top_five_processes_by_cpu
@@ -203,23 +238,45 @@ SELECT TopProcesses(
 
 Breaking this down again:
 
-1. Starting from the inner-most SELECT statement, there is what looks like a function call to the ProcessInfo function; in face this is no conincidence. For each proto that the metrics platform knows about, an SQL function is generated with the same name as the proto. This function takes key value pairs with the key as the name of the proto field to fill and the value being the data to store in the field. The output is the proto created by writing the fields described in the function. (\*)
+1. Starting from the inner-most SELECT statement, there is what looks like
+   function call to the ProcessInfo function; in face this is no conincidence.
+   For each proto that the metrics platform knows about, an SQL function is
+   generated with the same name as the proto. This function takes key value
+   pairs with the key as the name of the proto field to fill and the value being
+   the data to store in the field. The output is the proto created by writing
+   the fields described in the function. (\*)
    
-   In this case, this function is called once for each row in the `top_five_processes_by_cpu` table. The output of will be the fully filled ProcessInfo proto.
+   In this case, this function is called once for each row in the
+   `top_five_processes_by_cpu` table. The output of will be the fully filled
+   ProcessInfo proto.
    
-   The call to the `RepeatedField` function is the most interesting part and also the most important. In technical terms, `RepeatedField` is an aggregate function; practically, this means that it takes a full table of values and generates a single array which contains all the values passed to it.
+   The call to the `RepeatedField` function is the most interesting part and
+   also the most important. In technical terms, `RepeatedField` is an aggregate
+   function; practically, this means that it takes a full table of values and
+   generates a single array which contains all the values passed to it.
    
-   Therefore, the output of this whole SELECT statement is an array of 5 ProcessInfo protos.
+   Therefore, the output of this whole SELECT statement is an array of 5
+   ProcessInfo protos.
 
-2. Next is creation of the `TopProcesses` proto. By now, the syntax should already feel somewhat familiar; the proto builder function is called to fill in the `process_info` field with the array of protos from the inner funciton.
+2. Next is creation of the `TopProcesses` proto. By now, the syntax should
+   already feel somewhat familiar; the proto builder function is called to fill
+   in the `process_info` field with the array of protos from the inner funciton.
    
-   The output of this SELECT is a single `TopProcesses` proto containing the ProcessInfos as a repeated field.
+   The output of this SELECT is a single `TopProcesses` proto containing the
+   ProcessInfos as a repeated field.
 
-3. Finally, the view is created. This view is specially named to allow the metrics platform to query it to obtain the root proto for each metric (in this case `TopProcesses`). See the note below as to the pattern behind this view's name.
+3. Finally, the view is created. This view is specially named to allow the
+   metrics platform to query it to obtain the root proto for each metric
+   (in this case `TopProcesses`). See the note below as to the pattern behind
+   this view's name.
 
-NOTE: (\*) this is not strictly true. To type-check the protos, some metadata is returned about the type of the proto but this is unimportant for metric authors.
+(\*) _This is not strictly true. To type-check the protos, some metadata
+is returned about the type of the proto but this is unimportant for metric
+authors._
 
-NOTE: It is important that the views be named {name of TraceMetrics extension field}\_output. This is the pattern used and expected by the metrics platform for all metrics.
+NOTE: It is important that the views be named {name of TraceMetrics extension
+      field}\_output. This is the pattern used and expected by the metrics
+      platform for all metrics.
 
 The final file should look like so:
 
@@ -251,11 +308,14 @@ SELECT TopProcesses(
 );
 ```
 
-NOTE: The name of the SQL file should be the same as the name of TraceMetrics extension field. This is to allow the metrics platform to associated the proto extension field with the SQL which needs to be run to generate it.
+NOTE: The name of the SQL file should be the same as the name of TraceMetrics
+      extension field. This is to allow the metrics platform to associated the
+      proto extension field with the SQL which needs to be run to generate it.
 
 ### Step 4
 
-For this step, invoke trace processor shell to run the metrics (see the [prerequistes](/docs/TODO.md) for downloading it):
+For this step, invoke trace processor shell to run the metrics (see the
+[Quickstart](/docs/quickstart/trace-analysis.md) for downloading instructions):
 
 ```shell
 $TRACE_PROCESSOR --run-metrics $WORKSPACE/top_five_processes.sql $TRACE 2> /dev/null
@@ -305,7 +365,5 @@ If everything went successfully, the following output should be visible (specifi
 
 ### Next steps
 
-There are a couple of options to learn more about trace-based metrics:
-
-- The [metrics reference](/docs/TODO.md) gives a comprehensive list of all the available metrics including descriptions of their fields.
-- The [common tasks](/docs/TODO.md) page gives a list of steps on how new metrics can be added to the trace processor.
+* The [common tasks](/docs/contributing/common-tasks.md) page gives a list of
+  steps on how new metrics can be added to the trace processor.

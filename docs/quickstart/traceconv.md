@@ -6,7 +6,9 @@ _This quickstart demonstrates how Perfetto traces can be converted into other tr
 
 ## Prerequistes
 
-NOTE: Alternatively, skip to [this section](/docs/TODO.md) to use the Perfetto UI to convert traces to the Chrome JSON format and open these traces in the legacy UI (Catapult's chrome://tracing).
+NOTE: Alternatively, use the _"Open with legacy UI"_ link in the Perfetto UI to
+convert traces to the Chrome JSON format and open these traces in the
+chrome://tracing (also known as Catapult) UI.
 
 - A device running macOS/Linux
 - A Perfetto protobuf trace file
@@ -16,7 +18,8 @@ The supported output formats are:
 - proto text format: the standard text based representation of protos
 - Chrome JSON format: the format used by chrome://tracing
 - systrace format: the ftrace text format used by Android systrace
-- profile format (heap profiler only): pprof-like format. This is only valid for traces with [heap profiler](/src/profiling/memory/README.md) dumps
+- profile format (heap profiler only): pprof-like format. This is only valid for
+  traces with [heap profiler](/docs/data-sources/native-heap-profiler.md) dumps.
 
 ## Setup
 

@@ -345,7 +345,6 @@ This can be viewed using https://ui.perfetto.dev.
 ```
 
 ### Viewing the Data
-TODO(fmayer): have an example that shows something interesting.
 
 Upload the trace to the [Perfetto UI](https://ui.perfetto.dev) and click on
 diamond marker that shows.

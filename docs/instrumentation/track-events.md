@@ -160,7 +160,7 @@ the given category. It is always called synchronously and possibly multiple
 times if multiple concurrent tracing sessions are active.
 
 Now that you have instrumented your app with track events, you are ready to
-start [recording traces](/docs/TODO.md).
+start [recording traces](tracing-sdk.md#recording).
 
 ## Category configuration
 
