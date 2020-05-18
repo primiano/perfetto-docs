@@ -31,7 +31,7 @@ These can be viewed using pprof. Googlers: head to pprof/ and upload them.
 
 ## View profile
 Upload the `raw-trace` file from the output directory to the [Perfetto UI](
-https://ui.perfetto.dev) and click on diamond marker in the UI track labelled
+https://ui.perfetto.dev) and click on diamond marker in the UI track labeled
 _"Heap profile"_.
 
 ![Profile Diamond](/docs/images/profile-diamond.png)

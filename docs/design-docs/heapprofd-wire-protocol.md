@@ -30,13 +30,13 @@ At every point in time, every object is owned by exactly one thread. No referenc
 
 **_Main Thread:_**
 
-*   Signalling sockets before handshake was completed.
+*   Signaling sockets before handshake was completed.
 *   Bookkeeping data.
 *   Set of connected processes and TraceConfigs (in `ProcessMatcher` class).
 
 **_Unwinder Thread, for each process:_**
 
-*   Signalling sockets after handshake was completed.
+*   Signaling sockets after handshake was completed.
 *   libunwindstack objects for `/proc/pid/{mem,maps}`.
 *   Shared memory buffer.
 
@@ -47,13 +47,13 @@ Refer to the following phases in the sequence diagram below:
 ### 1. Handshake
 The _Main Thread_ receives a `TracingConfig` from traced containing a `HeapprofdConfig`. It adds the processes expected to connect, and their `ClientConfiguration` to the `ProcessMatcher`. It then finds matching processes (by PID or cmdline) and sends the heapprofd RT signal to trigger initialization.
 
-The processes receiving this configuration connect to `/dev/socket/heapprofd` and sends `/proc/self/{map,mem}` fds. The _Main Thread_ finds the matching configuration in the `ProcessMatcher`, creates a new shared memory buffer, and sends the two over the signalling socket. The client uses those to finish initializing its internal state. The _Main Thread_ hands off (`RemoveFiledescriptorWatch` + `AddFiledescriptorWatch`) the signalling socket to an _Unwinding Thread_. It also hands off the `ScopedFile`s for the `/proc` fds. These are used to create `UnwindingMetadata`.
+The processes receiving this configuration connect to `/dev/socket/heapprofd` and sends `/proc/self/{map,mem}` fds. The _Main Thread_ finds the matching configuration in the `ProcessMatcher`, creates a new shared memory buffer, and sends the two over the signaling socket. The client uses those to finish initializing its internal state. The _Main Thread_ hands off (`RemoveFiledescriptorWatch` + `AddFiledescriptorWatch`) the signaling socket to an _Unwinding Thread_. It also hands off the `ScopedFile`s for the `/proc` fds. These are used to create `UnwindingMetadata`.
 
 
 ### 2. Sampling
 Now that the handshake is done, all communication is between the _Client_ and its corresponding _Unwinder Thread_.
 
-For every malloc, the client decides whether to sample the allocation, and if it should, write the `AllocMetadata` + raw stack onto the shared memory buffer, and then sends a byte over the signalling socket to wake up the _Unwinder Thread_. The _Unwinder Thread_ uses `DoUnwind` to get an `AllocRecord` (metadata like size, address, etc + a vector of frames).  It then posts a task to the _Main Thread_ to apply this to the bookkeeping.
+For every malloc, the client decides whether to sample the allocation, and if it should, write the `AllocMetadata` + raw stack onto the shared memory buffer, and then sends a byte over the signaling socket to wake up the _Unwinder Thread_. The _Unwinder Thread_ uses `DoUnwind` to get an `AllocRecord` (metadata like size, address, etc + a vector of frames).  It then posts a task to the _Main Thread_ to apply this to the bookkeeping.
 
 
 ### 3. Dump / concurrent sampling
@@ -68,7 +68,7 @@ In general, _Unwinder Threads_ will receive concurrent records from clients. The
 
 
 ### 4. Disconnect
-traced sends a `StopDataSource` IPC. The _Main Thread_ posts a task to the _Unwinder Thread_ to ask it to disconnect from the client. It unmaps the shared memory, closes the memfd, and then closes the signalling socket.
+traced sends a `StopDataSource` IPC. The _Main Thread_ posts a task to the _Unwinder Thread_ to ask it to disconnect from the client. It unmaps the shared memory, closes the memfd, and then closes the signaling socket.
 
 The client receives an `EPIPE` on the next attempt to send data over that socket, and then tears down the client.
 
@@ -76,7 +76,7 @@ The client receives an `EPIPE` on the next attempt to send data over that socket
 
 
 ## Changes to client
-The client will no longer need a socket pool, as all operations are done on the same shared memory buffer and the single signalling socket. Instead, the data is written to the shared memory buffer, and then a single byte is sent on the signalling socket in nonblocking mode.
+The client will no longer need a socket pool, as all operations are done on the same shared memory buffer and the single signaling socket. Instead, the data is written to the shared memory buffer, and then a single byte is sent on the signaling socket in nonblocking mode.
 
 We need to be careful about which operation we use to copy the callstack to the shared memory buffer, as `memcpy(3)` can crash on the stack frame guards due to source hardening.
 

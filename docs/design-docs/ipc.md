@@ -14,7 +14,7 @@ Key features:
 - Protobuf over a unix-socket.
 - Allows to send file descriptors over the wire: for setting up shared memory
   and passing the FD for the output trace from a consumer to the service.
-- Service definition uses same protobuf rpc syntax of [gRPC](https://grpc.io)
+- Service definition uses same protobuf RPC syntax of [gRPC](https://grpc.io)
 - Extremely simple [wire protocol](/protos/perfetto/ipc/wire_protocol.proto).
 - C++11 friendly, allows to bind `std::function` to each request.
 - Leak (un)friendly: tries hard to guarantee that callbacks are left unresolved,

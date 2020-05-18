@@ -90,7 +90,7 @@ When `mm_event` is enabled, the following mm event types are recorded:
 
 * mem.mm.min_flt: Minor page faults
 * mem.mm.maj_flt: Major page faults
-* mem.mm.swp_flt: Page fauls served by swapcache
+* mem.mm.swp_flt: Page faults served by swapcache
 * mem.mm.read_io: Read page faults backed by I/O
 * mem.mm..compaction: Memory compaction events
 * mem.mm.reclaim: Memory reclaim events
@@ -213,7 +213,7 @@ data_sources: {
 
 ## Low-memory Kills (LMK)
 
-#### Backround
+#### Background
 
 The Android framework kills apps and services, especially background ones, to
 make room for newly opened apps when memory is needed. These are known as low
@@ -222,7 +222,7 @@ memory kills (LMK).
 Note LMKs are not always the symptom of a performance problem. The rule of thumb
 is that the severity (as in: user perceived impact) is proportional to the state
 of the app being killed. The app state can be derived in a trace from the OOM
-adjustement score.
+adjustment score.
 
 A LMK of a foreground app or service is typically a big concern. This happens
 when the app that the user was using disappeared under their fingers, or their
@@ -257,7 +257,7 @@ Android 9.
 
 See https://source.android.com/devices/tech/perf/lmkd for details.
 
-`lmkd` emits a userspace atrace countter event called `kill_one_process`.
+`lmkd` emits a userspace atrace counter event called `kill_one_process`.
 
 #### Android LMK vs Linux oomkiller
 
@@ -267,7 +267,7 @@ use a completely different mechanism than the standard
 Perfetto at the moment supports only Android LMK events (Both in-kernel and
 user-space) and does not support tracing of Linux kernel OOM Killer events.
 Linux OOMKiller events are still theoretically possible on Android but extremely
-unlikely to happen. If they happen, they are more likley the symptom of a
+unlikely to happen. If they happen, they are more likely the symptom of a
 mis-configured BSP.
 
 ### UI

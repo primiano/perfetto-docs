@@ -10,7 +10,7 @@ When using the Tracing SDK there are two main aspects to consider:
    system trace events like scheduler traces, syscalls or any other Perfetto
    data source.
 
-2. For app-specific tracing, wheteher you need to trace simple types of timeline
+2. For app-specific tracing, whether you need to trace simple types of timeline
   events (e.g., slices, counters) or need to define complex data sources with a
   custom strongly-typed schema (e.g., for dumping the state of a subsystem of
   your app into the trace).

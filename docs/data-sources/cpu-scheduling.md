@@ -8,7 +8,7 @@ This allows to get fine grained scheduling events such as:
 
 * Which threads were scheduling on which CPU cores at any point in time, with
   nanosecond accuracy.
-* The reason why a running thread got descheduled (e.g.m pre-emption, blocked on
+* The reason why a running thread got descheduled (e.g. pre-emption, blocked on
   a mutex, blocking syscall or any other wait queue).
 * The point in time when a thread became eligible to be executed, even if it was
   not put immediately on any CPU run queue, together with the source thread that
@@ -33,7 +33,7 @@ Scrolling down, when expanding individual processes, the scheduling events also
 create one track for each thread, which allows to follow the evolution of the
 state of individual threads:
 
-![](/docs/images/thread-states.png "States of invidivual threads")
+![](/docs/images/thread-states.png "States of individual threads")
 
 
 ```protobuf
@@ -132,7 +132,7 @@ for some time because, for instance:
 Unless using real-time thread priorities, most Linux Kernel scheduler
 configurations are not strictly work-conserving. For instance the scheduler
 might prefer to wait some time in the hope that the thread running on the
-current CPU goes to idle, avoiding a cross-cpu migration which migh be more
+current CPU goes to idle, avoiding a cross-cpu migration which might be more
 costly both in terms of overhead and power.
 
 NOTE: `sched_waking` and `sched_wakeup` provide nearly the same information. The
@@ -140,7 +140,7 @@ NOTE: `sched_waking` and `sched_wakeup` provide nearly the same information. The
       inter-processor interrupts. The former is emitted on the source (wakee)
       CPU, the latter on the destination (waked) CPU. `sched_waking` is usually
       sufficient for latency analysis, unless you are looking into breaking down
-      latency due to inter-processor signalling.
+      latency due to inter-processor signaling.
 
 When enabling `sched_waking` events, the following will appear in the UI when
 selecting a CPU slice:

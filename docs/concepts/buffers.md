@@ -56,9 +56,9 @@ This buffer is a temporary staging buffer and has two purposes:
    tracing data from the writer fastpath in a memory region directly readable by
    the tracing service.
 
-2. Decupling writes from reads of the tracing service. The tracing service has
+2. Decoupling writes from reads of the tracing service. The tracing service has
    the job of moving trace packets from the shared memory buffer (blue) into the
-   cental buffer (yellow) as fast as it can.
+   central buffer (yellow) as fast as it can.
    The shared memory buffer hides the scheduling and response latencies of the
    tracing service, allowing the producer to keep writing without losing data
    when the tracing service is temporarily blocked.
@@ -66,7 +66,7 @@ This buffer is a temporary staging buffer and has two purposes:
 #### Ftrace buffer
 
 When the `linux.ftrace` data source is enabled, the kernel will have its own
-per-CPU buffers. These are unavoidable because the kenel cannot write directly
+per-CPU buffers. These are unavoidable because the kernel cannot write directly
 into user-space buffers. The `traced_probes` process will periodically read
 those buffers, convert the data into binary protos and follow the same dataflow
 of userspace tracing. These buffers need to be just large enough to hold data
@@ -124,7 +124,7 @@ the central buffer needs to be at least 5 * 2 = 10 MB to avoid data losses.
 
 The sizing of the shared memory buffer depends on:
 
-* The scheduling charateristics of the underlying system, i.e. for how long the
+* The scheduling characteristics of the underlying system, i.e. for how long the
  tracing service can be blocked on the scheduler queues. This is a function of
  the kernel configuration and nice-ness level of the `traced` process.
 * The max write rate of all data sources within a producer process.
@@ -133,7 +133,7 @@ Suppose that a producer produce at a max rate of 8 MB/s. If `traced` gets
 blocked for 10 ms, the shared memory buffer need to be at least 8 * 0.01 = 80 KB
 to avoid losses.
 
-Empirical measuements suggest that on most Android systems a shared memory
+Empirical measurements suggest that on most Android systems a shared memory
 buffer size of 128-512 KB is good enough.
 
 The default shared memory buffer size is 256 KB. When using the Perfetto Client
@@ -159,9 +159,9 @@ Its average write rate is 2MB / 10 = 200 KB/s. However, the data source will
 make bursts of 2MB back-to-back without ever yielding, limited only by the
 tracing serialization overhead. In practice it will write that 2MB buffer at
 O(GB/s). If the shared memory buffer is < 2 MB, the tracing service will be
-unlkely to catch up at that rate and data losses will be experienced.
+unlikely to catch up at that rate and data losses will be experienced.
 
-In a case like this thes options are:
+In a case like this these options are:
 
 * Increase the size of the shared memory buffer in the producer that hosts the
   data source.
@@ -223,7 +223,7 @@ At the trace proto level, losses in this path are recorded:
 * In [`TraceStats.BufferStats.trace_writer_packet_loss`][BufferStats].
 * In [`TracePacket.previous_packet_dropped`][TracePacket].
   Caveat: the very first packet emitted by every data source is also marked as
-  `previous_packet_dropped=true`. This is because the sevice has no way to
+  `previous_packet_dropped=true`. This is because the service has no way to
   tell if that was the truly first packet or everything else before that was
   lost.
 
@@ -244,7 +244,7 @@ Data losses in the central buffer can happen for two different reasons:
    These losses are recorded, at the trace proto level, in
    [`TraceStats.BufferStats.chunks_overwritten`][BufferStats].
 
-2. When using `fill_policy: DISCARD`, newer tacing data committed after the
+2. When using `fill_policy: DISCARD`, newer tracing data committed after the
    buffer is full is dropped.
    These losses are recorded, at the trace proto level, in
    [`TraceStats.BufferStats.chunks_discarded`][BufferStats].
@@ -275,7 +275,7 @@ typically create one TraceWriter per thread.
   same order they have been written, without gaps.
 
 * There is no ordering guarantee between packets written by different sequences.
-  Sequences are, by design, concurrent and more than one linearizaion is
+  Sequences are, by design, concurrent and more than one linearization is
   possible. The service does NOT respect global timestamp ordering across
   different sequences. If two packets from two sequences were emitted in
   global timestamp order, the service can still emit them in the trace file in
@@ -312,9 +312,9 @@ Here are are two concrete examples:
    keyed by thread id. In most cases users want to map those events back to the
    parent process (the thread-group). To solve this, when both the
    `linux.ftrace` and the `linux.process_stats` data sources are enabled in a
-   Perfetto trace, the latter does capture proces<>thread associations from
+   Perfetto trace, the latter does capture process<>thread associations from
    the /proc pseudo-filesystem, whenever a new thread-id is seen by ftrace.
-   A typipcal trace in this case looks as follows:
+   A typical trace in this case looks as follows:
    ```
     # From process_stats's /proc scanner.
     pid: 610; ppid: 1; cmdline: "/system/bin/surfaceflinger"

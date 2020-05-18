@@ -28,7 +28,7 @@ Categories can be used to enable group of events across several processes,
 without having to worry about which particular system process emits them.
 
 **App events**: have the same semantics of system events. Unlike system events,
-hoever, they don't have any tag-filtering capability (all app events share the
+however, they don't have any tag-filtering capability (all app events share the
 same tag `ATRACE_TAG_APP`) but can be enabled on a per-app basis.
 
 See the [TraceConfig](#traceconfig) section below for instructions on how to

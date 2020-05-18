@@ -38,7 +38,7 @@ _Data sources_ section of the docs.
 
 ![Record page of the Perfetto UI](/docs/images/record-trace.png)
 
-If you are unsure, start by turning on **Scheduling details** under the **Cpu** tab.
+If you are unsure, start by turning on **Scheduling details** under the **CPU** tab.
 
 Ensure your device is connected and select **Add ADB device**. Once your device has successfully paired (you may need to allow USB debugging on the device), select the **Start Recording** button.
 
@@ -52,7 +52,7 @@ Your trace may look different depending on which data sources you enabled.
 
 #### Short syntax
 
-If you are aready familiar with `systrace` or `atrace`, you an equivalent syntax
+If you are already familiar with `systrace` or `atrace`, you an equivalent syntax
 with `perfetto`:
 
 ```bash

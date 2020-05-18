@@ -72,7 +72,7 @@ NOTE: The UI runs fully in-browser using JavaScript + Web Assembly. The trace
 
 3. Explore the trace by zooming/panning using WASD, and mouse for expanding
    process tracks (rows) into their constituent thread tracks.
-   Press "?" forfurther navigation controls.
+   Press "?" for further navigation controls.
 
 Alternatively, you can explore the trace contents issuing SQL queries through
 [Trace processor](/docs/analysis/trace-processor).

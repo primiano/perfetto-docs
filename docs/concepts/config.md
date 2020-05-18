@@ -107,7 +107,7 @@ buffers {
 Each buffer has a fill policy which is either:
 
 * RING_BUFFER (default): the buffer behaves like a ring buffer and writes when
-  full will wrap over and replpace the oldest trace data in the buffer.
+  full will wrap over and replace the oldest trace data in the buffer.
 
 * DISCARD: the buffer stops accepting data once full. Further write attempts are
   dropped on the floor.
@@ -124,7 +124,7 @@ sources write at significantly different rates.
 
 For instance, imagine a trace config that enables both:
 
-1. The kernel scheduler tracer. On a tyipcal Android phone this records
+1. The kernel scheduler tracer. On a typical Android phone this records
    ~10000 events/second, writing ~1 MB/s of trace data into the buffer.
 
 2. Memory stat polling. This data source writes the contents of /proc/meminfo
@@ -145,7 +145,7 @@ Data-source <> buffer mappings are dynamic in Perfetto.
 In the simplest case a tracing session can define only one buffer. By default,
 all data sources will record data into that one buffer.
 
-In cases like the example above, it might be preferrable separating these data
+In cases like the example above, it might be preferable separating these data
 sources into different buffers.
 This can be achieved with the `target_buffer` field of the TraceConfig.
 
@@ -182,7 +182,7 @@ data_sources: {
 ## PBTX vs binary format
 
 There are two ways to pass the trace config when using the `perfetto` cmdline
-client fformat:
+client format:
 
 #### Text format
 
@@ -193,7 +193,7 @@ representation) syntax, for the schema defined in the
 (see [reference docs](/docs/reference/trace-config-proto.autogen))
 
 When using this mode pass the `--txt` flag to `perfetto` to indicate the config
-should be intepreted as a PBTX file:
+should be interpreted as a PBTX file:
 
 ```bash
 perfetto -c /path/to/config.pbtx --txt -o trace_file.pftrace
@@ -294,7 +294,7 @@ message DataSourceConfig {
 }
 ```
 
-Fields like `ftrace_config`, `android_power_config` are examplpes of data-source
+Fields like `ftrace_config`, `android_power_config` are examples of data-source
 specific configs. The tracing service will completely ignore the contents of
 those fields and route the whole DataSourceConfig object to any data source
 registered with the same name.
@@ -309,7 +309,7 @@ implements data sources.
 
 #### A note on backwards/forward compatibility
 The tracing service will route the raw binary blob of the `DataSourceConfig`
-message to the data sources with a matching name, without attemping to decode
+message to the data sources with a matching name, without attempting to decode
 and re-encode it. If the `DataSourceConfig` section of the trace config contains
 a new field that didn't exist at the time when the service was built, the
 service will still pass the `DataSourceConfig` through to the data source.
@@ -325,7 +325,7 @@ ad-hoc configurations for your own data sources.
 
 ## Multi-process data sources
 
-Some data sources are singletons. E.g., in the case of scheruler tracing that
+Some data sources are singletons. E.g., in the case of scheduler tracing that
 Perfetto ships on Android, there is only data source for the whole system,
 owned by the `traced_probes` service.
 
@@ -334,11 +334,11 @@ source. This is the case, for instance, when using the
 [Perfetto SDK](/docs/instrumentation/tracing-sdk.md) for userspace
 instrumentation.
 
-If this happpens, when starting a tracing session that specifies that data
+If this happens, when starting a tracing session that specifies that data
 source in the trace config, Perfetto by default will ask all processes that
-advertise that data asource to start it.
+advertise that data source to start it.
 
-In some cases it might be desirable to futher limit the enabling of the data
+In some cases it might be desirable to further limit the enabling of the data
 source to a specific process (or set of processes). That is possible through the
 `producer_name_filter` and `producer_name_regex_filter`.
 
@@ -373,12 +373,12 @@ invocation of the `perfetto` cmdline client: trace data recording starts when
 the TraceConfig is passed to `perfetto` and ends when either the
 `Traceconfig.duration_ms` has elapsed, or when the cmdline client terminates.
 
-Perfetto supports an alternative mode of either starting or stoppping the trace
+Perfetto supports an alternative mode of either starting or stopping the trace
 which is based on triggers. The overall idea is to declare in the trace config
 itself:
 
 * A set of triggers, which are just free-form strings.
-* Whether a gien trigger should cause the trace to be started or stopped, and
+* Whether a given trigger should cause the trace to be started or stopped, and
   the start/stop delay.
 
 Why using triggers? Why can't one just start perfetto or kill(SIGTERM) it when
@@ -396,10 +396,10 @@ lifecycle of a tracing session. The conceptual model is:
   declares upfront what are the possible trigger names for the trace and what
   they will do.
 * Unprivileged entities (any random app process) can activate those triggers.
-  Unprivilege entities don't get a say on what the triggers will do, they only
+  Unprivileged entities don't get a say on what the triggers will do, they only
   communicate that an event happened.
 
-Triggers can be signalled via the cmdline util
+Triggers can be signaled via the cmdline util
 
 ```bash
 /system/bin/trigger_perffetto "trigger_name"
@@ -414,7 +414,7 @@ There are two types of triggers:
 
 Start triggers allow activating a tracing session only after some significant
 event has happened. Passing a trace config that has `START_TRACING` trigger
-causes the tracing session to stay idle (i.e. not recordi any data) until either
+causes the tracing session to stay idle (i.e. not recording any data) until either
 the trigger is hit or the `duration_ms` timeout is hit.
 
 Example config:

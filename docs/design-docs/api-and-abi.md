@@ -1,4 +1,4 @@
-# Tracing API and ABI: surfaces and stabillity
+# Tracing API and ABI: surfaces and stability
 
 This document describes the API and ABI surface of the
 [Perfetto Client Library][cli_lib], what can be expected to be stable long-term
@@ -11,8 +11,8 @@ and what not.
 * The C++ API within `include/perfetto/ext/` is internal-only and exposed only
   for Chromium.
 * The tracing protocol ABI is based on protobuf-over-UNIX-socket and shared
-  memory. It is long-term stable and maintains compatiblility in both directions
-  (old service + newer client and viceversa).
+  memory. It is long-term stable and maintains compatibility in both directions
+  (old service + newer client and vice-versa).
 * The [DataSourceDescriptor][data_source_descriptor.proto],
   [DataSourceConfig][data_source_config.proto] and
   [TracePacket][trace-packet-ref] protos are updated maintaining backwards
@@ -72,7 +72,7 @@ any project from depending on this API because it is too complex and extremely
 hard to get right.
 This API surface exists only for the Chromium project, which has unique
 challenges (e.g., its own IPC system, complex sandboxing models) and has dozens
-of subtle use cases accumulated thtough over ten years of legacy of
+of subtle use cases accumulated through over ten years of legacy of
 chrome://tracing. The team is continuously reshaping this surface to gradually
 migrate all Chrome Tracing use cases over to Perfetto.
 
@@ -87,7 +87,7 @@ inject tracing data into the tracing service:
  * [Protobuf messages](#protos)
 
 The whole tracing protocol ABI is binary stable across platforms and is updated
-maintaining both backwards and forward compatiblility. No breaking changes
+maintaining both backwards and forward compatibility. No breaking changes
 have been introduced since its first revision in Android 9 (Pie, 2018).
 See also the [ABI Stability](#abi-stability) section below.
 
@@ -113,7 +113,7 @@ protocol is simply based on a sequence of length-prefixed messages of the form:
 
 The `IPCFrame` proto message defines a request/response protocol that is
 compatible with the [protobuf services syntax][proto_rpc]. `IPCFrame` defines
-the folllwing frame types:
+the following frame types:
 
 1. `BindService   {producer, consumer} -> service`<br>
     Binds to one of the two service ports (either `producer_port` or
@@ -184,7 +184,7 @@ msg_invoke_method_reply: {
 The producer socket exposes the RPC interface defined in [producer_port.proto].
 It allows processes to advertise data sources and their capabilities, receive
 notifications about the tracing session lifecycle (trace being started, stopped)
-and signal trace data commits and flush requestd.
+and signal trace data commits and flush requests.
 
 This socket is also used by the producer and the service to exchange a
 tmpfs file descriptor during initialization for setting up the
@@ -235,7 +235,7 @@ _Why SOCK_STREAM and not DGRAM/SEQPACKET?_
    on-device tracing service. Today both the Perfetto UI and Android GPU
    Inspector do this.
 2. To allow in future to directly control a remote service over TCP or SSH
-   tunnelling.
+   tunneling.
 3. Because the socket buffer for `SOCK_DGRAM` is extremely limited and
    and `SOCK_SEQPACKET` is not supported on MacOS.
 
@@ -300,7 +300,7 @@ The page layout is stored in a 32-bit atomic word in the page header. The same
 32-bit word contains also the state of each chunk (2 bits per chunk).
 
 Having fixed the total SMB size (hence the total memory overhead), the page
-size is a triangular tradeoff between:
+size is a triangular trade off between:
 
 1. IPC traffic: smaller pages -> more IPCs.
 2. Producer lock freedom: larger pages -> larger chunks -> data sources can
@@ -326,7 +326,7 @@ A a chunk can be in one of the following four states:
 * `BeingWritten`: The Chunk is being written by the Producer and is not
     complete yet (i.e. there is still room to write other trace packets).
     The Service never alter the state of chunks in the `BeingWritten` state
-    (but will still read them when flusing even if incomplete).
+    (but will still read them when flushing even if incomplete).
 
 * `Complete`: The Producer is done writing the chunk and won't touch it
   again. The Service can move it to its non-shared ring buffer and mark the
@@ -344,7 +344,7 @@ happens only when a Chunk is full and a new one needs to be acquired.
 
 Locking happens only within the scope of a Producer process.
 Inter-process locking is not generally allowed. The Producer cannot lock the
-Service and viceversa. In the worst case, any of the two can starve the SMB, by
+Service and vice versa. In the worst case, any of the two can starve the SMB, by
 marking all chunks as either being read or written. But that has the only side
 effect of losing the trace data.
 The only case when stalling on the writer-side (the Producer) can occur is when
@@ -434,7 +434,7 @@ See the [TracePacket reference][trace-packet-ref] for the full details.
 ## {#abi-stability} ABI Stability
 
 All the layers of the tracing protocol ABI are long-term stable and can only
-be changed maintaining backwards compatiblity.
+be changed maintaining backwards compatibility.
 
 This is due to the fact that on every Android release the `traced` service
 gets frozen in the system image while unbundled apps (e.g. Chrome) and host
@@ -455,7 +455,7 @@ Producer or Consumer tracing protocol.
 * Don't remove IPC methods from the service.
 * Assume that fields added later to existing methods might be absent.
 * For newer Producer/Consumer behaviors, advertise those behaviors through
-  feature flags when conneting to the service. Good examples of this are the
+  feature flags when connecting to the service. Good examples of this are the
   `will_notify_on_stop` or `handles_incremental_state_clear` flags in
   [data_source_descriptor.proto]
 
@@ -473,7 +473,7 @@ service, which might not support some newer features.
 
 * Newer IPC methods defined in [producer_port.proto] won't exist in the older
   service. When connecting on the socket the service lists its RPC methods
-  and the client is able to detect if a method is avilable or not.
+  and the client is able to detect if a method is available or not.
   At the C++ IPC layer, invoking a method that doesn't exist on the service
   causes the `Deferred<>` promise to be rejected.
 

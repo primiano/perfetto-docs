@@ -31,9 +31,9 @@ Features of the trace processor include:
 
 * Execution of SQL queries on a custom, in-memory, columnar database backed by
   the SQLite query engine.
-* Metrics subsystem which allows computation of summarised view of the trace
+* Metrics subsystem which allows computation of summarized view of the trace
   (e.g. CPU or memory usage of a process, time taken for app startup etc.).
-* Annotationing events in the trace with user-friendly descriptions providing
+* Annotating events in the trace with user-friendly descriptions providing
   context and explanation of events to newer users.
 * Creation of new events derived from the contents of the trace.
 
@@ -64,7 +64,7 @@ used in the rest of documentation.
 
 In the most general sense, a trace is simply a collection of "events" on a
 timeline. Events can have associated metadata and context which allows them to
-be interpreted and analysed.
+be interpreted and analyzed.
 
 Events form the foundation of trace processor and are one of two types: slices
 and counters.
@@ -95,7 +95,7 @@ counters include:
 ### Tracks
 
 A track is a named partition of events of the same type and the same associated
-contex. For example:
+context. For example:
 
 * Scheduling slices have one track for each CPU
 * Sync userspace slice have one track for each thread which emitted an event
@@ -109,11 +109,11 @@ For example, all the scheduling events for CPU 5 are on the same track:
 ![CPU slices track](/docs/images/cpu-slice-track.png)
 
 Tracks can be split into various types based on the type of event they contain
-and the context they are assocated with. Examples include:
+and the context they are associated with. Examples include:
 
-* Global tracks are not assocated to any context and contain slices
+* Global tracks are not associated to any context and contain slices
 * Thread tracks are associated to a single thread and contain slices
-* Counter tracks are not assocated to any context and contain counters
+* Counter tracks are not associated to any context and contain counters
 * CPU counter tracks are associated to a single CPU and contain counters
 
 ### Thread and process identifiers
@@ -126,12 +126,12 @@ when querying tables in trace processor.
 
 To solve this problem, the trace processor uses `utid` (_unique_ tid) for
 threads and `upid` (_unique_ pid) for processes. All references to threads and
-processes (e.g. in CPU scheduiling data, thread tracks) uses `utid` and `upid`
+processes (e.g. in CPU scheduling data, thread tracks) uses `utid` and `upid`
 instead of the system identifiers.
 
 ## Object-oriented tables
 
-Modelling an object with many types is a common problem in trace processor. For
+Modeling an object with many types is a common problem in trace processor. For
 example, tracks can come in many varieties (thread tracks, process tracks,
 counter tracks etc). Each type has a piece of data associated to it unique to
 that type; for example, thread tracks have a `utid` of the thread, counter
@@ -146,14 +146,14 @@ subclass of `CounterTrack` etc).
 
 In trace processor,  this "object-oriented" approach is replicated by having
 different tables for each type of object. For example, we have a `track` table
-as the "root" of the heirarchy with the `thread_track` and `counter_track`
+as the "root" of the hierarchy with the `thread_track` and `counter_track`
 tables "inheriting from" the `track` table.
 
 NOTE: [The appendix below](#appendix-table-inheritance) gives the exact rules
 for inheritance between tables for interested readers.
 
 Inheritance between the tables works in the natural way (i.e. how it works in
-OO languages) and is best summarised by a diagram.
+OO languages) and is best summarized by a diagram.
 
 ![SQL table inheritance diagram](/docs/images/tp-table-inheritance.png)
 
@@ -181,7 +181,7 @@ JOIN thread_track ON thread_track.id = slice.track_id
 WHERE slice.name = 'measure'
 ```
 
-Similarily, to obtain the `upid`s of any process which has a `mem.swap` counter
+Similarly, to obtain the `upid`s of any process which has a `mem.swap` counter
 greater than 1000
 
 ```sql
@@ -308,7 +308,7 @@ automatically kept in sync with what the user sees in the UI.
 ## Alerts
 
 Alerts are used to draw the attention of the user to interesting parts of the
-trace; this are usually warnings or errors about anomalies which occured in the
+trace; this are usually warnings or errors about anomalies which occurred in the
 trace.
 
 Currently, alerts are not implemented in the trace processor but the API to
@@ -343,7 +343,7 @@ Concretely, the rules for inheritance between tables works are as follows:
     *  `track` has `name`
   * Every row in `process_counter_track` will have the same `name`  for the row
     with the same id in  `track` and `counter_track`
-  * Similarily, every row in `process_counter_track` will have both the same
+  * Similarly, every row in `process_counter_track` will have both the same
     `name ` and `unit` for the row with the same id in `counter_track`
 * Every row in a table has a `type` column. This specifies the _most specific_
   table this row belongs to.

@@ -80,7 +80,7 @@ dumps as diamonds on the timeline, click any of them to get a flamegraph.
 Alternatively [Speedscope](https://speedscope.app) can be used to visualize
 the gzipped protos, but will only show the space view.
 
-TIP: Click Left Heavy on the top left for a good visualisation.
+TIP: Click Left Heavy on the top left for a good visualization.
 
 ## Sampling interval
 heapprofd samples heap allocations. Given a sampling interval of n bytes,
@@ -273,7 +273,7 @@ sure no [DEDUPED frames](#deduped-frames) are involved.
 
 ### Symbolization: Could not find library
 
-When symbolizing a profile, you might come accross messages like this:
+When symbolizing a profile, you might come across messages like this:
 
 ```
 Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so

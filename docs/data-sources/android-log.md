@@ -1,6 +1,6 @@
 # Android Log
 
-_This data source is suported only on Android userdebug builds._
+_This data source is supported only on Android userdebug builds._
 
 The "android.log" data source allows to record log events from the Android log
 daemon (`logd`), the same events that are generally available via `adb logcat`.

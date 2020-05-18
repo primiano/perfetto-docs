@@ -104,7 +104,7 @@ increase by 1KiB.
 When an Android device becomes low on memory, a daemon called LMKD will
 start killing unimportant processes in order to free up memory. Devices'
 strategies differ, but in general processes will be killed in order of
-decending `oom_score_adj` score.
+descending `oom_score_adj` score.
 
 App will remain *cached* even after the user finishes using them, to make
 subsequent starts of the app faster. Such apps will generally be killed
@@ -256,7 +256,7 @@ how the memory usage of an application reacts to different triggers.
 ## {#heapprofd} Analyzing the Native Heap
 **Native Heap Profiles require Android 10.**
 
-_If your native memory is neglibile, you can skip ahead to
+_If your native memory is negligible, you can skip ahead to
 [Analyzing the Java Heap](#analyzing-the-java-heap)._
 
 Applications usually get memory through `malloc` or C++'s `new` rather than
@@ -323,7 +323,7 @@ show callstacks where some frame matches "loadApkAssets".
 
 From this we have a clear idea where in the code we have to look. From the
 code we can see how that memory is being used and if we actually need all of
-it. In this case the key is the `_CompressedAsset` that requires uncompressing
+it. In this case the key is the `_CompressedAsset` that requires decompressing
 into RAM rather than being able to (_cleanly_) memory-map. By not compressing
 these data, we can save RAM.
 

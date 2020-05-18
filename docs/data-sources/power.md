@@ -22,7 +22,7 @@ These counters report:
 
 * The remaining battery capacity in %.
 * The remaining battery charge in microampere-hours (µAh).
-* The instantanous (typically the average over a small window of time) current
+* The instantaneous (typically the average over a small window of time) current
   in microampere (µA)
 
 The presence and the resolution of these counters depends on the device
@@ -49,7 +49,7 @@ for this are:
   tests are running.
 
 * On rooted phones the power management IC driver allows to disconnect the USB
-  charging while keeping the USB data link active. This featurre is
+  charging while keeping the USB data link active. This feature is
   SoC-specific, is undocumented and not exposed through any HAL.
   For instance on a Pixel 2 this can be achieved running, as root:
   `echo 1 > /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-02/800f000.qcom,spmi:qcom,pmi8998@2:qcom,qpnp-smb2/power_supply/battery/input_suspend`.
@@ -107,7 +107,7 @@ presence of dedicated hardware on the device. This hw is not yet available on
 most production phones._
 
 Recent version of Android introduced the support for more advanced power
-monitoring at the harware subsystem level, known as "Power rail counters".
+monitoring at the hardware subsystem level, known as "Power rail counters".
 These counters measure the energy drained by (groups of) hardware units.
 
 Unlike the battery counters, they are not affected by the charging/discharging

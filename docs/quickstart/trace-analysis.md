@@ -85,7 +85,7 @@ ts                   dur                  cpu                  utid
 ## Trace-based metrics
 
 TraceProcessor offers also a higher-level query interface that allows to run
-pre-baked queries that output structured JSON/Protobuf/text in output, wihtout
+pre-baked queries that output structured JSON/Protobuf/text in output, without
 having to type manual SQL queries.
 
 These metrics schema live in the

@@ -33,7 +33,7 @@ instead of having to reproduce the issue.
 
 The metric subsystem is a part of the
 [trace processor](/docs/analysis/trace-processor.md) which executes SQL queries
-against traces and produces a metric which summarises some performance attribute
+against traces and produces a metric which summarizes some performance attribute
 (e.g. CPU, memory, startup latency etc.).
 
 For example, generating the Android memory metrics on a trace is as simple as:
@@ -94,7 +94,7 @@ process in the trace and list the names of the top 5 processes (by CPU time) and
 the number of threads created by the process.
 
 NOTE: See this [GitHub gist][gist] to see how the code should look at the end of
-      the walkthrough. The prerequistes and Step 4 below give instructions on
+      the walkthrough. The prerequisites and Step 4 below give instructions on
       how to get trace processor and run the metrics code.
 
 [gist]: https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080
@@ -108,7 +108,7 @@ using the instructions [here](trace-processor.md). Whichever method is chosen, $
 
 ### Step 1
 
-As all metrics in the metrics platform are defined using protos, the metric needs to be strctured as a proto. For this metric, there needs to be some notion of a process name along with its CPU time and number of threads.
+As all metrics in the metrics platform are defined using protos, the metric needs to be structured as a proto. For this metric, there needs to be some notion of a process name along with its CPU time and number of threads.
 
 Starting off, in a file named `top_five_processes.proto` in our workspace, create a basic proto message called ProcessInfo with those three fields:
 
@@ -239,7 +239,7 @@ SELECT TopProcesses(
 Breaking this down again:
 
 1. Starting from the inner-most SELECT statement, there is what looks like
-   function call to the ProcessInfo function; in face this is no conincidence.
+   function call to the ProcessInfo function; in face this is no coincidence.
    For each proto that the metrics platform knows about, an SQL function is
    generated with the same name as the proto. This function takes key value
    pairs with the key as the name of the proto field to fill and the value being
@@ -260,7 +260,7 @@ Breaking this down again:
 
 2. Next is creation of the `TopProcesses` proto. By now, the syntax should
    already feel somewhat familiar; the proto builder function is called to fill
-   in the `process_info` field with the array of protos from the inner funciton.
+   in the `process_info` field with the array of protos from the inner function.
    
    The output of this SELECT is a single `TopProcesses` proto containing the
    ProcessInfos as a repeated field.

@@ -55,15 +55,15 @@ Known issues:
 ### UI
 
 In the UI, CPU frequency and idle-ness are shown on the same track. The height
-of the track represents the frequency, the colouring represents the idle
-state (coloured: not-idle, gray: idle). Hovering or clicking a point in the
+of the track represents the frequency, the coloring represents the idle
+state (colored: not-idle, gray: idle). Hovering or clicking a point in the
 track will reveal both the frequency and the idle state:
   
 ![](/docs/images/cpu-frequency.png "CPU frequency and idle states in the UI")
 
 ### SQL
 
-At the SQL level, both frequency and idle states are modelled as counters,
+At the SQL level, both frequency and idle states are modeled as counters,
 Note that the cpuidle value 0xffffffff (4294967295) means _back to not-idle_.
 
 ```sql

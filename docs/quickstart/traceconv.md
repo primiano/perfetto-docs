@@ -4,7 +4,7 @@ _This quickstart demonstrates how Perfetto traces can be converted into other tr
 
 ![](/docs/images/traceconv-summary.png)
 
-## Prerequistes
+## Prerequisites
 
 NOTE: Alternatively, use the _"Open with legacy UI"_ link in the Perfetto UI to
 convert traces to the Chrome JSON format and open these traces in the
@@ -23,7 +23,7 @@ The supported output formats are:
 
 ## Setup
 
-To begin, download the `traceconv` [here](). (_Note: this script requries Python and downloads the correct native binary based on your platform._)
+To begin, download the `traceconv` [here](). (_Note: this script requires Python and downloads the correct native binary based on your platform._)
 
 ```console
 $ chmod +x traceconv      # ensures that traceconv is executable 

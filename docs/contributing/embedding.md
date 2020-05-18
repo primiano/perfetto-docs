@@ -28,9 +28,9 @@ To ingest a trace into trace processor, the `Parse` function can be called multi
 
 As this is a common task, a helper function `ReadTrace` is provided in [include/perfetto/trace_processor/read_trace.h](/include/perfetto/trace_processor/read_trace.h). This will read a trace file directly from the filesystem and calls into appropriate `TraceProcessor`functions to perform parsing.
 
-### Execucting queries
+### Executing queries
 
-The `ExecuteQuery` function can be called with an SQL statement to execute. This will return an iterator which can be used to retrive rows in a streaming fashion.
+The `ExecuteQuery` function can be called with an SQL statement to execute. This will return an iterator which can be used to retrieve rows in a streaming fashion.
 
 WARNING: embedders should ensure that the iterator is forwarded using `Next` before any other functions are called on the iterator.
 

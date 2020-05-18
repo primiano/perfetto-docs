@@ -31,7 +31,7 @@ These are the properties that must be fulfilled by a heap profiler for Android:
 
 **Negligible in-process memory overhead:** the system must not hold bookkeeping data in the process in order not to inflate higher-level metrics like PSS.
 
-**Bounded performance impact:** the device must still be useable for all use-cases.
+**Bounded performance impact:** the device must still be usable for all use-cases.
 
 
 ## Detailed Design
@@ -42,7 +42,7 @@ These are the properties that must be fulfilled by a heap profiler for Android:
 One of the real-time signals ([`BIONIC_SIGNAL_PROFILER`](https://cs.android.com/android/platform/superproject/+/master:bionic/libc/platform/bionic/reserved_signals.h?q=symbol:BIONIC_SIGNAL_PROFILER)) is reserved in libc as a triggering mechanism. In this scenario:
 
 *   heapprofd sends a RT signal to the target process
-*   Upon receival of the signal, bionic reacts by installing a temporary malloc hook, which in turn spawns a thread to dynamically load libheapprofd.so in the process context. This means heapprofd will not work for statically linked binaries, as they lack the abilitity to `dlopen`. We can not spawn the thread directly from the signal handler, as `pthread_create` is not async-safe.
+*   Upon receipt of the signal, bionic reacts by installing a temporary malloc hook, which in turn spawns a thread to dynamically load libheapprofd.so in the process context. This means heapprofd will not work for statically linked binaries, as they lack the ability to `dlopen`. We can not spawn the thread directly from the signal handler, as `pthread_create` is not async-safe.
 *   The initializer in libheapprofd.so is called to take care of the rest (see [client operation](#client-operation-and-in-process-hooks) below)
 
 
