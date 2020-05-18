@@ -12,12 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-runtime: python27
-api_version: 1
-threadsafe: yes
+runtime: python37
 default_expiration: "5m"
-skip_files:
- - ^node_modules.*
 handlers:
 - url: /
   static_files: dist/index.html
@@ -30,12 +26,14 @@ handlers:
   mime_type: text/html
   secure: always
   redirect_http_response_code: 301
-- url: /docs/(.*[.]svg)$
+- url: /docs/(.*\.svg)$
   static_files: dist/docs/\1
   mime_type: image/svg+xml
-  upload: dist/docs/.*
-  secure: always
-  redirect_http_response_code: 301
+  upload: dist/docs/(.*\.svg)$
+- url: /docs/(.*\.png)$
+  static_files: dist/docs/\1
+  mime_type: image/png
+  upload: dist/docs/(.*\.png)$
 - url: /docs/(.*)$
   static_files: dist/docs/\1
   mime_type: text/html
