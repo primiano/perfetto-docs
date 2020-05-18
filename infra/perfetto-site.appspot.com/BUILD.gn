@@ -309,6 +309,9 @@ foreach(source, read_file(md_file_list, "list lines")) {
   md_to_html(target_name) {
     deps = [ ":navmap" ]
     base_name = string_replace(rebase_path(source, "../../docs"), ".md", "")
+    if (base_name == "README") {
+      base_name = "index.html"
+    }
     markdown = source
     out_html = "$dist_dir/docs/$base_name"
     html_template = rebase_path("src/template_markdown.html", root_build_dir)

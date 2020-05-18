@@ -106,6 +106,7 @@ function renderLink(originalLinkFn, href, title, text) {
     // that are typically generated at build time.
     assertNoDeadLink(docsHref);
     href = docsHref.replace(/[.](md|autogen)\b/, '');
+    href = href.replace(/\/README$/, '/');
   } else if (href.startsWith('/') && !href.startsWith('//')) {
     // /tools/xxx -> github/tools/xxx.
     sourceCodeLink = href;

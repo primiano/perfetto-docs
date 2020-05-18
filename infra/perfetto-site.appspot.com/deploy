@@ -53,8 +53,6 @@ while [[ $# -gt 0 ]]; do
       -h|--help)
       echo "Usage: $0 [--no-clean] [--prod] [--staging]"
       echo "    --no-clean  Don't remove the out directory"
-      echo "    --prod      Deploy prod version (implies --release)"
-      echo "    --staging   Deploy staging version"
       echo "    -h|--help   Display this message"
       exit 0
       shift
@@ -68,13 +66,11 @@ fi
 
 npm run build
 
-if [ "$DEPLOY_PROD" = true ]; then
-  echo not implementedd
-  # echo_and_do gcloud app deploy app.yaml --project perfetto-ui -v prod
-elif [ "$DEPLOY_STAGING" = true ]; then
-  echo_and_do gcloud app deploy app.yaml --project perfetto-site \
-      -v staging --no-promote --stop-previous-version
-else
-  echo_and_do gcloud app deploy app.yaml --project perfetto-site \
-      -v $USER --no-promote --stop-previous-version
+read -p "Continue with the deployment? y|n " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+  exit 1
 fi
+
+firebase deploy
