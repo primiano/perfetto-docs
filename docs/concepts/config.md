@@ -467,4 +467,4 @@ data_sources { ... }
 ## Other resources
 
 * [TraceConfig Reference](/docs/reference/trace-config-proto.autogen)
-* [Buffers and dataflow](/docs/recording/buffers.md)
+* [Buffers and dataflow](/docs/concepts/buffers.md)

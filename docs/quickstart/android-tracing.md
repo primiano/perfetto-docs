@@ -6,7 +6,7 @@ instrumentation via atrace and all other data sources listed in this site).
 
 ## Starting the tracing services
 
-Due to Perfetto's [service-based architecture](/docs/recording/service-model.md)
+Due to Perfetto's [service-based architecture](/docs/concepts/service-model.md)
 , the `traced` and `traced_probes` services need to be running to record traces.
 
 These services are shipped on Android system images by default since Android 9
@@ -64,7 +64,7 @@ adb shell perfetto -o mytrace.pftrace -t 20s sched freq idle am wm gfx view
 The short syntax allows to enable only a subset of the data sources. For full
 control of the trace config, pass the full trace config in input.
 
-See the [_Trace configuration_ page](/docs/recording/config.md) and the examples
+See the [_Trace configuration_ page](/docs/concepts/config.md) and the examples
 in each data source doc page for detailed instructions about how to configure
 all the various knobs of Perfetto.
 

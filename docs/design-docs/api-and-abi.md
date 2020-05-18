@@ -188,7 +188,7 @@ and signal trace data commits and flush requestd.
 
 This socket is also used by the producer and the service to exchange a
 tmpfs file descriptor during initialization for setting up the
-[shared memory buffer](/docs/recording/buffers.md) where tracing data will be
+[shared memory buffer](/docs/concepts/buffers.md) where tracing data will be
 written (asynchronously).
 
 On Android this socket is linked at `/dev/socket/traced_producer`. On all
@@ -261,7 +261,7 @@ The SMB is a staging area to decouple data sources living in the Producer
 and allow them to do non-blocking async writes. A SMB is small-ish, typically
 hundreds of KB. Its size is configurable by the producer when connecting.
 For more architectural details about the SMB see also the
-[buffers and dataflow doc](/docs/recording/buffers.md) and the
+[buffers and dataflow doc](/docs/concepts/buffers.md) and the
 [shared_memory_abi.h] sources.
 
 #### Obtaining the SMB
@@ -349,7 +349,7 @@ marking all chunks as either being read or written. But that has the only side
 effect of losing the trace data.
 The only case when stalling on the writer-side (the Producer) can occur is when
 a data source in a producer opts in into using the
-[`BufferExhaustedPolicy.kStall`](/docs/recording/buffers.md) policy and the SMB
+[`BufferExhaustedPolicy.kStall`](/docs/concepts/buffers.md) policy and the SMB
 is full.
 
 **[TracePacket][trace-packet-ref]** is the atom of tracing. Putting aside
@@ -417,7 +417,7 @@ counters are supported, their possible sampling rates).
 Defined in [data_source_config.proto]. This message is sent:
 
 * Consumer -> Service through IPC on the Consumer socket, as part of the
-  [TraceConfig](/docs/recording/config.md) when a Consumer starts a new tracing
+  [TraceConfig](/docs/concepts/config.md) when a Consumer starts a new tracing
   session.
 
 * Service -> Producer through IPC on the Producer socket, as a reaction to the

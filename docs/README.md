@@ -59,7 +59,7 @@ Privilege isolation is a key design goal:
 * Perfetto daemons are designed following to the principle of least privilege,
   in order to allow strong sandboxing (via SELinux on Android).
 
-See [security-model](old/security-model.md) for more details.
+See [security-model](design-docs/security-model.md) for more details.
 
 **Long traces**  
 Pefetto aims at supporting hours-long / O(100GB) traces, both in terms of

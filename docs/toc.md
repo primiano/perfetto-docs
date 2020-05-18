@@ -35,11 +35,11 @@
   * [Stats table](analysis/sql-stats.autogen)
 
 * [Core concepts](#)
-  * [Trace configuration](recording/config.md)
-  * [Buffers and dataflow](recording/buffers.md)
-  * [Service model](recording/service-model.md)
-  * [Clock synchronization](recording/clock-sync.md)
-  * [Detached mode](recording/detached-mode.md)
+  * [Trace configuration](concepts/config.md)
+  * [Buffers and dataflow](concepts/buffers.md)
+  * [Service model](concepts/service-model.md)
+  * [Clock synchronization](concepts/clock-sync.md)
+  * [Detached mode](concepts/detached-mode.md)
 
 * [Reference](#)
   * [Trace Config proto](reference/trace-config-proto.autogen)
@@ -63,7 +63,3 @@
     * [Perfetto IPC](design-docs/ipc.md)
     * [ProtoZero](TODO.md)
     * [Security model](design-docs/security-model.md)
-
-* [Old Stuff](#)
-  * [Instrumenting and tracing](#)
-    * [Recording traces](old/recording-traces.md)

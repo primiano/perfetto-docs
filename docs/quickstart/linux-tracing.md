@@ -32,7 +32,7 @@ _This step is optional when using the convenience `tools/tmux` script below._
 
 ## Capturing a trace
 
-Due to Perfetto's [service-based architecture](/docs/recording/service-model.md)
+Due to Perfetto's [service-based architecture](/docs/concepts/service-model.md)
 , in order to capture a trace, the `traced` (session daemon) and `traced_probes`
 (probes and ftrace-interop daemon) need to be running.
 

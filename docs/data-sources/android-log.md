@@ -9,7 +9,7 @@ Both textual events and binary-formatted events from the [EventLog] are
 supported.
 
 This allows to see events time-synced with the rest of the trace. When recording
-[long traces](/docs/recording/config#long-traces), this allow to record event
+[long traces](/docs/concepts/config#long-traces), this allow to record event
 logs for prolonged times, regardless of the Android log daemon buffer size
 (i.e. log events are periodically fetched and copied into the trace buffer).
 

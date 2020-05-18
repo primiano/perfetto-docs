@@ -306,6 +306,88 @@ side-channel attacks.
 _System mode is not yet supported on Windows, due to the lack of an IPC
 implementation_.
 
+## Recording traces through the API
+
+_Tracing through the API is currently only supported with the in-process mode.
+When using system mode, use the `perfetto` cmdline client (see quickstart
+guides)._
+
+First initialize a [TraceConfig](/docs/reference/trace-config-proto.autogen)
+message which specifies what type of data to record.
+
+If your app includes [track events](track-events.md) (i.e, `TRACE_EVENT`), you
+typically want to choose the categories which are enabled for tracing.
+
+By default, all non-debug categories are enabled, but you can enable a specific
+one like this:
+
+```C++
+perfetto::protos::gen::TrackEventConfig track_event_cfg;
+track_event_cfg.add_disabled_categories("*");
+track_event_cfg.add_enabled_categories("rendering");
+```
+
+Next, build the main trace config together with the track event part:
+
+```C++
+perfetto::TraceConfig cfg;
+cfg.add_buffers()->set_size_kb(1024);  // Record up to 1 MiB.
+auto* ds_cfg = cfg.add_data_sources()->mutable_config();
+ds_cfg->set_name("track_event");
+ds_cfg->set_track_event_config_raw(track_event_cfg.SerializeAsString());
+```
+
+If your app includes a custom data source, you can also enable it here:
+
+```C++
+ds_cfg = cfg.add_data_sources()->mutable_config();
+ds_cfg->set_name("my_data_source");
+```
+
+After building the trace config, you can begin tracing:
+
+```C++
+std::unique_ptr<perfetto::TracingSession> tracing_session(
+    perfetto::Tracing::NewTrace());
+tracing_session->Setup(cfg);
+tracing_session->StartBlocking();
+```
+
+TIP: API methods with `Blocking` in their name will suspend the calling thread
+     until the respective operation is complete. There are also asynchronous
+     variants that don't have this limitation.
+
+Now that tracing is active, instruct your app to perform the operation you
+want to record. After that, we can stop tracing and collect the
+protobuf-formatted trace data:
+
+```C++
+tracing_session->StopBlocking();
+std::vector<char> trace_data(tracing_session->ReadTraceBlocking());
+
+// Write the trace into a file.
+std::ofstream output;
+output.open("example.pftrace", std::ios::out | std::ios::binary);
+output.write(&trace_data[0], trace_data.size());
+output.close();
+```
+
+To save memory with longer traces, you can also tell Perfetto to write
+directly into a file by passing a file descriptor into Setup(), remembering
+to close the file after tracing is done:
+
+```C++
+int fd = open("example.pftrace", O_RDWR | O_CREAT | O_TRUNC, 0600);
+tracing_session->Setup(cfg, fd);
+tracing_session->StartBlocking();
+// ...
+tracing_session->StopBlocking();
+close(fd);
+```
+
+The resulting trace file can be directly opened in the [Perfetto
+UI](https://ui.perfetto.dev) or the [Trace Processor](/docs/analysis/trace-processor.md).
+
 [ipc]: /docs/design-docs/api-and-abi.md#socket-protocol
 [atrace-ds]: /docs/data-sources/atrace.md
 [atrace-ndk]: https://developer.android.com/ndk/reference/group/tracing

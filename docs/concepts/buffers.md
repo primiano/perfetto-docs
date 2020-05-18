@@ -411,7 +411,7 @@ pass the `--full-sort` option to `trace_processor_shell` when importing the
 trace. Doing so will disable the windowed sorting at the cost of a higher
 memory usage (the trace file will be fully buffered in memory before parsing).
 
-[streaming mode]: /docs/recording/config#long-traces
+[streaming mode]: /docs/concepts/config#long-traces
 [TraceConfig]: /docs/reference/trace-config-proto.autogen#TraceConfig
 [FtraceConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig
 [IncrStateConfig]: /docs/reference/trace-config-proto.autogen#FtraceConfig.IncrementalStateConfig

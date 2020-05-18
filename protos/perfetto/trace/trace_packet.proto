@@ -75,7 +75,7 @@ package perfetto.protos;
 // exception of few fields (e.g.. trusted_*, trace_config) that are written by
 // the service itself.
 //
-// See the [Buffers and Dataflow](/docs/recording/buffers.md) doc for details.
+// See the [Buffers and Dataflow](/docs/concepts/buffers.md) doc for details.
 //
 // Next reserved id: 13 (up to 15).
 // Next id: 71.
