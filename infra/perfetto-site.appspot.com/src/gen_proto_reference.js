@@ -21,7 +21,8 @@ const fs = require('fs');
 const path = require('path');
 const argv = require('yargs').argv
 
-const PROJECT_ROOT = path.dirname(path.dirname(path.dirname(path.dirname(__filename))));
+const PROJECT_ROOT =
+    path.dirname(path.dirname(path.dirname(path.dirname(__filename))));
 
 const visited = {};
 
@@ -129,7 +130,8 @@ function main() {
     return path.join(PROJECT_ROOT, target);
   };
 
-  const cfg = parser.loadSync(inProtoFile, { alternateCommentMode: true, keepCase: true });
+  const cfg = parser.loadSync(
+      inProtoFile, {alternateCommentMode: true, keepCase: true});
   cfg.resolveAll();
   const traceConfig = cfg.lookup(protoName);
   const generatedMd = genType(traceConfig);

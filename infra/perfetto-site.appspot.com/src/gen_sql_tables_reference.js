@@ -41,9 +41,9 @@ function parseTableDef(tableDefName, tableDef) {
     cppClassName: '',        // e.g., StackProfileMappingTable.
     defMacro: tableDefName,  // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
     comment: '',
-    parent: undefined,    // Will be filled afterwards in the resolution phase.
-    parentDefName: '',    // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
-    tablegroup: 'Misc',   // From @tablegroup in comments.
+    parent: undefined,   // Will be filled afterwards in the resolution phase.
+    parentDefName: '',   // e.g., PERFETTO_TP_STACK_PROFILE_MAPPING_DEF.
+    tablegroup: 'Misc',  // From @tablegroup in comments.
     cols: {},
   };
   const getOrCreateColumn = (name) => {
@@ -63,7 +63,8 @@ function parseTableDef(tableDefName, tableDef) {
 
   let lastColumn = undefined;
   for (const line of tableDef.split('\n')) {
-    if (line.startsWith('#define')) continue;  // Skip the first line.
+    if (line.startsWith('#define'))
+      continue;  // Skip the first line.
     let m;
     if (line.startsWith('//')) {
       let comm = line.replace(/^\s*\/\/\s*/, '');

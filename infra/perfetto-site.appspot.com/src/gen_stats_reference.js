@@ -50,13 +50,14 @@ function parseTablesInCppFile(filePath) {
   let table = [];
   while ((match = regex.exec(hdr)) !== null) {
     let def = match[1];
-    let s = def.split(",").map(s => s.trim());
+    let s = def.split(',').map(s => s.trim());
     table.push({
       name: s[0],
       cardinality: s[1],
       type: s[2],
       scope: s[3],
-      comment: s[4] === undefined ? undefined : s[4].split("\n").map(trimQuotes).join(" "),
+      comment: s[4] === undefined ? undefined :
+                                    s[4].split('\n').map(trimQuotes).join(' '),
     });
   }
   return table;
@@ -68,7 +69,8 @@ function tableToMarkdown(table) {
   md += 'Name | Cardinality | Type | Scope | Description |\n';
   md += '---- | ----------- | ---- | ----- | ----------- |\n';
   for (const col of table) {
-    md += `${col.name} | ${col.cardinality} | ${col.type} | ${col.scope} | ${singleLineComment(col.comment)} |\n`
+    md += `${col.name} | ${col.cardinality} | ${col.type} | ${col.scope} | ${
+        singleLineComment(col.comment)} |\n`
   }
   md += '\n\n';
   return md;
