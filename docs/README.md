@@ -1,4 +1,4 @@
-# Perfetto - Performance instrumentation, tracing and trace analysis
+# Perfetto - System profiling, app tracing and trace analysis
 
 Perfetto is a production-grade open-source stack for performance
 instrumentation and trace analysis. It offers services and libraries and for
