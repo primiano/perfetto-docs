@@ -603,6 +603,11 @@ h3 {
         * {
             max-width: 100%;
         }
+
+        img[alt$="screenshot"] {
+            box-shadow: 0 0 10px 2px #eee;
+        }
+
         code:not(.code-block) {
             background: hsla(210, 17%, 90%, 0.2);
             border: 1px solid #E8EAED;
@@ -760,7 +765,6 @@ h3 {
                 &:before { content: 'warning'; }
             }
         }
-
     }
     .toc {
         grid-area: toc;

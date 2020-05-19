@@ -1,4 +1,4 @@
-* [Introduction](README.md)
+* [Overview](README.md)
 
 * [Quickstart](#)
   * [Record traces on Android](quickstart/android-tracing.md)
