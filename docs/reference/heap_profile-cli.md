@@ -27,7 +27,7 @@ usage: heap_profile [-h] [-i INTERVAL] [-d DURATION] [--no-start] [-p PIDS]
 | --block-client | When buffer is full, block the client to wait for buffer space. Use with caution as this can significantly slow down the client. This is the default |
 | --no-block-client | When buffer is full, stop the profile early. |
 | --block-client-timeout | If --block-client is given, do not block any allocation for longer than this timeout (us). |
-| -h, --help | show this help message and exit |
+| -h, --help | Show this help message and exit |
 | --no-start | Do not start heapprofd. |
 | -c, --continuous-dump | Dump interval in ms. 0 to disable continuous dump. |
 | --disable-selinux | Disable SELinux enforcement for duration of profile. |

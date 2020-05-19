@@ -196,11 +196,11 @@ Let's break this query down:
 1. The first table used is the `sched` table. This contains all the scheduling
    data available in the trace. Each scheduling "slice" is associated with a
    thread which is uniquely identified in Perfetto traces using its `utid`. The
-   two pieces of information which needed from the sched table is the `dur` -
+   two pieces of information needed from the sched table are the `dur` -
    short for duration, this is the amount of time the slice lasted - and the
-   `utid` which will be use to join with the thread table.
+   `utid` which will be used to join with the thread table.
 2. The next table is the thread table. This gives us a lot of information which
-   are not particularly interested (including its thread name) but it does give
+   is not particularly interesting (including its thread name) but it does give
    us the `upid`. Similar to `utid`, `upid` is the unique identifier for a
    process in a Perfetto trace. In this case, `upid` will refer to the process
    which hosts the thread given by `utid`.
@@ -208,14 +208,14 @@ Let's break this query down:
    associated with the original sched slice.
 4. With the process, thread and duration for each sched slice, all the slices
    for a single processes are collected and their durations summed to get the
-   CPU time (dividing by 1e6 as sched's duration is in nanoseconds) and count
+   CPU time (dividing by 1e6 as sched's duration is in nanoseconds) and
    the number of distinct threads.
-5. Finally, we order by the cpu time and take limit to the top 5.
+5. Finally, we order by the cpu time and limit to the top 5 results.
 
 ### Step 3
 
 Now that the result of the metric has been expressed as an SQL table, it needs
-to be converted a proto. The metrics platform has built-in support for emitting
+to be converted to a proto. The metrics platform has built-in support for emitting
 protos using SQL functions; something which is used extensively in this step.
 
 Let's look at how it works for our table above.
@@ -239,7 +239,7 @@ SELECT TopProcesses(
 Breaking this down again:
 
 1. Starting from the inner-most SELECT statement, there is what looks like
-   function call to the ProcessInfo function; in face this is no coincidence.
+   a function call to the ProcessInfo function; in fact this is no coincidence.
    For each proto that the metrics platform knows about, an SQL function is
    generated with the same name as the proto. This function takes key value
    pairs with the key as the name of the proto field to fill and the value being
@@ -247,12 +247,12 @@ Breaking this down again:
    the fields described in the function. (\*)
    
    In this case, this function is called once for each row in the
-   `top_five_processes_by_cpu` table. The output of will be the fully filled
+   `top_five_processes_by_cpu` table. The output will be the fully filled
    ProcessInfo proto.
    
    The call to the `RepeatedField` function is the most interesting part and
    also the most important. In technical terms, `RepeatedField` is an aggregate
-   function; practically, this means that it takes a full table of values and
+   function. Practically, this means that it takes a full table of values and
    generates a single array which contains all the values passed to it.
    
    Therefore, the output of this whole SELECT statement is an array of 5
@@ -323,12 +323,12 @@ $TRACE_PROCESSOR --run-metrics $WORKSPACE/top_five_processes.sql $TRACE 2> /dev/
 
 (For an example trace to test this on, see the Notes section below.)
 
-By passing the SQL file for the metric to be computed, trace processor uses the name of this file to both find the proto and also to figure out the name of the output table for the proto and the name of the extension field for `TraceMetrics`; this is the reason it was important to choose the names of these other objects carefully.
+By passing the SQL file for the metric to be computed, trace processor uses the name of this file to find the proto and to figure out the name of the output table for the proto and the name of the extension field for `TraceMetrics`; this is the reason it was important to choose the names of these other objects carefully.
 
 _Notes:_
 
 - If something doesn't work as intended, check that the workspace looks the same as the contents of this [GitHub gist](https://gist.github.com/tilal6991/c221cf0cae17e298dfa82b118edf9080).
-- A good example trace for this metric is the Android example trace used by the Perfetto UI found [here](https://storage.googleapis.com/perfetto-misc/example_android_trace_30s_1)
+- A good example trace for this metric is the Android example trace used by the Perfetto UI found [here](https://storage.googleapis.com/perfetto-misc/example_android_trace_30s_1).
 - stderr is redirected to remove any noise from parsing the trace that trace processor generates.
 
 If everything went successfully, the following output should be visible (specifically this is the output for the Android example trace linked above):

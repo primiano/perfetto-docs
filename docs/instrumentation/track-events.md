@@ -20,16 +20,16 @@ TIP: The code from this example is also available as a
 
 There are a few main types of track events:
 
-1. **Slices**, which represent nested, time bounded operations. For example,
+- **Slices**, which represent nested, time bounded operations. For example,
     a slice could cover the time period from when a function begins executing
     to when it returns, the time spent loading a file from the network or the
     time to complete a user journey.
 
-2. **Counters**, which are snapshots of time-varying numeric values. For
+- **Counters**, which are snapshots of time-varying numeric values. For
     example, a track event can record instantaneous the memory usage of a
     process during its execution.
 
-3. **Flows**, which are used to connect related slices that span different
+- **Flows**, which are used to connect related slices that span different
     tracks together. For example, if an image file is first loaded from
     the network and then decoded on a thread pool, a flow event can be used to
     highlight its path through the system. (Not fully implemented yet).
@@ -88,8 +88,8 @@ void DrawPlayer() {
 }
 ```
 
-This type of trace event is scoped, under the hoods it uses C++ [RAII]. The
-event will cover the time from when the `TRACE_EVENT` annotation is encoundered
+This type of trace event is scoped, under the hood it uses C++ [RAII]. The
+event will cover the time from when the `TRACE_EVENT` annotation is encountered
 to the end of the block (in the example above, until the function returns).
 
 You can also supply (up to two) debug annotations together with the event.
@@ -308,11 +308,11 @@ function calls) generally belong on the same track.
 
 Perfetto supports three kinds of tracks:
 
-1. `Track` – a basic timeline.
+- `Track` – a basic timeline.
 
-2. `ProcessTrack` – a timeline that represents a single process in the system.
+- `ProcessTrack` – a timeline that represents a single process in the system.
 
-3. `ThreadTrack` – a timeline that represents a single thread in the system.
+- `ThreadTrack` – a timeline that represents a single thread in the system.
 
 Tracks can have a parent track, which is used to group related tracks
 together. For example, the parent of a `ThreadTrack` is the `ProcessTrack` of

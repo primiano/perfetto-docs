@@ -153,7 +153,7 @@ See the [Track events page](track-events.md) for full instructions.
 For most uses, track events are the most straightforward way of instrumenting
 apps for tracing. However, in some rare circumstances they are not
 flexible enough, e.g., when the data doesn't fit the notion of a track or is
-high volume enough that it need strongly typed schema to minimize the size of
+high volume enough that it needs a strongly typed schema to minimize the size of
 each event. In this case, you can implement a *custom data source* for
 Perfetto.
 
@@ -243,7 +243,7 @@ CustomDataSource::Trace([](CustomDataSource::TraceContext ctx) {
 });
 ```
 
-## In-proccess vs System mode
+## In-process vs System mode
 
 The two modes are not mutually exclusive. An app can be configured to work
 in both modes and respond both to in-process tracing requests and system
@@ -259,7 +259,7 @@ In-process mode can be enabled by setting
 `TracingInitArgs.backends = perfetto::kInProcessBackend` when initializing the
 SDK, see examples below.
 
-This mode only to generate traces that contain only events emitted by
+This mode is used to generate traces that contain only events emitted by
 the app, but not other types of events (e.g. scheduler traces).
 
 The main advantage is that by running fully in-process, it doesn't require any
@@ -277,12 +277,12 @@ System mode can be enabled by setting
 `TracingInitArgs.backends = perfetto::kSystemBackend` when initializing the SDK,
 see examples below.
 
-The main advantage of this mode is that it allows to create fused traces where
+The main advantage of this mode is that it is possible to create fused traces where
 app events are overlaid on the same timeline of OS events. This enables
 full-stack performance investigations, looking all the way through syscalls and
 kernel scheduling events.
 
-The main limitation of this mode is that requires the external `traced` daemon
+The main limitation of this mode is that it requires the external `traced` daemon
 to be up and running and reachable through the UNIX socket connection.
 
 This is suggested for local debugging or lab testing scenarios where the user
@@ -358,7 +358,7 @@ TIP: API methods with `Blocking` in their name will suspend the calling thread
      variants that don't have this limitation.
 
 Now that tracing is active, instruct your app to perform the operation you
-want to record. After that, we can stop tracing and collect the
+want to record. After that, stop tracing and collect the
 protobuf-formatted trace data:
 
 ```C++
