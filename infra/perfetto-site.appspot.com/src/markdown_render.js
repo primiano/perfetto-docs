@@ -199,9 +199,10 @@ function main() {
   if (templateFile) {
     // TODO rename nav.html to sitemap or something more mainstream.
     const navFilePath = path.join(outDir, 'docs', '_nav.html');
+    const fallbackTitle = 'Perfetto - System profiling, app tracing and trace analysis';
     const templateData = {
       markdown: markdownHtml,
-      title: `${title} - Perfetto Tracing Docs`,
+      title: title ? `${title} - Perfetto Tracing Docs` : fallbackTitle,
       fileName: '/' + outFile.split('/').slice(1).join('/'),
     };
     if (fs.existsSync(navFilePath)) {
