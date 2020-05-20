@@ -1,10 +1,10 @@
 # Quickstart: Record traces on Linux
 
-Perfetto allows to capture system traces on Linux. All ftrace-based data sources
+Perfetto can capture system traces on Linux. All ftrace-based data sources
 and most other procfs / sysfs-based data sources are supported.
 
 Currently there are no packages or prebuilts for Linux. In order to run Perfetto
-on Linux you need to build it from sources.
+on Linux you need to build it from source.
 
 ## Building from source
 
@@ -32,8 +32,8 @@ _This step is optional when using the convenience `tools/tmux` script below._
 
 ## Capturing a trace
 
-Due to Perfetto's [service-based architecture](/docs/concepts/service-model.md)
-, in order to capture a trace, the `traced` (session daemon) and `traced_probes`
+Due to Perfetto's [service-based architecture](/docs/concepts/service-model.md),
+in order to capture a trace, the `traced` (session daemon) and `traced_probes`
 (probes and ftrace-interop daemon) need to be running.
 
 For a quick start, the [tools/tmux](/tools/tmux) script takes care of building,
@@ -74,5 +74,5 @@ NOTE: The UI runs fully in-browser using JavaScript + Web Assembly. The trace
    process tracks (rows) into their constituent thread tracks.
    Press "?" for further navigation controls.
 
-Alternatively, you can explore the trace contents issuing SQL queries through
-[Trace processor](/docs/analysis/trace-processor).
+Alternatively, you can explore the trace contents issuing SQL queries through 
+the [trace processor](/docs/analysis/trace-processor).
