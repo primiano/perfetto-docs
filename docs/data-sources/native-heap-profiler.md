@@ -1,10 +1,11 @@
 # Native heap profiler
-NOTE: **heapprofd requires Android 10.**
 
-heapprofd is a tool that tracks native heap allocations & deallocations of an
-Android process within a given time period. The resulting profile can be used
-to attribute memory usage to particular function callstacks, supporting a mix
-of both native and java code. The tool can be used by Android platform and app
+NOTE: **heapprofd requires Android 10 or higher**
+
+Heapprofd is a tool that tracks native heap allocations & deallocations of an
+Android process within a given time period. The resulting profile can be used to
+attribute memory usage to particular call-stacks, supporting a mix of both
+native and java code. The tool can be used by Android platform and app
 developers to investigate memory issues.
 
 On debug Android builds, you can profile all apps and most system services.
@@ -12,20 +13,24 @@ On "user" builds, you can only use it on apps with the debuggable or
 profileable manifest flag.
 
 ## Quickstart
-See the [Memory Guide](/docs/case-studies/memory.md#heapprofd) for getting started with
-heapprofd.
+
+See the [Memory Guide](/docs/case-studies/memory.md#heapprofd) for getting
+started with heapprofd.
 
 ## UI
 
 Dumps from heapprofd are shown as flamegraphs in the UI after clicking on the
-diamond.
+diamond. Each diamond corresponds to a snapshot of the allocations and
+callstacks collected at that point in time.
 
-![](/docs/images/profile-diamond.png)
+![heapprofd snapshots in the UI tracks](/docs/images/profile-diamond.png)
 
-![](/docs/images/native-flamegraph.png)
+![heapprofd flamegraph](/docs/images/native-flamegraph.png)
 
-## Trace Processor
+## SQL
+
 Information about callstacks is written to the following tables:
+
 * [`stack_profile_mapping`](/docs/analysis/sql-tables.autogen#stack_profile_mapping)
 * [`stack_profile_frame`](/docs/analysis/sql-tables.autogen#stack_profile_frame)
 * [`stack_profile_callsite`](/docs/analysis/sql-tables.autogen#stack_profile_callsite)
@@ -39,21 +44,37 @@ Offline symbolization data is stored in
 See [Example Queries](#heapprofd-example-queries) for example SQL queries.
 
 ## Recording
-On Linux / MacOS, use the `tools/heap_profile` script to heap profile a
-process. If you are having trouble make sure you are using the
+
+Heapprofd can be configured and started in three ways.
+
+#### Manual configuration
+
+This requires manually setting the
+[HeapprofdConfig](/docs/reference/trace-config-proto.autogen#HeapprofdConfig)
+section of the trace config. The only benefit of doing so is that in this way
+heap profiling can be enabled alongside any other tracing data sources.
+
+#### Using the tools/heap_profile script (recommended)
+
+On Linux / MacOS, use the `tools/heap_profile` script. If you are having trouble
+make sure you are using the
 [latest version](
 https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile).
 
-See all the arguments using `tools/heap_profile -h`.
+You can target processes either by name (`-n com.example.myapp`) or by PID
+(`-p 1234`). In the first case, the heap profile will be initiated on both on
+already-running processes that match the package name and new processes launched
+after the profiling session is started.
+For the full arguments list see the
+[heap_profile cmdline reference page](/docs/reference/heap_profile-cli).
+
+#### Using the Recording page of Perfetto UI
 
 You can also use the [Perfetto UI](https://ui.perfetto.dev/#!/record?p=memory)
 to record heapprofd profiles. Tick "Heap profiling" in the trace configuration,
 enter the processes you want to target, click "Add Device" to pair your phone,
 and record profiles straight from your browser. This is also possible on
 Windows.
-
-See [the reference](/docs/reference/trace-config-proto.autogen#HeapprofdConfig)
-for all available data source configuration when running `perfetto` manually.
 
 ## Viewing the data
 
@@ -68,8 +89,7 @@ The resulting profile proto contains four views on the data
 * **alloc\_objects**: how many allocations (including ones with matching frees)
   were done at this callstack.
 
-**Googlers:** Head to http://pprof/ and upload the gzipped protos to get a
-visualization. 
+_(Googlers: You can also open the gzipped protos using http://pprof/)_
 
 TIP: you might want to put `libart.so` as a "Hide regex" when profiling apps.
 
@@ -83,73 +103,86 @@ the gzipped protos, but will only show the space view.
 TIP: Click Left Heavy on the top left for a good visualization.
 
 ## Sampling interval
-heapprofd samples heap allocations. Given a sampling interval of n bytes,
-one allocation is sampled, on average, every n bytes allocated. This allows to
-reduce the performance impact on the target process. The default sampling rate
+
+Heapprofd samples heap allocations by hooking calls to malloc/free and C++'s
+operator new/delete. Given a sampling interval of n bytes, one allocation is
+sampled, on average, every n bytes allocated. This allows to reduce the
+performance impact on the target process. The default sampling rate
 is 4096 bytes.
 
 The easiest way to reason about this is to imagine the memory allocations as a
-steady stream of one byte allocations. From this stream, every byte has a 1/n
+stream of one byte allocations. From this stream, every byte has a 1/n
 probability of being selected as a sample, and the corresponding callstack
-gets attributed the complete n bytes. As an optimization, we sample allocations
-larger than the sampling interval with their true size.
+gets attributed the complete n bytes. For more accuracy, allocations larger than
+the sampling interval bypass the sampling logic and are recorded with their true
+size.
 
 ## Startup profiling
-When a profile session names processes by name and a matching process is
-started, it gets profiled from the beginning. The resulting profile will
+
+When specifying a target process name (as opposite to the PID), new processes
+matching that name are profiled from their startup. The resulting profile will
 contain all allocations done between the start of the process and the end
 of the profiling session.
 
-On Android, Java apps are usually not started, but the zygote forks and then
-specializes into the desired app. If the app's name matches a name specified
-in the profiling session, profiling will be enabled as part of the zygote
-specialization. The resulting profile contains all allocations done between
-that point in zygote specialization and the end of the profiling session.
-Some allocations done early in the specialization process are not accounted
-for.
+On Android, Java apps are usually not exec()-ed from scratch, but fork()-ed from
+the [zygote], which then specializes into the desired app. If the app's name
+matches a name specified in the profiling session, profiling will be enabled as
+part of the zygote specialization. The resulting profile contains all
+allocations done between that point in zygote specialization and the end of the
+profiling session. Some allocations done early in the specialization process are
+not accounted for.
 
-The Resulting `ProfilePacket` will have `from_startup` set  to true in the
-corresponding `ProcessHeapSamples` message. This does not get surfaced in the
-converted pprof compatible proto.
+At the trace proto level, the resulting [ProfilePacket] will have the
+`from_startup` field set to true in the corresponding `ProcessHeapSamples`
+message. This is not surfaced in the converted pprof compatible proto.
+
+[ProfilePacket]: /docs/reference/trace-packet-proto.autogen#ProfilePacket
+[zygote]: https://developer.android.com/topic/performance/memory-overview#SharingRAM
 
 ## Runtime profiling
-When a profile session is started, all matching processes (by name or PID)
+
+When a profiling session is started, all matching processes (by name or PID)
 are enumerated and profiling is enabled. The resulting profile will contain
 all allocations done between the beginning and the end of the profiling
 session.
 
-The resulting `ProfilePacket` will have `from_startup` set to false in the
+The resulting [ProfilePacket] will have `from_startup` set to false in the
 corresponding `ProcessHeapSamples` message. This does not get surfaced in the
 converted pprof compatible proto.
 
 ## Concurrent profiling sessions
+
 If multiple sessions name the same target process (either by name or PID),
 only the first relevant session will profile the process. The other sessions
 will report that the process had already been profiled when converting to
 the pprof compatible proto.
 
 If you see this message but do not expect any other sessions, run
+
 ```shell
 adb shell killall perfetto
 ```
+
 to stop any concurrent sessions that may be running.
 
-The resulting `ProfilePacket` will have `rejected_concurrent` set  to true in
+The resulting [ProfilePacket] will have `rejected_concurrent` set  to true in
 otherwise empty corresponding `ProcessHeapSamples` message. This does not get
 surfaced in the converted pprof compatible proto.
 
 ## {#heapprofd-targets} Target processes
+
 Depending on the build of Android that heapprofd is run on, some processes
 are not be eligible to be profiled.
 
-On user builds, only Java applications with either the profileable or the
-debuggable manifest flag set can be profiled. Profiling requests for other
-processes will result in an empty profile.
+On _user_ (i.e. production, non-rootable) builds, only Java applications with
+either the profileable or the debuggable manifest flag set can be profiled.
+Profiling requests for non-profileable/debuggable processes will result in an
+empty profile.
 
 On userdebug builds, all processes except for a small blacklist of critical
 services can be profiled (to find the blacklist, look for
 `never_profile_heap` in [heapprofd.te](
-https://cs.android.com/android/platform/superproject/+/master:system/sepolicy/private/heapprofd.te?q=never_profile_heap)).
+https://cs.android.com/android/platform/superproject/+/master:system/sepolicy/private/heapprofd.te?q=never_profile_heap).
 This restriction can be lifted by disabling SELinux by running
 `adb shell su root setenforce 0` or by passing `--disable-selinux` to the
 `heap_profile` script.
@@ -158,16 +191,16 @@ This restriction can be lifted by disabling SELinux by running
 
 |                         | userdebug setenforce 0 | userdebug | user |
 |-------------------------|:----------------------:|:---------:|:----:|
-| critical native service |            y           |     n     |  n   |
-| native service          |            y           |     y     |  n   |
-| app                     |            y           |     y     |  n   |
-| profileable app         |            y           |     y     |  y   |
-| debuggable app          |            y           |     y     |  y   |
+| critical native service |            Y           |     N     |  N   |
+| native service          |            Y           |     Y     |  N   |
+| app                     |            Y           |     Y     |  N   |
+| profileable app         |            Y           |     Y     |  Y   |
+| debuggable app          |            Y           |     Y     |  Y   |
 
 </center>
 
 To mark an app as profileable, put `<profileable android:shell="true"/>` into
-the `<application>`.
+the `<application>` section of the app manifest.
 
 ```xml
 <manifest ...>
@@ -179,24 +212,31 @@ the `<application>`.
 ```
 
 ## DEDUPED frames
+
 If the name of a Java method includes `[DEDUPED]`, this means that multiple
 methods share the same code. ART only stores the name of a single one in its
 metadata, which is displayed here. This is not necessarily the one that was
 called.
 
-## Manual dumping
-You can trigger a manual dump of all currently profiled processes by running
-`adb shell killall -USR1 heapprofd`. This can be useful for seeing the current
-memory usage of the target in a specific state.
+## Triggering heap snapshots on demand
+
+Heap snapshot are recorded into the trace either at regular time intervals, if
+using the `continuous_dump_config` field, or at the end of the session.
+
+You can also trigger a snapshot of all currently profiled processes by running
+`adb shell killall -USR1 heapprofd`. This can be useful in lab tests for
+recording the current memory usage of the target in a specific state.
 
 This dump will show up in addition to the dump at the end of the profile that is
 always produced. You can create multiple of these dumps, and they will be
 enumerated in the output directory.
 
 ## Symbolization
-NOTE: **Symbolization is currently only available on Linux.**
+
+NOTE: Symbolization is currently only available on Linux
 
 ### Set up llvm-symbolizer
+
 You only need to do this once.
 
 To use symbolization, your system must have llvm-symbolizer installed and
@@ -233,8 +273,8 @@ The symbol file is the first with matching Build ID in the following order:
 1. absolute path of library file relative to binary path.
 2. absolute path of library file relative to binary path, but with base.apk!
     removed from filename.
-3. only filename of library file relative to binary path.
-4. only filename of library file relative to binary path, but with base.apk!
+3. basename of library file relative to binary path.
+4. basename of library file relative to binary path, but with base.apk!
     removed from filename.
 5. in the subdirectory .build-id: the first two hex digits of the build-id
     as subdirectory, then the rest of the hex digits, with ".debug"appended.
@@ -242,7 +282,8 @@ The symbol file is the first with matching Build ID in the following order:
     https://fedoraproject.org/wiki/RolandMcGrath/BuildID#Find_files_by_build_ID
 
 For example, "/system/lib/base.apk!foo.so" with build id abcd1234,
-is looked for at
+is looked for at:
+
 1. $PERFETTO_BINARY_PATH/system/lib/base.apk!foo.so
 2. $PERFETTO_BINARY_PATH/system/lib/foo.so
 3. $PERFETTO_BINARY_PATH/base.apk!foo.so
@@ -252,30 +293,36 @@ is looked for at
 ## Troubleshooting
 
 ### Buffer overrun
+
 If the rate of allocations is too high for heapprofd to keep up, the profiling
 session will end early due to a buffer overrun. If the buffer overrun is
 caused by a transient spike in allocations, increasing the shared memory buffer
-size (passing `--shmem-size` to heap\_profile) can resolve the issue.
+size (passing `--shmem-size` to `tools/heap_profile`) can resolve the issue.
 Otherwise the sampling interval can be increased (at the expense of lower
-accuracy in the resulting profile) by passing `--interval` to heap\_profile.
+accuracy in the resulting profile) by passing `--interval=16000` or higher.
 
 ### Profile is empty
+
 Check whether your target process is eligible to be profiled by consulting
 [Target processes](#target-processes) above.
 
 Also check the [Known Issues](#known-issues).
 
+### Implausible callstacks
 
-### Impossible callstacks
 If you see a callstack that seems to impossible from looking at the code, make
 sure no [DEDUPED frames](#deduped-frames) are involved.
 
+Also, if your code is linked using _Identical Code Folding_
+(ICF), i.e. passing `-Wl,--icf=...` to the linker, most trivial functions, often
+constructors and destructors, can be aliased to binary-equivalent operators
+of completely unrelated classes.
 
 ### Symbolization: Could not find library
 
 When symbolizing a profile, you might come across messages like this:
 
-```
+```bash
 Could not find /data/app/invalid.app-wFgo3GRaod02wSvPZQ==/lib/arm64/somelib.so
 (Build ID: 44b7138abd5957b8d0a56ce86216d478).
 ```
@@ -308,32 +355,33 @@ $ readelf -S file.so | grep "gnu_debugdata\|eh_frame\|debug_frame"
   [24] .gnu_debugdata    PROGBITS         0000000000000000  000f7292
 ```
 
-
 If this does not show one or more of the sections, change your build system
 to not strip them.
 
 ## Known Issues
 
 ### Android 10
+
 * On ARM32, the bottom-most frame is always `ERROR 2`. This is harmless and
   the callstacks are still complete.
-* Does not work on x86 platforms (including the Android cuttlefish emulator).
+* x86 platforms are not supported. This includes the Android _Cuttlefish_
+  emulator.
 * If heapprofd is run standalone (by running `heapprofd` in a root shell, rather
   than through init), `/dev/socket/heapprofd` get assigned an incorrect SELinux
   domain. You will not be able to profile any processes unless you disable
   SELinux enforcement.
   Run `restorecon /dev/socket/heapprofd` in a root shell to resolve.
 
-## Ways to count memory
+## Heapprofd vs malloc_info() vs RSS
 
 When using heapprofd and interpreting results, it is important to know the
 precise meaning of the different memory metrics that can be obtained from the
 operating system.
 
 **heapprofd** gives you the number of bytes the target program
-requested from the allocator. If you are profiling a Java app from startup,
-allocations that happen early in the application's initialization will not be
-visible to heapprofd. Native services that do not fork from the Zygote
+requested from the default C/C++ allocator. If you are profiling a Java app from
+startup, allocations that happen early in the application's initialization will
+not be visible to heapprofd. Native services that do not fork from the Zygote
 are not affected by this.
 
 **malloc\_info** is a libc function that gives you information about the
@@ -348,8 +396,9 @@ allocator. This is larger than the previous two numbers because memory can only
 be obtained in page size chunks, and fragmentation causes some of that memory to
 be wasted. This can be obtained by running `adb shell dumpsys meminfo <PID>` and
 looking at the "Private Dirty" column.
-
-<center>
+RSS can also end up being smaller than the other two if the device kernel uses
+memory compression (ZRAM, enabled by default on recent versions of android) and
+the memory of the process get swapped out onto ZRAM.
 
 |                     | heapprofd         | malloc\_info | RSS |
 |---------------------|:-----------------:|:------------:|:---:|
@@ -359,50 +408,44 @@ looking at the "Private Dirty" column.
 | thread caches       |                   |      x       |  x  |
 | fragmentation       |                   |              |  x  |
 
-</center>
-
 If you observe high RSS or malloc\_info metrics but heapprofd does not match,
-there might be a problem with fragmentation or the allocator.
+you might be hitting some patological fragmentation problem in the allocator.
 
 ## Convert to pprof
-You can use
-[traceconv](https://raw.githubusercontent.com/google/perfetto/master/tools/traceconv) to
-convert the heap dumps in a trace into the [pprof](
-https://github.com/google/pprof) format. These can then be viewed using
-the pprof CLI or a UI (e.g. Speedscope, or Google-internally pprof/).
 
-```shell
+You can use [traceconv](/docs/quickstart/traceconv.md) to convert the heap dumps
+in a trace into the [pprof](https://github.com/google/pprof) format. These can
+then be viewed using the pprof CLI or a UI (e.g. Speedscope, or Google-internal
+pprof/).
+
+```bash
 tools/traceconv profile /tmp/profile
 ```
 
-This will create a directory in `/tmp/` containing the heap dumps. Run
+This will create a directory in `/tmp/` containing the heap dumps. Run:
 
-```shell
+```bash
 gzip /tmp/heap_profile-XXXXXX/*.pb
 ```
 
 to get gzipped protos, which tools handling pprof profile protos expect.
 
 ## {#heapprofd-example-queries} Example SQL Queries
-<!--
-echo 'select a.ts, a.upid, a.count, a.size, c.depth, c.parent_id, f.name, f.rel_pc, m.build_id, m.name from heap_profile_allocation a join stack_profile_callsite c ON (a.callsite_id = c.id) join stack_profile_frame f ON (c.frame_id = f.id) join stack_profile_mapping m ON (f.mapping = m.id) order by abs(size) desc;' | out/linux_clang_release/trace_processor_shell -q /dev/stdin /tmp/profile-0dd6cc73-05ad-4064-af05-82691adedb4c/raw-trace | head -n10 | sed 's/,/|/g'
-
--->
 
 We can get the callstacks that allocated using an SQL Query in the
-Trace Processor. For each frame we get one row for the number of allocated
+Trace Processor. For each frame, we get one row for the number of allocated
 bytes, where `count` and `size` is positive, and, if any of them were already
 freed, another line with negative `count` and `size`. The sum of those gets us
 the `space` view.
 
 ```sql
-> select a.callsite_id, a.ts, a.upid, f.name, f.rel_pc, m.build_id, m.name as mapping_name,
-         sum(a.size) as space_size, sum(a.count) as space_count
-        from heap_profile_allocation a join
-             stack_profile_callsite c ON (a.callsite_id = c.id) join
-             stack_profile_frame f ON (c.frame_id = f.id) join
-             stack_profile_mapping m ON (f.mapping = m.id)
-        group by 1, 2, 3, 4, 5, 6, 7 order by space_size desc;
+select a.callsite_id, a.ts, a.upid, f.name, f.rel_pc, m.build_id, m.name as mapping_name,
+        sum(a.size) as space_size, sum(a.count) as space_count
+      from heap_profile_allocation a join
+           stack_profile_callsite c ON (a.callsite_id = c.id) join
+           stack_profile_frame f ON (c.frame_id = f.id) join
+           stack_profile_mapping m ON (f.mapping = m.id)
+      group by 1, 2, 3, 4, 5, 6, 7 order by space_size desc;
 ```
 
 | callsite_id | ts | upid | name | rel_pc | build_id | mapping_name | space_size | space_count |
@@ -424,12 +467,12 @@ parent_id of a callsite (not shown in this table) recursively is very hard in
 SQL.
 
 There is an **experimental** table that surfaces this information. The **API is
-subject to change**, so only use this in one-off situations.
+subject to change**.
 
 ```sql
-> select name, map_name, cumulative_size
-         from experimental_flamegraph(8300973884377,1,'native')
-         order by abs(cumulative_size) desc;
+select name, map_name, cumulative_size
+       from experimental_flamegraph(8300973884377,1,'native')
+       order by abs(cumulative_size) desc;
 ``` 
 
 | name | map_name | cumulative_size |

@@ -5,7 +5,7 @@
   * [Record traces on Linux](quickstart/linux-tracing.md)
   * [SQL analysis and metrics](quickstart/trace-analysis.md)
   * [Trace conversion](quickstart/traceconv.md)
-  * [Heap profiling](quickstart/profiling.md)
+  * [Heap profiling](quickstart/heap-profiling.md)
 
 * [Case studies](#)
   * [Debugging memory usage](case-studies/memory.md)

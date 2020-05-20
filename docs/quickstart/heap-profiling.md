@@ -11,10 +11,10 @@
 
 [hdocs]: /docs/data-sources/native-heap-profiler.md#heapprofd-targets
 
-## Get a profile
+## Capture a heap profile
 
-Download the `tools/heap_profile` (if you  don't have a perfetto checkout) and
-and run it as follows:
+Download the `tools/heap_profile` (if you don't have a perfetto checkout) and
+run it as follows:
 
 ```bash
 curl -LO https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile
@@ -30,6 +30,7 @@ These can be viewed using pprof. Googlers: head to pprof/ and upload them.
 ```
 
 ## View profile
+
 Upload the `raw-trace` file from the output directory to the [Perfetto UI](
 https://ui.perfetto.dev) and click on diamond marker in the UI track labeled
 _"Heap profile"_.
@@ -38,6 +39,7 @@ _"Heap profile"_.
 ![Native Flamegraph](/docs/images/syssrv-apk-assets-two.png)
 
 ## Next steps
+
 Learn more about memory debugging in the [Memory Usage on Android Guide](
 /docs/case-studies/memory.md) and more about the [heapprofd data-source](
-/docs/data-sources/native-heap-profiler.md).
+/docs/data-sources/native-heap-profiler.md)

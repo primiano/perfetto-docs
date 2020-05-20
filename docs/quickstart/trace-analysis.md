@@ -1,27 +1,27 @@
 # Quickstart: SQL-based analysis and trace-based metrics
 
 _This quickstart explains how to use `trace_processor` to programmatically query
-the trace contents through a SQL interface and compute trace-based metrics._
+the trace contents through SQL and compute trace-based metrics._
 
-## Get trace_processor
+## Get Trace Processor
 
 TraceProcessor is a multi-format trace importing and query engine based on
-SQLite. It comes both as a C++ library and as a standalone executable, often
-referred to as `trace_processor_shell`.
+SQLite. It comes both as a C++ library and as a standalone executable:
+`trace_processor_shell` (or just `trace_processor`).
 
 ```bash
 # Download prebuilts (Linux and Mac only)
 curl -LO https://get.perfetto.dev/trace_processor
 chmod +x ./trace_processor
 
-# Starts the interactive shell
+# Start the interactive shell
 ./trace_processor trace.pftrace
 ```
 
-See [TraceProcessor docs](/docs/analysis/trace-processor.md) for the full
+See [Trace Processor docs](/docs/analysis/trace-processor.md) for the full
 TraceProcessor guide.
 
-## Basic queries
+## Sample queries
 
 For more exhaustive examples see the _SQL_ section of the various _Data sources_
 docs.
@@ -65,8 +65,7 @@ ts                   value
 
 ### Scheduler slices
 
-Scheduling slices are slices which indicate which thread was scheduled on which
-CPU at which time.
+Scheduler slices indicate which thread was scheduled on which CPU at which time.
 
 ![](/docs/images/sched-slices.png "Example of scheduler slices in the UI")
 
@@ -84,11 +83,14 @@ ts                   dur                  cpu                  utid
 
 ## Trace-based metrics
 
-TraceProcessor offers also a higher-level query interface that allows to run
-pre-baked queries that output structured JSON/Protobuf/text in output, without
-having to type manual SQL queries.
+Trace Processor offers also a higher-level query interface that allows to run
+pre-baked queries, herein called "metrics". Metrics are generally curated by
+domain experts, often the same people who add the instrumentation points in the
+first lace, and output structured JSON/Protobuf/text.
+Metrics allow to get a summarized view of the trace without having to type any
+SQL or having to load the trace in the UI.
 
-These metrics schema live in the
+The metrics` schema files live in the
 [/protos/perfetto/metrics](/protos/perfetto/metrics/) directory.
 The corresponding SQL queries live in
 [/src/trace_processor/metrics](/src/trace_processor/metrics/).
@@ -98,7 +100,7 @@ The corresponding SQL queries live in
 Let's run the [`android_cpu`](/protos/perfetto/metrics/android/cpu_metric.proto)
 metric. This metrics computes the total CPU time and the total cycles
 (CPU frequency * time spent running at that frequency) for each process in the
-trace, breaking it down by CPU (core) number.
+trace, breaking it down by CPU (_core_) number.
 
 ```protobuf
 ./trace_processor --run-metrics android_cpu trace.pftrace
@@ -302,13 +304,21 @@ Both single and multiple metrics are supported as with proto text output.
 }
 ```
 
-
 ## Next steps
 
-There are several options for exploring more of the trace analysis features Perfetto provides:
+There are several options for exploring more of the trace analysis features
+Perfetto provides:
 
-* The [trace conversion quickstart](/docs/quickstart/traceconv.md) gives an overview on how to convert Perfetto traces to legacy formats to integrate with existing tooling.
-* The [trace processor documentation](/docs/analysis/trace-processor.md) gives more information about how to work with trace processor including details on how to write queries and how tables in trace processor are organized.
-* The [metrics documentation](/docs/analysis/metrics.md) gives a more in-depth look into metrics including a short walkthrough on how to build an experimental metric from scratch.
-* The [SQL table reference](/docs/analysis/sql-tables.autogen) gives a comprehensive guide to the all the available tables in trace processor.
-* The [common tasks](/docs/contributing/common-tasks.md) page gives a list of steps on how new metrics can be added to the trace processor.
+* The [trace conversion quickstart](/docs/quickstart/traceconv.md) gives an
+  overview on how to convert Perfetto traces to legacy formats to integrate with
+  existing tooling.
+* The [Trace Processor documentation](/docs/analysis/trace-processor.md) gives
+  more information about how to work with trace processor including details on
+  how to write queries and how tables in trace processor are organized.
+* The [metrics documentation](/docs/analysis/metrics.md) gives a more in-depth
+  look into metrics including a short walkthrough on how to build an
+  experimental metric from scratch.
+* The [SQL table reference](/docs/analysis/sql-tables.autogen) gives a
+  comprehensive guide to the all the available tables in trace processor.
+* The [common tasks](/docs/contributing/common-tasks.md) page gives a list of
+  steps on how new metrics can be added to the trace processor.
