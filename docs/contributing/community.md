@@ -3,7 +3,7 @@
 ## Repository
 
 This project uses [Android AOSP Gerrit][perfetto-gerrit] for code reviews,
-follows the [Google C++ style][google-cpp-style] and targets `-std=c++11`.
+follows the [Google C++ style][google-cpp-style], and targets `-std=c++11`.
 
 Development happens in the AOSP repository:
 https://android.googlesource.com/platform/external/perfetto/
@@ -40,7 +40,7 @@ There are two levels of CI / TryBots involved when submitting a Perfetto CL:
 Both CIs are kicked in when the `Presubmit-Ready: +1` is set and will publish a
 comment like [this][ci-example] on the CL.
 
-You need to wait for both CIs green lights before submitting. The only
+You need to wait for both CIs to go green before submitting. The only
 exceptions are UI-only, docs-only or GN-only changes, for which the Android CI
 can be bypassed, as those are not built as part of the Android tree.
 
