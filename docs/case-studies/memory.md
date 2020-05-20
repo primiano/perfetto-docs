@@ -1,4 +1,4 @@
-# Memory Usage on Android
+# Debugging memory usage on Android
 
 ## Prerequisites
 * A host running macOS or Linux.

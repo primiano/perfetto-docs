@@ -1,4 +1,4 @@
-# Quickstart: Heap Profiling
+# Quickstart: Heap profiling
 
 ## Prerequisites
 

@@ -60,6 +60,5 @@
     * [Heapprofd wire protocol](design-docs/heapprofd-wire-protocol.md)
     * [Life of a tracing session](design-docs/life-of-a-tracing-session.md)
     * [Perfetto CI](design-docs/continuous-integration.md)
-    * [Perfetto IPC](design-docs/ipc.md)
     * [ProtoZero](design-docs/protozero.md)
     * [Security model](design-docs/security-model.md)
