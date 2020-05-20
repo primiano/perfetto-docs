@@ -1,18 +1,19 @@
 # Power data sources
 
-On Android Perfetto bundles data sources that are able to retrieve power
-counters from the device power management units where supported.
+On Android Perfetto bundles data sources to retrieve power
+counters from the device power management units (where supported).
 
 ## Battery counters
 
 _This data source has been introduced in Android 10 (Q) and requires the
-presence of power-management hardware on the device. It is available most Google
-Pixel smartphones._
+presence of power-management hardware on the device. This is available on 
+most Google Pixel smartphones._
 
 Modern smartphones are equipped with a power monitoring IC which is able to
-measure the charge flowing in and out of the battery. This allows to observe the
-total and instantaneous charge drained from the battery by the overall device
-(the union of SoC, display, radios and all other hardware units).
+measure the charge flowing in and out of the battery. This allows Perfetto to
+observe the total and instantaneous charge drained from the battery by the
+overall device (the union of SoC, display, radios and all other hardware
+units).
 
 A simplified block diagram:
 
@@ -29,7 +30,7 @@ The presence and the resolution of these counters depends on the device
 manufacturer. At the platform level this data is obtained polling the
 Android [IHealth HAL][health-hal].
 For more details on HW specs and resolution see
-https://source.android.com/devices/tech/power/device .
+[Measuring Device Power](https://source.android.com/devices/tech/power/device).
 
 [health-hal]: https://cs.android.com/android/platform/superproject/+/master:hardware/interfaces/health/2.0/IHealth.hal?q=IHealth
 
@@ -53,7 +54,7 @@ for this are:
   SoC-specific, is undocumented and not exposed through any HAL.
   For instance on a Pixel 2 this can be achieved running, as root:
   `echo 1 > /sys/devices/soc/800f000.qcom,spmi/spmi-0/spmi0-02/800f000.qcom,spmi:qcom,pmi8998@2:qcom,qpnp-smb2/power_supply/battery/input_suspend`.
-  Note that In most devices the kernel USB driver holds a wakelock to keep the
+  Note that in most devices the kernel USB driver holds a wakelock to keep the
   USB data link active, so the device will never fully suspend even when turning
   the screen off.
 
@@ -103,7 +104,7 @@ data_sources: {
 ## Power rails
 
 _This data source has been introduced in Android 10 (Q) and requires the
-presence of dedicated hardware on the device. This hw is not yet available on
+dedicated hardware on the device. This hardware is not yet available on
 most production phones._
 
 Recent version of Android introduced the support for more advanced power
