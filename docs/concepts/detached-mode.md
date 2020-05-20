@@ -3,13 +3,13 @@
 This document describes the `--detach` and `--attach` advanced operating modes
 of the `perfetto` cmdline client.
 
-The use of `--detach` and `--attach` is highly discouraged because of the risk
-of leaking tracing sessions and accidentally leaving tracing on for arbitrarily
-long periods of time.
+WARNING: The use of `--detach` and `--attach` is highly discouraged because of 
+the risk of leaking tracing sessions and accidentally leaving tracing on for 
+arbitrarily long periods of time.
 
-If what you are looking for is just a way to grab a trace in background (e.g.,
-while the USB cable / adb is disconnected) from the adb shell simply use
-`--background`.
+TIP: If what you are looking for is just a way to grab a trace in background
+(e.g., while the USB cable / adb is disconnected) from the adb shell simply
+use `--background`.
 
 ## Use case
 
@@ -17,14 +17,13 @@ By default the tracing service `traced` keeps the lifetime of a tracing session
 attached to the lifetime of the `perfetto` cmdline client that started it.
 This means that a `killall perfetto` or `kill $PID_OF_PERFETTO` is sufficient
 to guarantee that the tracing session is stopped.  
-There are rare occasions when this is undesirable.
 
-The use case this has been designed for is the Traceur app (on-device tracing
-UI for Android).  
+There are rare occasions when this is undesirable; for example, this mode of
+operation was designed for the Traceur app (on-device tracing UI for Android).
+
 When required by the user, Traceur needs to enable tracing in the background,
-possibly for very long periods of time.
-Because Traceur is not a persistent service (and even if it was, it could be
-still low-memory-killed), it cannot just use `--background`. This is
+possibly for very long periods of time. Because Traceur is not a persistent service (and even if it was, it could be
+still low-memory-killed), it cannot just use `--background`; this is
 because the Android framework kills any other process in the same process group
 when tearing down an app/service, and this would including killing forked
 `perfetto` client obtained via `--background`.
@@ -38,11 +37,11 @@ The `key` argument is an arbitrary string passed by the client to later
 re-identify the session using `--attach=key`.
 
 Once detached, the cmdline client will exit (without forking any bg process) and
-the `traced` service will keep the tracing session alive.  
-Because of the exit, a client that wants to use `--detach` needs to set the
-[`write_into_file`](config.md#long-traces) flag in the trace config, which
-transfers the output trace file descriptor to the service (see the
-[examples](#examples) section).
+the `traced` service will keep the tracing session alive. Because of the exit,
+a client that wants to use `--detach` needs to set the
+[`write_into_file`](config.md#long-traces) option in the trace config, which
+transfers the responsibility of writing the output trace file to the
+service (see the [examples](#examples) section).
 
 A detached session will run until either:
 

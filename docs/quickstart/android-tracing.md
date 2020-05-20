@@ -52,8 +52,7 @@ Your trace may look different depending on which data sources you enabled.
 
 #### Short syntax
 
-If you are already familiar with `systrace` or `atrace`, you an equivalent syntax
-with `perfetto`:
+If you are already familiar with `systrace` or `atrace`, there is an equivalent syntax with `perfetto`:
 
 ```bash
 adb shell perfetto -o mytrace.pftrace -t 20s sched freq idle am wm gfx view
@@ -61,7 +60,7 @@ adb shell perfetto -o mytrace.pftrace -t 20s sched freq idle am wm gfx view
 
 #### Full trace config
 
-The short syntax allows to enable only a subset of the data sources. For full
+The short syntax allows to enable only a subset of the data sources; for full
 control of the trace config, pass the full trace config in input.
 
 See the [_Trace configuration_ page](/docs/concepts/config.md) and the examples
@@ -125,7 +124,7 @@ adb push config.txt /data/local/tmp/trace_config.txt
 abb shell 'perfetto --txt -c - -o /data/misc/perfetto-traces/trace < /data/local/tmp/trace_config.txt'
 ```
 
-Note that because of strict SELinux rules, on versions of older than Android 11
+NOTE: because of strict SELinux rules, on versions of older than Android 11
 (R) passing directly the file path as `-c /data/local/tmp/config` might fail,
 hence the `-c -` + stdin piping above.
 

@@ -1,6 +1,6 @@
 # Perfetto CI design document
 
-This CI is used on-top (not in replacement of) AOSP's TreeHugger.
+This CI is used on-top of (not in replacement of) AOSP's TreeHugger.
 It gives early testing signals and coverage on other OSes and older Android
 devices not supported by TreeHugger.
 
@@ -28,7 +28,7 @@ The Controller orchestrates the CI. It's the most trusted piece of the system.
 It is based on a background AppEngine service. Such service is only
 triggered by deferred tasks and periodic Cron jobs.
 
-The Controller is the only entity which does authenticated access to Gerrit.
+The Controller is the only entity which performs authenticated access to Gerrit.
 It uses a non-privileged gmail account and has no meaningful voting power.
 
 The controller loop does mainly the following:

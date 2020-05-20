@@ -83,12 +83,12 @@ at a different rates, both targeting the same central buffer.
 
 2. When a page of the shared memory buffer is filled, the producer will send an
    async IPC to the service, asking it to copy the shared memory page just
-   written. Then the producer will grab the next free page in the shared memory
+   written. Then, the producer will grab the next free page in the shared memory
    buffer and keep writing.
 
-3. When the service receives the IPC it copies the shared memory page into
-   the central buffer and mark the shared memory buffer page as free again. Data
-   sources within the producer are be able to reuse that page at this point.
+3. When the service receives the IPC, it copies the shared memory page into
+   the central buffer and marks the shared memory buffer page as free again. Data
+   sources within the producer are able to reuse that page at this point.
 
 4. When the tracing session ends, the service sends a `Flush` request to all
    data sources. In reaction to this, data sources will commit all outstanding
@@ -113,7 +113,7 @@ If all producers write at a combined rate of 2 MB/s, a 16 MB buffer will hold
 The write rate is highly dependent on the data sources configured and by the
 activity of the system. 1-2 MB/s is a typical figure on Android traces with
 scheduler tracing, but can go up easily by 1+ orders of magnitude if chattier
-data sources are enabled (e.g., syscall of pagefault tracing).
+data sources are enabled (e.g., syscall or pagefault tracing).
 
 When using [streaming mode] the buffer needs to be able to hold enough data
 between two `file_write_period_ms` periods (default: 5s).
@@ -144,7 +144,7 @@ either the shared memory buffer needs to be big enough to handle that or
 `BufferExhaustedPolicy.kStall` must be employed.
 
 For instance, consider a data source that emits a 2MB screenshot every 10s.
-Its code, over simplifying, would look like:
+Its (simplified) code, would look like:
 ```c++
 for (;;) {
   ScreenshotDataSource::Trace([](ScreenshotDataSource::TraceContext ctx) {
@@ -155,9 +155,9 @@ for (;;) {
 }
 ```
 
-Its average write rate is 2MB / 10 = 200 KB/s. However, the data source will
-make bursts of 2MB back-to-back without ever yielding, limited only by the
-tracing serialization overhead. In practice it will write that 2MB buffer at
+Its average write rate is 2MB / 10s = 200 KB/s. However, the data source will
+create bursts of 2MB back-to-back without yielding; it is limited only by the
+tracing serialization overhead. In practice, it will write the 2MB buffer at
 O(GB/s). If the shared memory buffer is < 2 MB, the tracing service will be
 unlikely to catch up at that rate and data losses will be experienced.
 
@@ -267,8 +267,8 @@ and issue the query:
 ## Atomicity and ordering guarantees
 
 A "writer sequence" is the sequence of trace packets emitted by a given
-TraceWriter from a data source. In almost most all cases 1 data source ==
-1+ TraceWriter(s). Some data source that support writing from multiple threads
+TraceWriter from a data source. In almost all cases 1 data source ==
+1+ TraceWriter(s). Some data sources that support writing from multiple threads
 typically create one TraceWriter per thread.
 
 * Trace packets written from a sequence are emitted in the trace file in the
@@ -282,7 +282,7 @@ typically create one TraceWriter per thread.
   the opposite order.
 
 * Trace packets are atomic. If a trace packet is emitted in the trace file, it
-  is guaranteed to be contain all the field that the data source wrote. If a
+  is guaranteed to be contain all the fields that the data source wrote. If a
   trace packet is large and spans across several shared memory buffer pages, the
   service will save it in the trace file only if it can observe that all
   fragments have been committed without gaps.
@@ -355,7 +355,7 @@ There are two mitigations for this:
    `DataSourceConfig.target_buffer`). This technique is quite commonly used with
    in the ftrace + process_stats example mentioned before, recording the
    process_stats packet in a dedicated buffer less likely to wrap (ftrace events
-   are way more frequent than descriptors for new processes).
+   are much more frequent than descriptors for new processes).
 
 ## Flushes and windowed trace importing
 
