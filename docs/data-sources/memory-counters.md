@@ -36,7 +36,7 @@ ts | counter_name | value_kb | proc_name | pid
 
 ### TraceConfig
 
-To collect process stat counters at every X ms set `proc_stats_poll_ms = X` in
+To collect process stat counters every X ms set `proc_stats_poll_ms = X` in
 your process stats config. X must be greater than 100ms to avoid excessive CPU
 usage. Details about the specific counters being collected can be found in the
 [ProcessStats reference](/docs/reference/trace-packet-proto.autogen#ProcessStats).
@@ -57,7 +57,7 @@ data_sources: {
 
 ### rss_stat
 
-Recent version of the Linux kernel allow to report ftrace events when the
+Recent versions of the Linux kernel allow to report ftrace events when the
 Resident Set Size (RSS) mm counters change. This is the same counter available
 in `/proc/pid/status` as `VmRSS`. The main advantage of this event is that by
 being an event-driven push event it allows to detect very short memory usage
@@ -108,7 +108,7 @@ For each event type, the event records:
 
 ### SQL
 
-At the SQL level, these events are imported and exposed in the same way of
+At the SQL level, these events are imported and exposed in the same way as
 the corresponding polled events. This allows to collect both types of events
 (pushed and polled) and treat them uniformly in queries and scripts.
 
@@ -152,9 +152,9 @@ data_sources: {
 
 This data source allows periodic polling of system data from:
 
-- `proc/stat`
-- `proc/vmstat`
-- `proc/meminfo`
+- `/proc/stat`
+- `/proc/vmstat`
+- `/proc/meminfo`
 
 See [`man 5 proc`][man-proc] for their semantic.
 
@@ -241,7 +241,7 @@ of some component of the system causing memory spikes.
 
 #### In-kernel lowmemorykiller driver
 In Android, LMK used to be handled by an ad-hoc kernel-driver,
-Linux's [drivers/staging/android/lowmemorykiller.c][https://github.com/torvalds/linux/blob/v3.8/drivers/staging/android/lowmemorykiller.c].
+Linux's [drivers/staging/android/lowmemorykiller.c](https://github.com/torvalds/linux/blob/v3.8/drivers/staging/android/lowmemorykiller.c).
 This driver uses to emit the ftrace event `lowmemorykiller/lowmemory_kill`
 in the trace.
 

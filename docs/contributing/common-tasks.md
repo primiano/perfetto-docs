@@ -4,7 +4,7 @@ The checklists below show how to achieve some common tasks in the codebase.
 
 ## Add a new ftrace event
 
-* Find the `format` file for your event. The location of the file depends where `tracefs` is mounted but can often be found at `sys/kernel/debug/tracing/events/EVENT_GROUP/EVENT_NAME/format`.
+* Find the `format` file for your event. The location of the file depends where `tracefs` is mounted but can often be found at `/sys/kernel/debug/tracing/events/EVENT_GROUP/EVENT_NAME/format`.
 * Copy the format file into the codebase at `src/traced/probes/ftrace/test/data/synthetic/events/EVENT_GROUP/EVENT_NAME/format`.
 * Add the event to [tools/ftrace_proto_gen/event_whitelist](/tools/ftrace_proto_gen/event_whitelist).
 * Run `tools/run_ftrace_proto_gen`. This will update `protos/perfetto/trace/ftrace/ftrace_event.proto` and `protos/perfetto/trace/ftrace/GROUP_NAME.proto`.
@@ -19,7 +19,7 @@ Here is an [example change](https://android-review.googlesource.com/c/platform/e
 * Create the proto file containing the metric in the [protos/perfetto/metrics](/protos/perfetto/metrics) folder. The appropriate` BUILD.gn` file should be updated as well.
 * Import the proto in [protos/perfetto/metrics/metrics.proto](/protos/perfetto/metrics/metrics.proto) and add a field for the new message.
 * Run `tools/gen_all out/YOUR_BUILD_DIRECTORY`. This will update the generated headers containing the descriptors for the proto.
-  * *Note: this step has to be performed any time any metric-related proto is modified.1*
+  * *Note: this step has to be performed any time any metric-related proto is modified.*
 * Add a new SQL file for the metric to [src/trace_processor/metrics](/src/trace_processor/metrics). The appropriate `BUILD.gn` file should be updated as well.
   * To learn how to write new metrics, see the [trace-based metrics documentation](/docs/analysis/metrics.md).
 * Build all targets in your out directory with `tools/ninja -C out/YOUR_BUILD_DIRECTORY`.

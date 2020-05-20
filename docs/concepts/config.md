@@ -110,7 +110,7 @@ Each buffer has a fill policy which is either:
   full will wrap over and replace the oldest trace data in the buffer.
 
 * DISCARD: the buffer stops accepting data once full. Further write attempts are
-  dropped on the floor.
+  dropped.
 
 WARNING: DISCARD can have unexpected side-effect with data sources that commit
 data at the end of the trace.
@@ -244,7 +244,7 @@ To achieve that, Perfetto allows to periodically write the trace buffers into
 the target file (or stdout) using the following TraceConfig fields:
 
 * `write_into_file (bool)`:
-When true drains periodically the trace buffers into the output
+When true periodically drains the trace buffers into the output
 file. When this option is enabled, the userspace buffers need to be just
 big enough to hold tracing data between two write periods.
 The buffer sizing depends on the activity of the device.
@@ -253,8 +253,9 @@ hold for up write periods of ~4 seconds before starting to lose data.
 
 * `file_write_period_ms (uint32)`:
 Overrides the default drain period (5s). Shorter periods require a smaller
-userspace buffer but increase the performance intrusiveness of tracing. The
-tracing service will ignore periods too small (< 100ms).
+userspace buffer but increase the performance intrusiveness of tracing. If
+the period given is less than 100ms, the tracing service will use a period
+of 100ms.
 
 * `max_file_size_bytes (uint64)`:
 If set, stops the tracing session after N bytes have been written. Used to
@@ -268,7 +269,7 @@ Summary: to capture a long trace just set `write_into_file:true`, set a long
 
 ## Data-source specific config
 
-Alongside the trace-wide configuration parameters, the trace config defines also
+Alongside the trace-wide configuration parameters, the trace config also defines
 data-source-specific behaviors. At the proto schema level, this is defined in
 the `DataSourceConfig` section of `TraceConfig`:
 
@@ -313,7 +314,7 @@ message to the data sources with a matching name, without attempting to decode
 and re-encode it. If the `DataSourceConfig` section of the trace config contains
 a new field that didn't exist at the time when the service was built, the
 service will still pass the `DataSourceConfig` through to the data source.
-his allows to introduced new data sources without without needing the service to
+This allows to introduced new data sources without needing the service to
 know anything about them upfront.
 
 TODO: we are aware of the fact that today extending the `DataSourceConfig` with
@@ -371,7 +372,7 @@ data_sources {
 In nominal conditions, a tracing session has a lifecycle that simply matches the
 invocation of the `perfetto` cmdline client: trace data recording starts when
 the TraceConfig is passed to `perfetto` and ends when either the
-`Traceconfig.duration_ms` has elapsed, or when the cmdline client terminates.
+`TraceConfig.duration_ms` has elapsed, or when the cmdline client terminates.
 
 Perfetto supports an alternative mode of either starting or stopping the trace
 which is based on triggers. The overall idea is to declare in the trace config
@@ -402,7 +403,7 @@ lifecycle of a tracing session. The conceptual model is:
 Triggers can be signaled via the cmdline util
 
 ```bash
-/system/bin/trigger_perffetto "trigger_name"
+/system/bin/trigger_perfetto "trigger_name"
 ```
 
 (or also by starting an independent trace session which uses only the
