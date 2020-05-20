@@ -12,7 +12,7 @@ use.
 
 Key features:
 - Protobuf over a unix-socket.
-- Allows to send file descriptors over the wire: for setting up shared memory
+- Can send file descriptors over the wire: for setting up shared memory
   and passing the FD for the output trace from a consumer to the service.
 - Service definition uses same protobuf RPC syntax of [gRPC](https://grpc.io)
 - Extremely simple [wire protocol](/protos/perfetto/ipc/wire_protocol.proto).
