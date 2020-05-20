@@ -2,19 +2,20 @@
 
 _This data source is supported only on Android userdebug builds._
 
-The "android.log" data source allows to record log events from the Android log
-daemon (`logd`), the same events that are generally available via `adb logcat`.
+The "android.log" data source records log events from the Android log
+daemon (`logd`). These are the same log messages that are available via
+`adb logcat`.
 
 Both textual events and binary-formatted events from the [EventLog] are
 supported.
 
-This allows to see events time-synced with the rest of the trace. When recording
-[long traces](/docs/concepts/config#long-traces), this allow to record event
-logs for prolonged times, regardless of the Android log daemon buffer size
+This allows you to see log events time-synced with the rest of the trace. When recording
+[long traces](/docs/concepts/config#long-traces), it allows you to record event
+logs indefinitely, regardless of the Android log daemon buffer size
 (i.e. log events are periodically fetched and copied into the trace buffer).
 
-The trace config allows to filter event from specific log buffers and
-keep only events matching specific tags or priority.
+The data source can be configured to filter event from specific log buffers and
+keep only the events matching specific tags or priority.
 
 [EventLog]: https://developer.android.com/reference/android/util/EventLog
 
