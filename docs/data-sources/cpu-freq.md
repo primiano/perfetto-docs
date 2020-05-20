@@ -1,7 +1,7 @@
 # CPU frequency and idle states
 
 This data source is available on Linux and Android (Since P).
-It allows to record changes in the CPU power management scheme through the
+It records changes in the CPU power management scheme through the
 Linux kernel ftrace infrastructure.
 It involves three aspects:
 
@@ -48,7 +48,7 @@ Known issues:
   left-hand side of the trace, or none at all. Perfetto doesn't currently record
   the initial cpu frequency when the trace is started.
 
-* Currently the UI doesn't render the cpufreq track if idle states (See below)
+* Currently the UI doesn't render the cpufreq track if idle states (see below)
   are not captured. This is a UI-only bug, data is recorded and query-able
   through trace processor even if not displayed.
 
