@@ -1,13 +1,13 @@
 # Synchronization of multiple clock domains
 
-As per [6756fb05][6756fb05] Perfetto allows to deal with events using different
+As per [6756fb05][6756fb05] Perfetto handles events using different
 clock domains. On top of the default set of builtin clock domains, new clock
 domains can be dynamically created at trace-time.
 
 Clock domains are allowed to drift from each other.
 At import time, Perfetto's [Trace Processor](/docs/analysis/trace-processor.md) is able
 to rebuild the clock graph and use that to re-synchronize events on a global
-trace time, as long as [ClockSnapshot][clock_snapshot] packets are present in
+trace time, as long as the [ClockSnapshot][clock_snapshot] packets are present in
 the trace.
 
 ## Problem statement
@@ -67,8 +67,8 @@ It present, this field can be set to either:
 Builtin clocks cover the most common case of data sources using one of the
 POSIX clocks (see `man clock_gettime`). These clocks are periodically
 snapshotted by the `traced` service. The producer doesn't need to do anything
-else other than setting the `timestamp_clock_id` field in order to emit events
-that are use these clocks.
+other than set the `timestamp_clock_id` field in order to emit events
+that use these clocks.
 
 #### Sequence-scoped clocks
 Sequence-scoped clocks are application-defined clock domains that are valid only
@@ -80,7 +80,7 @@ the same thread"*.
 This covers the most common use case of a clock domain that is used only within
 a data source and not shared across different data sources.
 The main advantage of sequence-scoped clocks is that avoids the ID
-disambiguation problem and JustWorks&trade; for the most simple cases.
+disambiguation problem and JustWorks&trade; for the most simple case.
 
 In order to make use of a custom sequence-scoped clock domain a data source
 must:
