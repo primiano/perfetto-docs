@@ -42,7 +42,7 @@ examples:
   over time.
 
 * Integration with Android HALs modules for recording [battery and energy-usage
-  counters](/docs/data-sources/power.md).
+  counters](/docs/data-sources/battery-counters.md).
 
 * [Native heap profiling](/docs/data-sources/native-heap-profiler.md): a
   low-overhead heap profiler for hooking malloc/free/new/delete and associating
@@ -74,10 +74,10 @@ easily create time-boudned slices, counters and time markers using annotations
 of the form `TRACE_EVENT("category", "event_name", "x", "str", "y", 42)`.
 
 The SDK is designed for tracing of multi-process systems and multi-threaded
-processes. Is based on zero-alloc zero-syscall writing (on fast-paths) of
-protobufs on thread-local shared memory buffers.
+processes. It is based on [ProtoZero](/docs/design-docs/protozero.md), a library
+for direct writing of protobuf events on thread-local shared memory buffers.
 
-The same code can work both in fully in-process mode, hosting an instance of the
+The same code can work both in fully-in-process mode, hosting an instance of the
 Perfetto tracing service on a dedicated thread, or in _system mode_, connecting
 to the Linux/Android tracing daemon through a UNIX socket, allowing to combine
 app-specific instrumentation points with system-wide tracing events.
@@ -98,8 +98,8 @@ used instead of Perfetto's own UNIX socket.
 
 By default tracing works in in-process mode in Chromium, recording only data
 emitted by Chromium processes. On Android (and on Linux, if disabling the
-Chromium sandbox) tracing can work in hybrid mode, combining chrome-specific
-trace events with Perfetto system events.
+Chromium sandbox) tracing can work in hybrid in-process+system mode, combining
+chrome-specific trace events with Perfetto system events.
 
 _(Googlers: see [go/chrometto](https://goto.google.com/chrometto) for more)_
 
@@ -136,13 +136,14 @@ trace visualizers. Today Trace Processor is used by the
 
 Perfetto provides also a brand new trace visualizer for opening and querying
 hours-long traces, available at [ui.perfetto.dev](https://ui.perfetto.dev).
-The new visualizer takes advantage of modern web platform technolgies such as
-a multi-threading design based WebWorkers to keep the UI always responsive and
-WebAssembly, to reuse the analytical power of Trace Processor in-browser.
+The new visualizer takes advantage of modern web platform technolgies.
+Its multi-threading design based WebWorkers keeps the UI always responsive;
+the analytical power of Trace Processor and SQLite is fully available in-browser
+through WebAssembly.
 
-Thanks to the ServiceWorker based design, the Perfetto UI works fully offline
-after it has been opened once. Traces opened with the UI are processed locally
-by the browser and do not require any server-side interaction.
+The Perfetto UI works fully offline after it has been opened once. Traces opened
+with the UI are processed locally by the browser and do not require any
+server-side interaction.
 
 ![Perfetto UI screenshot](/docs/images/perfetto-ui-screenshot.png)
 
