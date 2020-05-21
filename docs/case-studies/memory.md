@@ -162,7 +162,7 @@ VmSwap:   43960 kB
 ### Memory tracepoints
 
 NOTE: For detailed instructions about the memory trace points see the
-      [Data sources -> Memory -> Counters and events](
+      [Data sources > Memory > Counters and events](
       /docs/data-sources/memory-counters.md) page.
 
 We can use Perfetto to get information about memory management events from the
@@ -304,7 +304,7 @@ to be killed) when it is opened, and gets increased again once it is closed.
 **Native Heap Profiles require Android 10.**
 
 NOTE: For detailed instructions about the native heap profiler and
-      troubleshooting see the [Data sources -> Native heap profiler](
+      troubleshooting see the [Data sources > Native heap profiler](
       /docs/data-sources/native-heap-profiler.md) page.
 
 Applications usually get memory through `malloc` or C++'s `new` rather than
@@ -382,7 +382,7 @@ these data, we can save RAM.
 **Java Heap Dumps require Android 11.**
 
 NOTE: For detailed instructions about the Java heap profiler and
-      troubleshooting see the [Data sources -> Java heap profiler](
+      troubleshooting see the [Data sources > Java heap profiler](
       /docs/data-sources/java-heap-profiler.md) page.
 
 ### Capturing the profile
