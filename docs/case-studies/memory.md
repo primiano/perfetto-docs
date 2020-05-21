@@ -123,7 +123,8 @@ each of them. If we map one 4KiB page into four processes, each of their
 #### Recap
 
 * Dynamically allocated memory, whether allocated through C's `malloc()`, C++'s
-  `operator new()` or Java's `new X()` starts always as _anonymous_ and _dirty_.
+  `operator new()` or Java's `new X()` starts always as _anonymous_ and _dirty_,
+  unless it is never used.
 * If this memory is not read/written for a while, or in case of memory pressure,
   it gets swapped out on ZRAM and becomes _swapped_.
 * Anonymous memory, whether _resident_ (and hence _dirty_) or _swapped_ is
