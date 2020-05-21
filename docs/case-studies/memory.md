@@ -388,7 +388,7 @@ NOTE: For detailed instructions about the Java heap profiler and
 
 ### Capturing the profile
 We can get a snapshot of the graph of all the Java objects that constitute the
-Java heap. We use the `tools/java_heap_dump` script.If you are having trouble
+Java heap. We use the `tools/java_heap_dump` script. If you are having trouble
 make sure you are using the [latest version](
 https://raw.githubusercontent.com/google/perfetto/master/tools/java_heap_dump).
 
