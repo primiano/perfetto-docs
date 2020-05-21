@@ -61,7 +61,7 @@ file descriptor to `mmap()`. The kernel will serve page faults on the VMA
 through the passed file, so reading a pointer to the VMA becomes the equivalent
 of a `read()` on the file.
 File-backed VMAs are used, for instance, by the dynamic linker (`ld`) when
-executing new processes or dynamically loading librares, or by the Android
+executing new processes or dynamically loading libraries, or by the Android
 framework, when loading a new .dex library or accessing resources in the APK.
 
 **Anonymous VMAs** are memory-only areas not backed by any file. This is the way
@@ -89,19 +89,19 @@ following states:
   be in two states:
     * **Clean** (only for file-backed pages): the contents of the page are the
       same of the contents on-disk. The kernel can evict clean pages more easily
-      in case of memory pressure. This is beacause if they should be needed
+      in case of memory pressure. This is because if they should be needed
       again, the kernel knows it can re-create its contents by reading them from
       the underlying file.
     * **Dirty**: the contents of the page diverge from the disk, or (in most
       cases), the page has no disk backing (i.e. it's _anonymous_). Dirty pages
       cannot be evicted because doing so would cause data loss. However they can
       be swapped out on disk or ZRAM, if present.
-* **Swappped**: a dirty page can be written to the swap file on disk (on most Linux
+* **Swapped**: a dirty page can be written to the swap file on disk (on most Linux
   desktop distributions) or compressed (on Android and CrOS through
   [ZRAM](https://source.android.com/devices/tech/perf/low-ram#zram)). The page
-  will stay stapped until a new page fault on its virtual address happens, at
+  will stay swapped until a new page fault on its virtual address happens, at
   which point the kernel will bring it back in main memory.
-* **Not present**: no page fault ever happpened on the page or the page was
+* **Not present**: no page fault ever happened on the page or the page was
   clean and later was evicted.
 
 It is generally more important to reduce the amount of _dirty_ memory as that
@@ -224,11 +224,11 @@ how the memory usage of an application reacts to different triggers.
 ## Which tool to use
 
 If you want to drill down into _anonymous_ memory allocated by Java code,
-labelled by `dumpsys meminfo` as `Dalvik Heap`, see the
+labeled by `dumpsys meminfo` as `Dalvik Heap`, see the
 [Analyzing the java heap](#java-hprof) section.
 
 If you want to drill down into _anonymous_ memory allocated by native code,
-labelled by `dumpsys meminfo` as `Native Heap`, see the
+labeled by `dumpsys meminfo` as `Native Heap`, see the
 [Analyzing the Native Heap](#heapprofd) section. Note that it's frequent to end
 up with native memory even if your app doesn't have any C/C++ code. This is
 because the implementation of some framework API (e.g. Regex) is internally
