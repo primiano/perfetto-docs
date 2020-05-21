@@ -1,4 +1,4 @@
-# ProtoZero
+# ProtoZero design document
 
 ProtoZero is a zero-copy zero-alloc zero-syscall protobuf serialization libary
 purposefully built for Perfetto's tracing use cases.
@@ -344,3 +344,121 @@ redirected to a temporary patch buffer
 (see [patch_list.h](/src/tracing/core/patch_list.h)). This patch buffer is then
 sent out-of-band, piggybacking over the next commit IPC (see
 [Tracing Protocol ABI](/docs/design-docs/api-and-abi.md#tracing-protocol-abi))
+
+### Performance characteristics
+
+NOTE: For the full code of the benchmark see
+      `/src/protozero/test/protozero_benchmark.cc`
+
+We consider two scenarios: writing a simple event and a nested event
+
+#### Simple event
+
+Consists of filling a flat proto message with of 4 integers (2 x 32-bit,
+2 x 64-bit) and a 32 bytes string, as follows:
+
+```c++
+void FillMessage_Simple(T* msg) {
+  msg->set_field_int32(...);
+  msg->set_field_uint32(...);
+  msg->set_field_int64(...);
+  msg->set_field_uint64(...);
+  msg->set_field_string(...);
+}
+```
+
+#### Nested event
+
+Consists of filling a similar message which is recursively nested 3 levels deep:
+
+```c++
+void FillMessage_Nested(T* msg, int depth = 0) {
+  FillMessage_Simple(msg);
+  if (depth < 3) {
+    auto* child = msg->add_field_nested();
+    FillMessage_Nested(child, depth + 1);
+  }
+}
+```
+
+#### Comparison terms
+
+We compare, for the same message type, the performance of ProtoZero,
+libprotobuf and a speed-of-light serializer.
+
+The speed-of-light serializer is a very simple C++ class that just appends
+data into a linear buffer making all sorts of favourable assumptions. It does
+not use any binary-stable encoding, it does not perform bound checking,
+all writes are 64-bit aligned, it doesn't deal with any thread-safety.
+
+```c++
+struct SOLMsg {
+  template <typename T>
+  void Append(T x) {
+    // The memcpy will be elided by the compiler, which will emit just a
+    // 64-bit aligned mov instruction.
+    memcpy(reinterpret_cast<T*>(ptr_), &x, sizeof(x));
+    ptr_ += sizeof(x);
+  }
+
+  void set_field_int32(int32_t x) { Append(x); }
+  void set_field_uint32(uint32_t x) { Append(x); }
+  void set_field_int64(int64_t x) { Append(x); }
+  void set_field_uint64(uint64_t x) { Append(x); }
+  void set_field_string(const char* str) { ptr_ = strcpy(ptr_, str); }
+
+  char storage_[sizeof(g_fake_input_simple)];
+  char* ptr_ = &storage_[0];
+};
+```
+
+The speed-of-light serializer serves as a reference for _how fast a serializer
+could be if argument marshalling and bound checking were zero cost._
+
+#### Benchmark results
+
+##### Google Pixel 3 - aarch64
+
+```bash
+$ cat out/droid_arm64/args.gn
+target_os = "android"
+is_clang = true
+is_debug = false
+target_cpu = "arm64"
+
+$ ninja -C out/droid_arm64/ perfetto_benchmarks && \
+  adb push --sync out/droid_arm64/perfetto_benchmarks /data/local/tmp/perfetto_benchmarks && \
+  adb shell '/data/local/tmp/perfetto_benchmarks --benchmark_filter=BM_Proto*'
+
+------------------------------------------------------------------------
+Benchmark                                 Time           CPU Iterations
+------------------------------------------------------------------------
+BM_Protozero_Simple_Libprotobuf         402 ns        398 ns    1732807
+BM_Protozero_Simple_Protozero           242 ns        239 ns    2929528
+BM_Protozero_Simple_SpeedOfLight        118 ns        117 ns    6101381
+BM_Protozero_Nested_Libprotobuf        1810 ns       1800 ns     390468
+BM_Protozero_Nested_Protozero           780 ns        773 ns     901369
+BM_Protozero_Nested_SpeedOfLight        138 ns        136 ns    5147958
+```
+
+##### HP Z920 workstation (Intel Xeon E5-2690 v4) running Linux
+
+```bash
+
+$ cat out/linux_clang_release/args.gn
+is_clang = true
+is_debug = false
+
+$ ninja -C out/linux_clang_release/ perfetto_benchmarks && \
+  out/linux_clang_release/perfetto_benchmarks --benchmark_filter=BM_Proto*
+
+------------------------------------------------------------------------
+Benchmark                                 Time           CPU Iterations
+------------------------------------------------------------------------
+BM_Protozero_Simple_Libprotobuf         428 ns        428 ns    1624801
+BM_Protozero_Simple_Protozero           261 ns        261 ns    2715544
+BM_Protozero_Simple_SpeedOfLight        111 ns        111 ns    6297387
+BM_Protozero_Nested_Libprotobuf        1625 ns       1625 ns     436411
+BM_Protozero_Nested_Protozero           843 ns        843 ns     849302
+BM_Protozero_Nested_SpeedOfLight        140 ns        140 ns    5012910
+```
