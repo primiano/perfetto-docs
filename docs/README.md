@@ -148,7 +148,7 @@ by the browser and do not require any server-side interaction.
 
 ## Contributing
 
-See the [Contributing -> Getting started page](/docs/contributing/community.md).
+See the [Contributing -> Getting started page](/docs/contributing/getting-started.md).
 
 ## Bugs
 

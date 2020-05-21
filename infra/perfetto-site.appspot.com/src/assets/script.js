@@ -23,7 +23,7 @@ let resizeObserver = undefined;
 
 // Handles redirects from the old docs.perfetto.dev.
 const legacyRedirectMap = {
-  '#/contributing': '/docs/contributing/community',
+  '#/contributing': '/docs/contributing/getting-started#community',
   '#/build-instructions': '/docs/contributing/build-instructions',
   '#/testing': '/docs/contributing/testing',
   '#/app-instrumentation': '/docs/instrumentation/tracing-sdk',

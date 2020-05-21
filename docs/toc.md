@@ -48,7 +48,7 @@
   * [heap_profile cmdline](reference/heap_profile-cli.md)
 
 * [Contributing](#)
-    * [Getting started](contributing/community.md)
+    * [Getting started](contributing/getting-started.md)
     * [Build instructions](contributing/build-instructions.md)
     * [Running tests](contributing/testing.md)
     * [Common tasks](contributing/common-tasks.md)
