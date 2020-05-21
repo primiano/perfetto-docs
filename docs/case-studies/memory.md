@@ -1,6 +1,7 @@
 # Debugging memory usage on Android
 
 ## Prerequisites
+
 * A host running macOS or Linux.
 * A device running Android 11+.
 
@@ -11,11 +12,12 @@ debuggable in its manifest. See the [heapprofd documentation](
 details on which applications can be targeted.
 
 ## dumpsys meminfo
+
 A good place to get started investigating memory usage of a process is
 `dumpsys meminfo` which gives a high-level overview of how much of the various
 types of memory are being used by a process.
 
-```
+```bash
 $ adb shell dumpsys meminfo com.android.systemui
 
 Applications Memory Usage (in Kilobytes):
@@ -36,130 +38,102 @@ Native Heap, we can see that SystemUI's memory usage on the Java heap
 is 9M, on the native heap it's 17M.
 
 ## Linux memory management
-But what does *private* and *dirty* actually mean? To answer this question, we
-need to delve into Linux memory management a bit.
+
+But what does *clean*, *dirty*, *Rss*, *Pss*, *Swap* actually mean? To answer
+this question, we need to delve into Linux memory management a bit.
 
 From the kernel's point of view, memory is split into equally sized blocks
-called *pages*. These are generally 4KiB. If an application asks for a new
-set of continuous blocks, the kernel creates a new VMA (Virtual Memory Area).
-The actual memory is only allocated (in page granularity) once the application
-tries to write to it. If you allocate 5TiB worth of pages but only touch one
-page, your process' memory usage will only go up by 4KiB. You will have
-increased your process' *virtual memory* by 5TiB, but its memory resident
-*physical memory* by 4KiB.
+called *pages*. These are generally 4KiB.
+
+Pages are organized in virtually contiguous ranges called VMA
+(Virtual Memory Area).
+
+VMAs are created when a process requests a new pool of memory pages through
+the [mmap() system call](https://man7.org/linux/man-pages/man2/mmap.2.html).
+Applications rarely call mmap() directly. Those calls are typically mediated by
+the allocator, `malloc()/operator new()` for native processes or by the
+Android RunTime for Java apps.
+
+VMAs can be of two types: file-backed and anonymous.
+
+**File-backed VMAs** are a view of a file in memory. They are obtained passing a
+file descriptor to `mmap()`. The kernel will serve page faults on the VMA
+through the passed file, so reading a pointer to the VMA becomes the equivalent
+of a `read()` on the file.
+File-backed VMAs are used, for instance, by the dynamic linker (`ld`) when
+executing new processes or dynamically loading librares, or by the Android
+framework, when loading a new .dex library or accessing resources in the APK.
+
+**Anonymous VMAs** are memory-only areas not backed by any file. This is the way
+allocators request dynamic memory from the kernel. Anonymous VMAs are obtained
+calling `mmap(... MAP_ANONYMOUS ...)`.
+
+Physical memory is only allocated, in page granularity, once the application
+tries to read/write from a VMA. If you allocate 32 MiB worth of pages but only
+touch one byte, your process' memory usage will only go up by 4KiB. You will
+have increased your process' *virtual memory* by 32 MiB, but its resident
+*physical memory* by 4 KiB.
 
 When optimizing memory use of programs, we are interested in reducing their
 footprint in *physical memory*. High *virtual memory* use is generally not a
-cause for concern (except if you run out of addresses, which is very hard on
-64 bit systems).
+cause for concern on modern platforms (except if you run out of address space,
+which is very hard on 64 bit systems).
 
 We call the amount a process' memory that is resident in *physical memory* its
-**RSS** (Resident Set Size). Not all memory is created equal though.
-Memory in Linux can be described using a couple of binary labels.
+**RSS** (Resident Set Size). Not all resident memory is equal though.
 
-* **anon / file:** anon memory does not exist on disk, file memory contains the
-content of a file.
-* **clean / dirty:** clean memory has not been written to by the process, or
-the changes have been written back to the backing file. Dirty memory has been
-written to and has not been written back to the backing file.
-* **private / shared:** modifications to private memory are only seen by the
-process doing it. Modifications to shared memory can be seen by other
-processes or the underlying file.
+From a memory-consumption viewpoint, individual pages within a VMA can have the
+following states:
 
-Some memory that is resident can be *reclaimed* by the kernel if it wants to
-free up memory.
+* **Resident**: the page is mapped to a physical memory page. Resident pages can
+  be in two states:
+    * **Clean** (only for file-backed pages): the contents of the page are the
+      same of the contents on-disk. The kernel can evict clean pages more easily
+      in case of memory pressure. This is beacause if they should be needed
+      again, the kernel knows it can re-create its contents by reading them from
+      the underlying file.
+    * **Dirty**: the contents of the page diverge from the disk, or (in most
+      cases), the page has no disk backing (i.e. it's _anonymous_). Dirty pages
+      cannot be evicted because doing so would cause data loss. However they can
+      be swapped out on disk or ZRAM, if present.
+* **Swappped**: a dirty page can be written to the swap file on disk (on most Linux
+  desktop distributions) or compressed (on Android and CrOS through
+  [ZRAM](https://source.android.com/devices/tech/perf/low-ram#zram)). The page
+  will stay stapped until a new page fault on its virtual address happens, at
+  which point the kernel will bring it back in main memory.
+* **Not present**: no page fault ever happpened on the page or the page was
+  clean and later was evicted.
 
-<center>
-
-| clean / dirty  | private / shared  | anon / file  | reclaimable |
-|:-----:|:--------:|:----:|-------------|
-| clean | private  | anon | reclaimable |
-| clean | private  | file | reclaimable |
-| clean | shared   | anon | reclaimable |
-| clean | shared   | file | reclaimable |
-| dirty | private  | anon | resident    |
-| dirty | private  | file | resident    |
-| dirty | shared   | anon | resident    |
-| dirty | shared   | file | reclaimable |
-
-</center>
-
-Memory that is *clean* is reclaimable by the kernel in case of low system memory.
-*Dirty* memory is always resident, except if it is *file*-backed and *shared*. In
-that case it can be reclaimed by writing back the content to the file.
-
-It is generally more important to reduce the amount of memory
-that cannot be reclaimed, as reclaimable memory can be thought of as a cache
-that the kernel can free up in case of low memory. This is why we looked at
-*Private Dirty* in the `dumpsys meminfo` example.
+It is generally more important to reduce the amount of _dirty_ memory as that
+cannot be reclaimed like _clean_ memory and, on Android, even if swapped in
+ZRAM, will still eat part of the system memory budget.
+This is why we looked at *Private Dirty* in the `dumpsys meminfo` example.
 
 *Shared* memory can be mapped into more than one process. This means VMAs in
-different processes refer to the same physical memory. This introduces the
-concept of **PSS** (Proportional Set Size). In **PSS**, memory that is
-resident in multiple processes is proportionally attributed to each of them.
-If we map one 4KiB page into four processes, each of their **PSS** will
-increase by 1KiB.
+different processes refer to the same physical memory. This typically happens
+with file-backed memory of commonly used libraries (e.g., libc.so,
+framework.dex) or, more rarely, when a process `fork()`s and a child process
+inherits dirty memory from its parent.
 
-## {#lmk} Low-memory kills
-When an Android device becomes low on memory, a daemon called LMKD will
-start killing unimportant processes in order to free up memory. Devices'
-strategies differ, but in general processes will be killed in order of
-descending `oom_score_adj` score.
+This introduces the concept of **PSS** (Proportional Set Size). In **PSS**,
+memory that is resident in multiple processes is proportionally attributed to
+each of them. If we map one 4KiB page into four processes, each of their
+**PSS** will increase by 1KiB.
 
-App will remain *cached* even after the user finishes using them, to make
-subsequent starts of the app faster. Such apps will generally be killed
-first (because they have a higher `oom_score_adj`).
+#### Recap
 
-We can collect information about LMKs and `oom_score_adj` using Perfetto.
-
-```
-$ adb shell perfetto \
-  -c - --txt \
-  -o /data/misc/perfetto-traces/trace \
-<<EOF
-
-buffers: {
-    size_kb: 8960
-    fill_policy: DISCARD
-}
-buffers: {
-    size_kb: 1280
-    fill_policy: DISCARD
-}
-data_sources: {
-    config {
-        name: "linux.process_stats"
-        target_buffer: 1
-        process_stats_config {
-            scan_all_processes_on_start: true
-        }
-    }
-}
-data_sources: {
-    config {
-        name: "linux.ftrace"
-        ftrace_config {
-            ftrace_events: "lowmemorykiller/lowmemory_kill"
-            ftrace_events: "oom/oom_score_adj_update"
-            ftrace_events: "ftrace/print"
-            atrace_apps: "lmkd"
-        }
-    }
-}
-duration_ms: 60000
-
-EOF
-```
-Pull the file using `adb pull /data/misc/perfetto-traces/trace ~/oom-trace`
-and upload to the [Perfetto UI](https://ui.perfetto.dev).
-
-
-![OOM Score](/docs/images/oom-score.png)
-
-We can see that the OOM score of Camera gets reduced (making it less likely
-to be killed) when it is opened, and gets increased again once it is closed.
+* Dynamically allocated memory, whether allocated through C's `malloc()`, C++'s
+  `operator new()` or Java's `new X()` starts always as _anonymous_ and _dirty_.
+* If this memory is not read/written for a while, or in case of memory pressure,
+  it gets swapped out on ZRAM and becomes _swapped_.
+* Anonymous memory, whether _resident_ (and hence _dirty_) or _swapped_ is
+  always a resource hog and should be avoided if unnecessary.
+* File-mapped memory comes from code (java or native), libraries and resource
+  and is almost always _clean_. Clean memory also erodes the system memory
+  budget but typically application developers have less control on it.
 
 ## Memory over time
+
 `dumpsys meminfo` is good to get a snapshot of the current memory usage, but
 even very short memory spikes can lead to low-memory situations, which will
 lead to [LMKs](#lmk). We have two tools to investigate situations like this
@@ -171,36 +145,30 @@ lead to [LMKs](#lmk). We have two tools to investigate situations like this
 
 We can get a lot of information from the `/proc/[pid]/status` file, including
 memory information. `RssHWM` shows the maximum RSS usage the process has seen
-since it was started.
+since it was started. This value is kept updated by the kernel.
 
-```
+```bash
 $ adb shell cat '/proc/$(pidof com.android.systemui)/status'
 [...]
-VmPeak:	14995392 kB
-VmSize:	14994624 kB
-VmLck:	       0 kB
-VmPin:	       0 kB
-VmHWM:	  256972 kB
-VmRSS:	  195272 kB
-RssAnon:	   30184 kB
-RssFile:	  164420 kB
-RssShmem:	     668 kB
-VmData:	 1310236 kB
-VmStk:	    8192 kB
-VmExe:	      28 kB
-VmLib:	  158856 kB
-VmPTE:	    1396 kB
-VmPMD:	      76 kB
-VmSwap:	   43960 kB
+VmHWM:    256972 kB
+VmRSS:    195272 kB
+RssAnon:  30184 kB
+RssFile:  164420 kB
+RssShmem: 668 kB
+VmSwap:   43960 kB
 [...]
 ```
 
 ### Memory tracepoints
 
+NOTE: For detailed instructions about the memory trace points see the
+      [Data sources -> Memory -> Counters and events](
+      /docs/data-sources/memory-counters.md) page.
+
 We can use Perfetto to get information about memory management events from the
 kernel.
 
-```
+```bash
 $ adb shell perfetto \
   -c - --txt \
   -o /data/misc/perfetto-traces/trace \
@@ -253,11 +221,91 @@ We can see that around 2/3 into the trace, the memory spiked (in the
 mem.rss.anon track). This is where I took a photo. This is a good way to see
 how the memory usage of an application reacts to different triggers.
 
+## Which tool to use
+
+If you want to drill down into _anonymous_ memory allocated by Java code,
+labelled by `dumpsys meminfo` as `Dalvik Heap`, see the
+[Analyzing the java heap](#java-hprof) section.
+
+If you want to drill down into _anonymous_ memory allocated by native code,
+labelled by `dumpsys meminfo` as `Native Heap`, see the
+[Analyzing the Native Heap](#heapprofd) section. Note that it's frequent to end
+up with native memory even if your app doesn't have any C/C++ code. This is
+because the implementation of some framework API (e.g. Regex) is internally
+implemented through native code.
+
+If you want to drill down into file-mapped memory the best option is to use
+`adb shell showmap PID` (on Android) or inspect `/proc/PID/smaps`.
+
+
+## {#lmk} Low-memory kills
+
+When an Android device becomes low on memory, a daemon called `lmkd` will
+start killing processes in order to free up memory. Devices' strategies differ,
+but in general processes will be killed in order of descending `oom_score_adj`
+score (i.e. background apps and processes first, foreground processes last).
+
+Apps on Android are not killed when switching away from them. They instead
+remain *cached* even after the user finishes using them. This is to make
+subsequent starts of the app faster. Such apps will generally be killed
+first (because they have a higher `oom_score_adj`).
+
+We can collect information about LMKs and `oom_score_adj` using Perfetto.
+
+```protobuf
+$ adb shell perfetto \
+  -c - --txt \
+  -o /data/misc/perfetto-traces/trace \
+<<EOF
+
+buffers: {
+    size_kb: 8960
+    fill_policy: DISCARD
+}
+buffers: {
+    size_kb: 1280
+    fill_policy: DISCARD
+}
+data_sources: {
+    config {
+        name: "linux.process_stats"
+        target_buffer: 1
+        process_stats_config {
+            scan_all_processes_on_start: true
+        }
+    }
+}
+data_sources: {
+    config {
+        name: "linux.ftrace"
+        ftrace_config {
+            ftrace_events: "lowmemorykiller/lowmemory_kill"
+            ftrace_events: "oom/oom_score_adj_update"
+            ftrace_events: "ftrace/print"
+            atrace_apps: "lmkd"
+        }
+    }
+}
+duration_ms: 60000
+
+EOF
+```
+
+Pull the file using `adb pull /data/misc/perfetto-traces/trace ~/oom-trace`
+and upload to the [Perfetto UI](https://ui.perfetto.dev).
+
+![OOM Score](/docs/images/oom-score.png)
+
+We can see that the OOM score of Camera gets reduced (making it less likely
+to be killed) when it is opened, and gets increased again once it is closed.
+
 ## {#heapprofd} Analyzing the Native Heap
+
 **Native Heap Profiles require Android 10.**
 
-_If your native memory is negligible, you can skip ahead to
-[Analyzing the Java Heap](#analyzing-the-java-heap)._
+NOTE: For detailed instructions about the native heap profiler and
+      troubleshooting see the [Data sources -> Native heap profiler](
+      /docs/data-sources/native-heap-profiler.md) page.
 
 Applications usually get memory through `malloc` or C++'s `new` rather than
 directly getting it from the kernel. The allocator makes sure that your memory
@@ -271,13 +319,14 @@ code. The profile *will only show allocations done while it was running*, any
 allocations done before will not be shown.
 
 ### Capturing the profile
+
 Use the `tools/heap_profile` script to profile a process. If you are having
 trouble make sure you are using the [latest version](
 https://raw.githubusercontent.com/google/perfetto/master/tools/heap_profile).
 See all the arguments using `tools/heap_profile -h`, or use the defaults
 and just profile a process (e.g. `system_server`):
 
-```
+```bash
 $ tools/heap_profile -n system_server
 
 Profiling active. Press Ctrl+C to terminate.
@@ -292,6 +341,7 @@ are done, press Ctrl-C to end the profile. For this tutorial, I opened a
 couple of apps.
 
 ### Viewing the data
+
 Then upload the `raw-trace` file from the output directory to the
 [Perfetto UI](https://ui.perfetto.dev) and click on diamond marker that
 shows.
@@ -328,7 +378,12 @@ into RAM rather than being able to (_cleanly_) memory-map. By not compressing
 these data, we can save RAM.
 
 ## {#java-hprof} Analyzing the Java Heap
+
 **Java Heap Dumps require Android 11.**
+
+NOTE: For detailed instructions about the Java heap profiler and
+      troubleshooting see the [Data sources -> Java heap profiler](
+      /docs/data-sources/java-heap-profiler.md) page.
 
 ### Capturing the profile
 We can get a snapshot of the graph of all the Java objects that constitute the
@@ -336,7 +391,7 @@ Java heap. We use the `tools/java_heap_dump` script.If you are having trouble
 make sure you are using the [latest version](
 https://raw.githubusercontent.com/google/perfetto/master/tools/java_heap_dump).
 
-```
+```bash
 $ tools/java_heap_dump -n com.android.systemui
 
 Dumping Java Heap.

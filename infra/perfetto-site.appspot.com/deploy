@@ -69,8 +69,8 @@ fi
 npm run build
 
 if [ "$DEPLOY_PROD" = true ]; then
-  echo not implementedd
-  # echo_and_do gcloud app deploy app.yaml --project perfetto-ui -v prod
+  echo_and_do gcloud app deploy app.yaml --project perfetto-site \
+      -v prod --promote --stop-previous-version
 elif [ "$DEPLOY_STAGING" = true ]; then
   echo_and_do gcloud app deploy app.yaml --project perfetto-site \
       -v staging --no-promote --stop-previous-version

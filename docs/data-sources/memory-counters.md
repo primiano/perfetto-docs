@@ -1,4 +1,4 @@
-# Memory Counters and Events
+# Memory counters and events
 
 Perfetto allows to gather a number of memory events and counters on
 Android and Linux. These events come from kernel interfaces, both ftrace and
