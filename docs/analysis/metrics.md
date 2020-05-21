@@ -36,10 +36,10 @@ The metric subsystem is a part of the
 against traces and produces a metric which summarizes some performance attribute
 (e.g. CPU, memory, startup latency etc.).
 
-For example, generating the Android memory metrics on a trace is as simple as:
+For example, generating the Android CPU metrics on a trace is as simple as:
 
 ```python
-> ./trace_processor --run-metrics android_mem <trace>
+> ./trace_processor --run-metrics android_cpu <trace>
 android_cpu {
   process_info {
     name: "/system/bin/init"
