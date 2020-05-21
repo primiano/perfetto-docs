@@ -1,18 +1,18 @@
 # Perfetto CLI
 
-This section describes how to use ADB to call `perfetto` and generate a trace.
+This section describes how to use the `perfetto` commandline binary to capture
+traces. Examples are given in terms of an Android device connected over ADB.
 
-`perfetto` includes the following two modes that determine the data sources
-it uses to record your trace:
+`perfetto` has two modes for configuring the tracing session (i.e. what and how
+to collect):
 
-* __light mode__: can select only a subset of data sources—specifically atrace
-  and ftrace. However, it offers an interface similar to
+* __lightweight mode__: all config options are supplied as commandline flags,
+  but the available data sources are restricted to ftrace and atrace. This mode
+  is similar to
   [`systrace`](https://developer.android.com/topic/performance/tracing/command-line).
-* __normal mode__: configuration is specified in a protocol buffer and allows you to
-  leverage more of the power of `perfetto` by using a larger variety of data sources.
+* __normal mode__: the configuration is specified in a protocol buffer. This
+  allows for full customisation of collected traces.
 
-This section describes the syntax `perfetto` requires to generate a trace using
-each of the modes described above.
 
 ## General options
 
@@ -31,18 +31,18 @@ mode.
 |`--help \| -h`|Prints out help text for the `perfetto` tool.|
 
 
-## Light mode
+## Lightweight mode
 
-The general syntax for using `perfetto` in *light mode* is as follows:
+The general syntax for using `perfetto` in *lightweight mode* is as follows:
 
-```
+<pre class="none">
  adb shell perfetto [ --time <var>TIMESPEC</var> ] [ --buffer <var>SIZE</var> ] [ --size <var>SIZE</var> ]
            [ <var>ATRACE_CAT</var> | <var>FTRACE_GROUP/FTRACE_NAME</var> | <var>FTRACE_GROUP/*</var> ]...
-```
+</pre>
 
 
 The following table lists the available options when using `perfetto` in
-*light mode*.
+*lightweight mode*.
 
 |Option|Description|
 |--- |--- |

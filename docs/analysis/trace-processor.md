@@ -16,15 +16,13 @@ on how to run SQL queries against traces using trace processor.
 
 ## Introduction
 
-Events in a trace are optimized for fast, low-overhead writing. This means they
-are written in a format from which requires lot of data-massaging and joins
-before being able to reason about and query for meaningful information.
-
-This is compounded by the number of legacy formats which are still in use and
+Events in a trace are optimized for fast, low-overhead recording. Therefore
+traces need significant data processing to extract meaningful information from
+them. This is compounded by the number of legacy formats which are still in use and
 need to be supported in trace analysis tools.
 
 The trace processor abstracts this complexity by parsing traces, extracting the
-data inside and exposing it in a set of database tables which can be queried
+data inside, and exposing it in a set of database tables which can be queried
 with SQL.
 
 Features of the trace processor include:
@@ -33,7 +31,7 @@ Features of the trace processor include:
   the SQLite query engine.
 * Metrics subsystem which allows computation of summarized view of the trace
   (e.g. CPU or memory usage of a process, time taken for app startup etc.).
-* Annotating events in the trace with user-friendly descriptions providing
+* Annotating events in the trace with user-friendly descriptions, providing
   context and explanation of events to newer users.
 * Creation of new events derived from the contents of the trace.
 
@@ -46,14 +44,13 @@ The formats supported by trace processor include:
 * Fuchsia binary format
 * [Ninja](https://ninja-build.org/) logs (the build system)
 
-The trace processor is embedded in a wide variety of trace analysis tools including:
+The trace processor is embedded in a wide variety of trace analysis tools, including:
 
 * [trace_processor](/docs/analysis/trace-processor.md), a standalone binary
    providing a shell interface (and the reference embedder).
 * [Perfetto UI](https://ui.perfetto.dev), in the form of a WebAssembly module.
 * [Android Graphics Inspector](https://gpuinspector.dev/).
 * [Android Studio](https://developer.android.com/studio/).
-* Internal pipelines for batch processing.
 
 ## Concepts
 
@@ -62,8 +59,8 @@ used in the rest of documentation.
 
 ### Events
 
-In the most general sense, a trace is simply a collection of "events" on a
-timeline. Events can have associated metadata and context which allows them to
+In the most general sense, a trace is simply a collection of timestamped
+"events". Events can have associated metadata and context which allows them to
 be interpreted and analyzed.
 
 Events form the foundation of trace processor and are one of two types: slices
@@ -144,7 +141,7 @@ subclass of `CounterTrack` etc).
 
 ![Object-oriented table diagram](/docs/images/oop-table-inheritance.png)
 
-In trace processor,  this "object-oriented" approach is replicated by having
+In trace processor, this "object-oriented" approach is replicated by having
 different tables for each type of object. For example, we have a `track` table
 as the "root" of the hierarchy with the `thread_track` and `counter_track`
 tables "inheriting from" the `track` table.
@@ -192,7 +189,7 @@ WHERE process_counter_track.name = 'mem.swap' AND value > 1000
 ```
 
 If the source and type of the event is known beforehand (which is generally the
-case),  the following can be used to find the `track` table to join with
+case), the following can be used to find the `track` table to join with
 
 | Event type | Associated with    | Track table           | Constraint in WHERE clause |
 | :--------- | ------------------ | --------------------- | -------------------------- |
@@ -221,7 +218,7 @@ WHERE slice.name = 'measure'
 ### Thread and process tables
 
 While obtaining `utid`s and `upid`s are a step in the right direction, generally
-users want the more widely applicable `tid`, `pid` or process/thread names.
+users want the original `tid`, `pid`, and process/thread names.
 
 The `thread` and `process` tables map `utid`s and `upid`s to threads and
 processes respectively. For example, to lookup the thread with `utid` 10
@@ -273,8 +270,6 @@ Android. We can add the following description and link:
 LayoutInflater#layout. This includes constructing all of the View objects in the
 hierarchy, and applying styled attributes.
 
-**Link**: https://developer.android.com/reference/android/view/layoutinflater#inflate(int,%20android.view.viewgroup)
-
 ## Creating derived events
 
 TIP: To see how to add to add a new annotation to trace processor, see the
@@ -290,7 +285,7 @@ users are just looking for a high level overview without needing to consider
 events from multiple locations.
 
 For example, an app startup in Android spans multiple components including
-`ActivityManager`, `system_server` and the newly created app process derived
+`ActivityManager`, `system_server`, and the newly created app process derived
 from `zygote`. Most users do not need this level of detail; they are only
 interested in a single slice spanning the entire startup.
 

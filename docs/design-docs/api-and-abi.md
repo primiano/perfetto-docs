@@ -210,10 +210,10 @@ tracing) and read back trace data.
 On Android this socket is linked at `/dev/socket/traced_consumer`. On all
 platforms it is overridable via the `PERFETTO_CONSUMER_SOCK_NAME` env var.
 
-Trace data contains sensitive information that discloses the activity the system
-(e.g., which processes / threads are running) and can allow side-channel
+Trace data contains sensitive information that discloses the activity the
+system (e.g., which processes / threads are running) and can allow side-channel
 attacks. For this reason the consumer socket is intended to be exposed only to
-few privileged processes.
+a few privileged processes.
 
 On Android, only the `adb shell` domain (used by various UI tools like
 [Perfetto UI](https://ui.perfetto.dev/),
@@ -482,7 +482,7 @@ service, which might not support some newer features.
 
 * If the producer/consumer client depends on a new behavior of the service, and
   that behavior cannot be inferred by the presence of a method, a new feature
-  flag  must be exposed through the `QueryCapabilities()` method.
+  flag  must be exposed through the `QueryCapabilities` method.
 
 ## Static linking vs shared library
 
